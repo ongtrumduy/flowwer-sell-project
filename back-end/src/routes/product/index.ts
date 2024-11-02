@@ -8,7 +8,7 @@ import { authentication, authenticationV2 } from '@auth/authUtils';
 const router = express.Router();
 
 // get all product
-// query params: limit, page
+// query params: limit, page, priceMin, priceMax, searchName, selectedCategory
 router.get('/all', asyncHandler(ProductController.getAllProductList));
 
 // get product detail
@@ -30,6 +30,9 @@ router.use(authenticationV2);
 router.post('/create', asyncHandler(ProductController.createNewProduct));
 
 // update product
-router.patch('/update', asyncHandler(ProductController.updateProduct));
+router.patch(
+  '/update/:productId',
+  asyncHandler(ProductController.updateProduct)
+);
 
 export default router;

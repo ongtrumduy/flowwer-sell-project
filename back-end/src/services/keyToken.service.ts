@@ -1,6 +1,6 @@
 import KeyTokenModel from '@models/keyToken.model';
 import { Types } from 'mongoose';
-import ErrorResponse from '../core/error.response';
+import ErrorDTODataResponse from '../core/error.dto.response';
 import { EnumMessageStatus } from '../utils/type';
 
 class KeyTokenService {
@@ -41,7 +41,7 @@ class KeyTokenService {
       // console.log('error 38 ===>', error);
       // return error;
 
-      throw new ErrorResponse({
+      throw new ErrorDTODataResponse({
         statusCode: 401,
         message: String(error),
         reasonStatusCode: EnumMessageStatus.UNAUTHORIZED_401,
@@ -59,9 +59,9 @@ class KeyTokenService {
     } catch (error) {
       // return error;
 
-      throw new ErrorResponse({
+      throw new ErrorDTODataResponse({
         statusCode: 401,
-        message: String(error),
+        message: (error as Error).message,
         reasonStatusCode: EnumMessageStatus.UNAUTHORIZED_401,
       });
     }
@@ -74,9 +74,9 @@ class KeyTokenService {
       return result;
     } catch (error) {
       // return error;
-      throw new ErrorResponse({
+      throw new ErrorDTODataResponse({
         statusCode: 401,
-        message: String(error),
+        message: (error as Error).message,
         reasonStatusCode: EnumMessageStatus.UNAUTHORIZED_401,
       });
     }
@@ -95,9 +95,9 @@ class KeyTokenService {
       return refreshTokenUsed;
     } catch (error) {
       // return error;
-      throw new ErrorResponse({
+      throw new ErrorDTODataResponse({
         statusCode: 401,
-        message: String(error),
+        message: (error as Error).message,
         reasonStatusCode: EnumMessageStatus.UNAUTHORIZED_401,
       });
     }
@@ -114,9 +114,9 @@ class KeyTokenService {
       return refreshTokenReturn;
     } catch (error) {
       // return error;
-      throw new ErrorResponse({
+      throw new ErrorDTODataResponse({
         statusCode: 401,
-        message: String(error),
+        message: (error as Error).message,
         reasonStatusCode: EnumMessageStatus.UNAUTHORIZED_401,
       });
     }
@@ -131,9 +131,9 @@ class KeyTokenService {
       return deleteKeyTokenByUserId;
     } catch (error) {
       // return error;
-      throw new ErrorResponse({
+      throw new ErrorDTODataResponse({
         statusCode: 401,
-        message: String(error),
+        message: (error as Error).message,
         reasonStatusCode: EnumMessageStatus.UNAUTHORIZED_401,
       });
     }

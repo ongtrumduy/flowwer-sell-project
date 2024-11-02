@@ -1,4 +1,3 @@
-import dotenv from 'dotenv';
 import express, {
   NextFunction,
   Request,
@@ -14,6 +13,7 @@ import compression from 'compression';
 import instanceMongodb from '@dbs/init.mongodb';
 
 import router from '@routes/index';
+import ErrorResponse from './core/error.response';
 
 const appExpress = express();
 
@@ -27,8 +27,6 @@ appExpress.use(compression());
 
 appExpress.use(express.json());
 appExpress.use(express.urlencoded({ extended: true }));
-
-dotenv.config();
 
 //=================================================
 // init db
@@ -64,15 +62,13 @@ const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  // console.log('show error final ============>', { error });
-  const statusCode = error.status || error.statusCode || 500;
-
-  return res.status(statusCode).json({
-    status: 'error',
-    message: error.message || error.reasonStatusCode || 'Internal Server Error',
-    code: statusCode,
+  return new ErrorResponse({
+    status: 'ERROR',
+    reasonStatusCode: error.reasonStatusCode,
+    message: error.message || 'Internal Server Error',
+    statusCode: error.statusCode || 500,
     stack: error.stack || 'OH NO! Something went wrong',
-  });
+  }).send({ res, headers: null });
 };
 
 appExpress.use(errorHandler as unknown as ErrorRequestHandler);

@@ -1,43 +1,23 @@
 import { NextFunction, Request, Response } from 'express';
-import ProductService from '@services/product.service';
+import CategoryService from '@services/category.service';
 
 import SuccessResponse from '@core/success.response';
 import { EnumMessageStatus } from '@root/src/utils/type';
 import { WithKeyStoreV2Request } from '@auth/authUtils';
-import {
-  DEFAULT_LIMIT,
-  DEFAULT_MAX_PRICE,
-  DEFAULT_MIN_PRICE,
-  DEFAULT_PAGE,
-} from '../utils/constant';
 
-class ProductController {
+class CategoryController {
   //=========================================================
-  // get all product list
-  // query params: limit, page, priceMin, priceMax, searchName, selectedCategory
-  static getAllProductList = async (
+  // get all category list
+  static getAllCategoryList = async (
     req: Request,
     res: Response,
     next: NextFunction
   ) => {
-    const data = await ProductService.getAllProductList({
-      limit: req.query?.limit ? Number(req.query.limit) : DEFAULT_LIMIT,
-      page: req.query?.page ? Number(req.query.page) : DEFAULT_PAGE,
-      priceMin: req.query?.priceMin
-        ? Number(req.query.priceMin)
-        : DEFAULT_MIN_PRICE,
-      priceMax: req.query?.priceMax
-        ? Number(req.query.priceMax)
-        : DEFAULT_MAX_PRICE,
-      searchName: req.query?.searchName ? String(req.query.searchName) : '',
-      selectedCategory: req.query?.selectedCategory
-        ? String(req.query.selectedCategory)
-        : '',
-    });
+    const data = await CategoryService.getAllCategoryList();
 
     new SuccessResponse({
       metaData: data?.metaData,
-      message: 'Get list product successfully !!!',
+      message: 'Get list category successfully !!!',
       statusCode: data?.code || 200,
       reasonStatusCode: data?.reasonStatusCode || EnumMessageStatus.SUCCESS_200,
     }).send({
@@ -47,19 +27,19 @@ class ProductController {
   };
 
   //=========================================================
-  // get product item detail
-  static getProductItemDetail = async (
+  // get category item detail
+  static getCategoryItemDetail = async (
     req: WithKeyStoreV2Request,
     res: Response,
     next: NextFunction
   ) => {
-    const data = await ProductService.getProductItemDetail({
-      productId: String(req.params.productId),
+    const data = await CategoryService.getCategoryItemDetail({
+      categoryId: String(req.params.categoryId),
     });
 
     new SuccessResponse({
       metaData: data?.metaData,
-      message: 'Get product item detail successfully !!!',
+      message: 'Get category item detail successfully !!!',
       statusCode: data?.code || 200,
       reasonStatusCode: data?.reasonStatusCode || EnumMessageStatus.SUCCESS_200,
     }).send({
@@ -69,19 +49,19 @@ class ProductController {
   };
 
   //=========================================================
-  // find list search product
-  static findListSearchProduct = async (
+  // find list search category
+  static findListSearchCategory = async (
     req: WithKeyStoreV2Request,
     res: Response,
     next: NextFunction
   ) => {
-    const data = await ProductService.findListSearchProduct({
+    const data = await CategoryService.findListSearchCategory({
       key_search: req.query?.key_search ? String(req.query.key_search) : '',
     });
 
     new SuccessResponse({
       metaData: data?.metaData,
-      message: 'Find list search product successfully !!!',
+      message: 'Find list search category successfully !!!',
       statusCode: data?.code || 200,
       reasonStatusCode: data?.reasonStatusCode || EnumMessageStatus.SUCCESS_200,
     }).send({
@@ -91,23 +71,20 @@ class ProductController {
   };
 
   //=========================================================
-  // create new product
-  static createNewProduct = async (
+  // create new category
+  static createNewCategory = async (
     req: Request,
     res: Response,
     next: NextFunction
   ) => {
-    const data = await ProductService.createNewProduct({
-      product_name: req.body.product_name,
-      order_quantity: req.body.order_quantity,
-      product_price: req.body.product_price,
-      product_image: req.body.product_image,
-      product_description: req.body.product_description,
+    const data = await CategoryService.createNewCategory({
+      category_name: req.body.category_name,
+      category_description: req.body.category_description,
     });
 
     new SuccessResponse({
       metaData: data?.metaData,
-      message: 'Create new product successfully !!!',
+      message: 'Create new category successfully !!!',
       statusCode: data?.code || 201,
       reasonStatusCode: data?.reasonStatusCode || EnumMessageStatus.CREATED_201,
     }).send({
@@ -117,24 +94,21 @@ class ProductController {
   };
 
   //=========================================================
-  // update product
-  static updateProduct = async (
+  // update category
+  static updateCategory = async (
     req: Request,
     res: Response,
     next: NextFunction
   ) => {
-    const data = await ProductService.updateProduct({
-      product_name: req.body.product_name,
-      order_quantity: req.body.order_quantity,
-      product_price: req.body.product_price,
-      product_image: req.body.product_image,
-      product_description: req.body.product_description,
-      productId: req.params.productId,
+    const data = await CategoryService.updateCategory({
+      category_name: req.body.category_name,
+      category_description: req.body.category_description,
+      categoryId: req.params.categoryId,
     });
 
     new SuccessResponse({
       metaData: data?.metaData,
-      message: 'Update product successfully !!!',
+      message: 'Update category successfully !!!',
       statusCode: data?.code || 200,
       reasonStatusCode: data?.reasonStatusCode || EnumMessageStatus.SUCCESS_200,
     }).send({
@@ -144,19 +118,19 @@ class ProductController {
   };
 
   //=========================================================
-  // delete product
-  static deleteProduct = async (
+  // delete category
+  static deleteCategory = async (
     req: Request,
     res: Response,
     next: NextFunction
   ) => {
-    const data = await ProductService.deleteProduct({
-      productId: req.params.productId,
+    const data = await CategoryService.deleteCategory({
+      categoryId: req.params.categoryId,
     });
 
     new SuccessResponse({
       metaData: data?.metaData,
-      message: 'Update product successfully !!!',
+      message: 'Update category successfully !!!',
       statusCode: data?.code || 200,
       reasonStatusCode: data?.reasonStatusCode || EnumMessageStatus.SUCCESS_200,
     }).send({
@@ -166,4 +140,4 @@ class ProductController {
   };
 }
 
-export default ProductController;
+export default CategoryController;

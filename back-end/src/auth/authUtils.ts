@@ -3,9 +3,13 @@ import JWT, { JwtPayload } from 'jsonwebtoken';
 import { asyncHandler } from '@helpers/asyncHandler';
 
 import KeyTokenService from '@services/keyToken.service';
-import { EnumHeaderKey, EnumMessageStatus } from '../utils/type';
+import {
+  EnumHeaderKey,
+  EnumMessageStatus,
+  EnumReasonStatusCode,
+} from '../utils/type';
 import { Request, Response, NextFunction } from 'express';
-import ErrorResponse from '../core/error.response';
+import ErrorDTODataResponse from '../core/error.dto.response';
 import {
   ACCESS_TOKEN_EXPIRES_IN,
   REFRESH_TOKEN_EXPIRES_IN,
@@ -36,7 +40,6 @@ export const createTokenPair = async ({
     });
 
     // let accessTokenExpires;
-
     const refreshToken = JWT.sign(payload, privateKey, {
       expiresIn: REFRESH_TOKEN_EXPIRES_IN,
     });
@@ -46,17 +49,16 @@ export const createTokenPair = async ({
         console.log('error verify ===>', error);
       } else {
         console.log('decode ===>', decode);
-
         // accessTokenExpires = decode
       }
     });
 
     return { accessToken, refreshToken };
   } catch (error) {
-    throw new ErrorResponse({
+    throw new ErrorDTODataResponse({
       statusCode: 401,
-      message: 'Invalid Token !!!',
-      reasonStatusCode: EnumMessageStatus.UNAUTHORIZED_401,
+      message: (error as Error).message,
+      reasonStatusCode: EnumReasonStatusCode.UNAUTHORIZED,
     });
   }
 };
@@ -68,29 +70,29 @@ export const authentication = asyncHandler(
     const userId = reqHeader[EnumHeaderKey.CLIEND_ID]?.toString();
 
     if (!userId) {
-      return res.status(401).json({
-        status: '401',
-        error: EnumMessageStatus.UNAUTHORIZED_401,
-        message: 'Not Have User Id !!!',
+      throw new ErrorDTODataResponse({
+        statusCode: 401,
+        message: 'Not Found User Id!!!',
+        reasonStatusCode: EnumReasonStatusCode.NOT_FOUND_USER_ID,
       });
     }
 
     const keyStore = await KeyTokenService.findKeyTokenByUserId(userId);
 
     if (!keyStore) {
-      return res.status(403).json({
-        status: '403',
-        error: EnumMessageStatus.FORBIDDEN_403,
+      throw new ErrorDTODataResponse({
+        statusCode: 401,
         message: 'Invalid User Id !!!',
+        reasonStatusCode: EnumReasonStatusCode.INVALID_USER_ID,
       });
     }
 
     const accessToken = reqHeader[EnumHeaderKey.TOKEN]?.toString();
 
     if (!accessToken) {
-      return res.status(401).json({
-        status: '401',
-        error: EnumMessageStatus.UNAUTHORIZED_401,
+      throw new ErrorDTODataResponse({
+        statusCode: 401,
+        reasonStatusCode: EnumReasonStatusCode.NOT_HAVE_ACCESS_TOKEN,
         message: 'Not Have Access Token !!!',
       });
     }
@@ -99,9 +101,9 @@ export const authentication = asyncHandler(
       const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
 
       if (userId !== (decodeUser as JwtPayload).userId) {
-        return res.status(401).json({
-          status: '401',
-          error: EnumMessageStatus.UNAUTHORIZED_401,
+        throw new ErrorDTODataResponse({
+          statusCode: 401,
+          reasonStatusCode: EnumReasonStatusCode.INVALID_USER_ID,
           message: 'Invalid UserId !!!',
         });
       }
@@ -110,10 +112,10 @@ export const authentication = asyncHandler(
 
       return next();
     } catch (error) {
-      throw new ErrorResponse({
+      throw new ErrorDTODataResponse({
         statusCode: 401,
-        message: 'Invalid Token !!!',
-        reasonStatusCode: EnumMessageStatus.UNAUTHORIZED_401,
+        message: (error as Error).message,
+        reasonStatusCode: EnumReasonStatusCode.EXPIRED_ACCESS_TOKEN,
       });
     }
   }
@@ -124,11 +126,10 @@ export const authenticationV2 = asyncHandler(
     const userId = req.headers[EnumHeaderKey.CLIEND_ID]?.toString();
 
     if (!userId) {
-      // throw new Error('Not Have User Id !!!');
-      return res.status(403).json({
-        status: '403',
-        error: EnumMessageStatus.FORBIDDEN_403,
-        message: 'Not Have User Id !!!',
+      throw new ErrorDTODataResponse({
+        statusCode: 401,
+        message: 'Not Found User Id!!!',
+        reasonStatusCode: EnumReasonStatusCode.NOT_FOUND_USER_ID,
       });
     }
 
@@ -136,11 +137,10 @@ export const authenticationV2 = asyncHandler(
     const keyStore = await KeyTokenService.findKeyTokenByUserId(userId);
 
     if (!keyStore) {
-      // throw new Error('Invalid User Id !!!');
-      return res.status(403).json({
-        status: '403',
-        error: EnumMessageStatus.FORBIDDEN_403,
+      throw new ErrorDTODataResponse({
+        statusCode: 401,
         message: 'Invalid User Id !!!',
+        reasonStatusCode: EnumReasonStatusCode.INVALID_USER_ID,
       });
     }
 
@@ -152,11 +152,10 @@ export const authenticationV2 = asyncHandler(
         const decodeUser = JWT.verify(refreshToken, keyStore.privateKey);
 
         if (userId !== (decodeUser as JwtPayload).userId) {
-          // throw new Error('Invalid UserId !!!');
-          return res.status(403).json({
-            status: '403',
-            error: EnumMessageStatus.FORBIDDEN_403,
-            message: 'Invalid User Id !!!',
+          throw new ErrorDTODataResponse({
+            statusCode: 401,
+            reasonStatusCode: EnumReasonStatusCode.INVALID_USER_ID,
+            message: 'Invalid UserId !!!',
           });
         }
 
@@ -166,23 +165,23 @@ export const authenticationV2 = asyncHandler(
 
         return next();
       } catch (error) {
-        return res.status(401).json({
-          status: '401',
-          error: EnumMessageStatus.UNAUTHORIZED_401,
-          message: error,
+        throw new ErrorDTODataResponse({
+          statusCode: 401,
+          reasonStatusCode: EnumReasonStatusCode.INVALID_REFRESH_TOKEN,
+          message: (error as Error).message,
         });
       }
     }
 
     const accessTokenGetHeader =
       req.headers[EnumHeaderKey.AUTHORIZATION]?.toString() || 'Bearer ';
+
     const accessToken = accessTokenGetHeader.replace('Bearer ', '');
 
     if (!accessToken) {
-      // throw new Error('Not Have Access Token !!!');
-      return res.status(403).json({
-        status: '403',
-        error: EnumMessageStatus.FORBIDDEN_403,
+      throw new ErrorDTODataResponse({
+        statusCode: 401,
+        reasonStatusCode: EnumReasonStatusCode.NOT_HAVE_ACCESS_TOKEN,
         message: 'Not Have Access Token !!!',
       });
     }
@@ -191,11 +190,10 @@ export const authenticationV2 = asyncHandler(
       const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
 
       if (userId !== (decodeUser as JwtPayload).userId) {
-        // throw new Error('Invalid UserId !!!');
-        return res.status(403).json({
-          status: '403',
-          error: EnumMessageStatus.FORBIDDEN_403,
-          message: 'Invalid User Id !!!',
+        throw new ErrorDTODataResponse({
+          statusCode: 401,
+          reasonStatusCode: EnumReasonStatusCode.INVALID_USER_ID,
+          message: 'Invalid UserId !!!',
         });
       }
 
@@ -205,26 +203,29 @@ export const authenticationV2 = asyncHandler(
 
       return next();
     } catch (error) {
-      // throw error;
-      throw new ErrorResponse({
+      throw new ErrorDTODataResponse({
         statusCode: 401,
-        message: 'Invalid Token !!!',
-        reasonStatusCode: EnumMessageStatus.UNAUTHORIZED_401,
+        reasonStatusCode: EnumReasonStatusCode.EXPIRED_ACCESS_TOKEN,
+        message: (error as Error).message,
       });
     }
   }
 );
 
-export const verifyJWT = async ({
-  token,
+export const verifyJWTByRefreshToken = async ({
+  refreshToken,
   keySecret,
 }: {
-  token: string;
+  refreshToken: string;
   keySecret: string;
 }) => {
   try {
-    return await JWT.verify(token, keySecret);
+    return await JWT.verify(refreshToken, keySecret);
   } catch (error) {
-    return null;
+    throw new ErrorDTODataResponse({
+      statusCode: 401,
+      reasonStatusCode: EnumReasonStatusCode.INVALID_REFRESH_TOKEN,
+      message: (error as Error).message,
+    });
   }
 };

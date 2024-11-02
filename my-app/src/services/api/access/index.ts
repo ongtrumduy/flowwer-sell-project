@@ -1,10 +1,10 @@
 import AuthInformationMetadataService from '@services/auth';
+import AxiosConfigService from '@services/axios';
 import { ACCESS_API } from '@services/constant';
-import AxiosConfigService from '@services/http';
-import { AxiosHeaders } from 'axios';
-import { InterfaceAuthInformation, InterfaceLogoutResponseData } from './type';
 import LocalStorageService from '@services/local-storage';
 import { EnumLocalStorage } from '@services/local-storage/type';
+import { AxiosHeaders } from 'axios';
+import { InterfaceAuthInformation, InterfaceLogoutResponseData } from './type';
 
 class AccessApiService {
   // ===========================================================================
@@ -28,8 +28,8 @@ class AccessApiService {
 
           resolve(userInformationReturnValue.metaData);
         })
-        .catch((err) => {
-          reject(err);
+        .catch((error) => {
+          reject(error.response.data);
         });
     });
   };
@@ -49,8 +49,9 @@ class AccessApiService {
 
           resolve(logoutReturnValue.metaData);
         })
-        .catch((err) => {
-          reject(err);
+
+        .catch((error) => {
+          reject(error.response.data);
         });
     });
   };
@@ -92,8 +93,8 @@ class AccessApiService {
 
           resolve(userInformationReturnValue.metaData);
         })
-        .catch((err) => {
-          reject(err);
+        .catch((error) => {
+          reject(error.response.data);
         });
     });
   };
@@ -112,7 +113,6 @@ class AccessApiService {
         customHeaders: headers,
       })
         .then((data) => {
-          // console.log('98 data refreshToken ===>', data);
           const refreshTokenReturnValue = data as InterfaceAuthInformation;
 
           LocalStorageService.setItem({
@@ -122,8 +122,8 @@ class AccessApiService {
 
           resolve(refreshTokenReturnValue.metaData);
         })
-        .catch((err) => {
-          reject(err);
+        .catch((error) => {
+          reject(error.response.data);
         });
     });
   };

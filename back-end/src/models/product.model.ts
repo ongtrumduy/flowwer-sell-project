@@ -1,4 +1,5 @@
 import { model, Schema } from 'mongoose';
+import { CATEGORY_DOCUMENT_NAME } from './category.model';
 
 export const PRODUCT_DOCUMENT_NAME = 'Products';
 const PRODUCT_COLLECTION_NAME = 'Products_Collection';
@@ -30,6 +31,13 @@ const ProductSchema = new Schema(
       required: true,
       trim: true,
     },
+    categoriesIds: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: CATEGORY_DOCUMENT_NAME,
+        required: true,
+      },
+    ],
   },
   {
     timestamps: true,
@@ -37,10 +45,10 @@ const ProductSchema = new Schema(
   }
 );
 
-const ProductModel = model(PRODUCT_DOCUMENT_NAME, ProductSchema);
-
 // =======================================================
 // create index for search
 ProductSchema.index({ product_name: 'text' });
+
+const ProductModel = model(PRODUCT_DOCUMENT_NAME, ProductSchema);
 
 export default ProductModel;

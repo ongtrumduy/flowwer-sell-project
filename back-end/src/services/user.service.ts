@@ -1,6 +1,6 @@
 import UserModel from '@models/user.model';
 import { EnumMessageStatus, EnumRole } from '../utils/type';
-import ErrorResponse from '../core/error.response';
+import ErrorDTODataResponse from '../core/error.dto.response';
 
 class UserService {
   // =========================================================================
@@ -23,9 +23,9 @@ class UserService {
 
       return userInformation;
     } catch (error) {
-      throw new ErrorResponse({
+      throw new ErrorDTODataResponse({
         statusCode: 400,
-        message: 'User information not found',
+        message: (error as Error).message,
         reasonStatusCode: EnumMessageStatus.BAD_REQUEST_400,
       });
     }

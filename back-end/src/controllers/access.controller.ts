@@ -1,10 +1,9 @@
-import { NextFunction, Request, Response } from 'express';
 import AccessService from '@services/access.service';
+import { NextFunction, Request, Response } from 'express';
 
-import SuccessResponse from '@core/success.response';
-import { EnumMessageStatus } from '@root/src/utils/type';
 import { WithKeyStoreV2Request } from '@auth/authUtils';
-import ApiKeyService from '../services/apiKey.service';
+import SuccessResponse from '@core/success.response';
+import { EnumMessageStatus, EnumReasonStatusCode } from '@root/src/utils/type';
 
 class AccessController {
   //=========================================================
@@ -20,9 +19,11 @@ class AccessController {
 
     new SuccessResponse({
       metaData: data?.metaData,
-      message: 'Refresh token successfully !!!',
-      statusCode: data?.code || 200,
-      reasonStatusCode: data?.reasonStatusCode || EnumMessageStatus.SUCCESS_200,
+      message: data?.metaData || 'Refresh Token Successfully !!!',
+      statusCode: data?.statusCode || 200,
+      reasonStatusCode:
+        data?.reasonStatusCode ||
+        EnumReasonStatusCode.REFRESH_TOKEN_SUCCESSFULLY,
     }).send({
       res,
       headers: null,
@@ -44,9 +45,11 @@ class AccessController {
 
     new SuccessResponse({
       metaData: data?.metaData,
-      message: 'Refresh token successfully !!!',
-      statusCode: data?.code || 200,
-      reasonStatusCode: data?.reasonStatusCode || EnumMessageStatus.SUCCESS_200,
+      message: data?.metaData || 'Refresh Token Successfully !!!',
+      statusCode: data?.statusCode || 200,
+      reasonStatusCode:
+        data?.reasonStatusCode ||
+        EnumReasonStatusCode.REFRESH_TOKEN_SUCCESSFULLY,
     }).send({
       res,
       headers: null,
@@ -66,9 +69,10 @@ class AccessController {
 
     new SuccessResponse({
       metaData: data?.metaData,
-      message: 'Logout successfully !!!',
-      statusCode: data?.code || 200,
-      reasonStatusCode: data?.reasonStatusCode || EnumMessageStatus.SUCCESS_200,
+      message: 'Logout Successfully !!!',
+      statusCode: data?.statusCode || 200,
+      reasonStatusCode:
+        data?.reasonStatusCode || EnumReasonStatusCode.LOGOUT_SUCCESSFULLY,
     }).send({
       res,
       headers: null,
@@ -85,9 +89,10 @@ class AccessController {
 
     new SuccessResponse({
       metaData: data?.metaData,
-      message: 'Login successfully !!!',
-      statusCode: data?.code || 200,
-      reasonStatusCode: data?.reasonStatusCode || EnumMessageStatus.SUCCESS_200,
+      message: 'Login Successfully !!!',
+      statusCode: data?.statusCode || 200,
+      reasonStatusCode:
+        data?.reasonStatusCode || EnumReasonStatusCode.LOGIN_SUCCESSFULLY,
     }).send({
       res,
       headers: null,
@@ -107,9 +112,10 @@ class AccessController {
 
     new SuccessResponse({
       metaData: data?.metaData,
-      message: 'Sign up successfully !!!',
-      statusCode: data?.code || 201,
-      reasonStatusCode: data?.reasonStatusCode || EnumMessageStatus.CREATED_201,
+      message: 'Sign Up Successfully !!!',
+      statusCode: data?.statusCode || 200,
+      reasonStatusCode:
+        data?.reasonStatusCode || EnumReasonStatusCode.SIGN_UP_SUCCESSFULLY,
     }).send({
       res,
       headers: null,

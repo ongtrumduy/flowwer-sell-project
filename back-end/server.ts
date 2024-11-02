@@ -1,4 +1,6 @@
 import './src/utils/register-aliases'; // Register aliases for module resolution ---> init first
+import dotenv from 'dotenv';
+dotenv.config();
 
 import appExpress from '@src/app';
 

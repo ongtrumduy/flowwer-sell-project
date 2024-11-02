@@ -1,9 +1,25 @@
 import { EnumPermission, EnumRole } from './type';
 
-export const DEFAULT_ROLE = [EnumRole.USER];
-export const DEFAULT_PERMISSION = [EnumPermission.ALL];
+const DEFAULT_ROLE = [EnumRole.USER];
+const DEFAULT_PERMISSION = [EnumPermission.ALL];
 
-export const ACCESS_TOKEN_EXPIRES_IN =
-  process.env.ACCESS_TOKEN_EXPIRES_IN || '1m';
-export const REFRESH_TOKEN_EXPIRES_IN =
-  process.env.REFRESH_TOKEN_EXPIRES_IN || '30d';
+const ACCESS_TOKEN_EXPIRES_IN = process.env.ACCESS_TOKEN_EXPIRES_IN || '1m';
+const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '30d';
+
+const DEFAULT_LIMIT = 8;
+const DEFAULT_MIN_PRICE = 0;
+const DEFAULT_MAX_PRICE = 1000000;
+const DEFAULT_PAGE = 1;
+const DEFAULT_CATEGORY_ID = 'ALL';
+
+export {
+  DEFAULT_ROLE,
+  DEFAULT_PERMISSION,
+  ACCESS_TOKEN_EXPIRES_IN,
+  REFRESH_TOKEN_EXPIRES_IN,
+  DEFAULT_LIMIT,
+  DEFAULT_MIN_PRICE,
+  DEFAULT_MAX_PRICE,
+  DEFAULT_PAGE,
+  DEFAULT_CATEGORY_ID,
+};

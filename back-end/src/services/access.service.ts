@@ -6,14 +6,19 @@ import crypto from 'node:crypto';
 import UserService from '@services/user.service';
 import KeyTokenService from '@services/keyToken.service';
 
-import { createTokenPair, verifyJWT } from '@auth/authUtils';
+import { createTokenPair, verifyJWTByRefreshToken } from '@auth/authUtils';
 
 import { getInformationData } from '@utils/index';
-import { EnumMessageStatus, EnumRole } from '@root/src/utils/type';
+import {
+  EnumMessageStatus,
+  EnumReasonStatusCode,
+  EnumRole,
+} from '@root/src/utils/type';
 
 import { JwtPayload } from 'jsonwebtoken';
-import ErrorResponse from '@core/error.response';
+import ErrorDTODataResponse from '@root/src/core/error.dto.response';
 import { DEFAULT_ROLE } from '../utils/constant';
+import SuccessDTODataResponse from '../core/success.dto.response';
 
 class AccessService {
   //=====================================================================
@@ -34,28 +39,28 @@ class AccessService {
         userId,
       });
 
-      throw new ErrorResponse({
-        statusCode: 403,
-        message: 'Refresh token used !!!',
-        reasonStatusCode: EnumMessageStatus.FORBIDDEN_403,
+      throw new ErrorDTODataResponse({
+        statusCode: 401,
+        message: 'Refresh Token Used !!!',
+        reasonStatusCode: EnumReasonStatusCode.REFRESH_TOKEN_USED,
       });
     }
 
     if (keyStore.refreshToken !== refreshToken) {
-      throw new ErrorResponse({
-        statusCode: 403,
-        message: 'Invalid refresh token',
-        reasonStatusCode: EnumMessageStatus.FORBIDDEN_403,
+      throw new ErrorDTODataResponse({
+        statusCode: 401,
+        message: 'Invalid Refresh Token !!!',
+        reasonStatusCode: EnumReasonStatusCode.INVALID_REFRESH_TOKEN,
       });
     }
 
     const foundUser = await UserService.findUserInformationByEmail({ email });
 
     if (!foundUser) {
-      throw new ErrorResponse({
-        statusCode: 403,
-        message: 'User not found',
-        reasonStatusCode: EnumMessageStatus.FORBIDDEN_403,
+      throw new ErrorDTODataResponse({
+        statusCode: 401,
+        message: 'Not Found User !!!',
+        reasonStatusCode: EnumReasonStatusCode.NOT_FOUND_USER,
       });
     }
 
@@ -66,10 +71,10 @@ class AccessService {
     });
 
     if (!tokens) {
-      throw new ErrorResponse({
-        statusCode: 403,
-        message: 'Create token pair failed',
-        reasonStatusCode: EnumMessageStatus.FORBIDDEN_403,
+      throw new ErrorDTODataResponse({
+        statusCode: 401,
+        message: 'Create token pair failed !!!',
+        reasonStatusCode: EnumReasonStatusCode.CREATE_TOKEN_PAIR_FAILED,
       });
     }
 
@@ -82,8 +87,8 @@ class AccessService {
       },
     });
 
-    return {
-      code: 201,
+    return new SuccessDTODataResponse({
+      statusCode: 201,
       metaData: {
         user: getInformationData({
           fields: ['userId', 'name', 'email', 'roles'],
@@ -91,8 +96,9 @@ class AccessService {
         }),
         tokens,
       },
-      reasonStatusCode: EnumMessageStatus.CREATED_201,
-    };
+      reasonStatusCode: EnumReasonStatusCode.CREATED_SUCCESSFULLY,
+      message: 'Refresh Token Successfully !!!',
+    });
   };
 
   //=====================================================================
@@ -107,8 +113,8 @@ class AccessService {
     });
 
     if (foundUsedToken) {
-      const payload = await verifyJWT({
-        token: refreshToken,
+      const payload = await verifyJWTByRefreshToken({
+        refreshToken,
         keySecret: foundUsedToken.privateKey,
       });
 
@@ -118,10 +124,10 @@ class AccessService {
         userId: (payload as JwtPayload)?.userId,
       });
 
-      throw new ErrorResponse({
-        statusCode: 403,
-        message: 'Refresh token used !!!',
-        reasonStatusCode: EnumMessageStatus.FORBIDDEN_403,
+      throw new ErrorDTODataResponse({
+        statusCode: 401,
+        message: 'Refresh Token Used !!!',
+        reasonStatusCode: EnumReasonStatusCode.REFRESH_TOKEN_USED,
       });
     }
 
@@ -130,28 +136,24 @@ class AccessService {
         refreshToken,
       });
 
-      // console.log('show holderToken =======> ', holderToken);
-
       if (!holderToken) {
-        throw new ErrorResponse({
-          statusCode: 403,
-          message: 'Invalid refresh token',
-          reasonStatusCode: EnumMessageStatus.FORBIDDEN_403,
+        throw new ErrorDTODataResponse({
+          statusCode: 401,
+          message: 'Invalid Refresh Token !!!',
+          reasonStatusCode: EnumReasonStatusCode.INVALID_REFRESH_TOKEN,
         });
       }
 
-      const payload = await verifyJWT({
-        token: refreshToken,
+      const payload = await verifyJWTByRefreshToken({
+        refreshToken,
         keySecret: holderToken.privateKey,
       });
 
-      // console.log(`{ userId, email } =====> 88`, { payload });
-
       if (!payload) {
-        throw new ErrorResponse({
-          statusCode: 403,
-          message: 'Invalid refresh token',
-          reasonStatusCode: EnumMessageStatus.FORBIDDEN_403,
+        throw new ErrorDTODataResponse({
+          statusCode: 401,
+          message: 'Invalid Refresh Token !!!',
+          reasonStatusCode: EnumReasonStatusCode.INVALID_REFRESH_TOKEN,
         });
       }
 
@@ -160,10 +162,10 @@ class AccessService {
       });
 
       if (!foundUser) {
-        throw new ErrorResponse({
-          statusCode: 403,
-          message: 'User not found',
-          reasonStatusCode: EnumMessageStatus.FORBIDDEN_403,
+        throw new ErrorDTODataResponse({
+          statusCode: 401,
+          message: 'Not Found User !!!',
+          reasonStatusCode: EnumReasonStatusCode.NOT_FOUND_USER,
         });
       }
 
@@ -181,10 +183,10 @@ class AccessService {
       });
 
       if (!tokens) {
-        throw new ErrorResponse({
-          statusCode: 403,
-          message: 'Create token pair failed',
-          reasonStatusCode: EnumMessageStatus.FORBIDDEN_403,
+        throw new ErrorDTODataResponse({
+          statusCode: 401,
+          message: 'Create Token Pair Failed !!!',
+          reasonStatusCode: EnumReasonStatusCode.CREATE_TOKEN_PAIR_FAILED,
         });
       }
 
@@ -197,8 +199,8 @@ class AccessService {
         },
       });
 
-      return {
-        code: 201,
+      return new SuccessDTODataResponse({
+        statusCode: 201,
         metaData: {
           user: {
             userId: (payload as JwtPayload)?.userId,
@@ -208,8 +210,9 @@ class AccessService {
           },
           tokens,
         },
-        reasonStatusCode: EnumMessageStatus.CREATED_201,
-      };
+        message: 'Refresh Token Successfully !!!',
+        reasonStatusCode: EnumReasonStatusCode.CREATED_SUCCESSFULLY,
+      });
     }
   };
 
@@ -227,20 +230,20 @@ class AccessService {
     const foundUser = await UserService.findUserInformationByEmail({ email });
 
     if (!foundUser) {
-      throw new ErrorResponse({
+      throw new ErrorDTODataResponse({
         statusCode: 401,
-        message: 'User not found',
-        reasonStatusCode: EnumMessageStatus.UNAUTHORIZED_401,
+        message: 'Not Found User !!!',
+        reasonStatusCode: EnumReasonStatusCode.NOT_FOUND_USER,
       });
     }
 
     const isMatch = await bcrypt.compare(password, foundUser.password);
 
     if (!isMatch) {
-      throw new ErrorResponse({
+      throw new ErrorDTODataResponse({
         statusCode: 401,
-        message: 'Invalid password',
-        reasonStatusCode: EnumMessageStatus.UNAUTHORIZED_401,
+        message: 'Invalid Password !!!',
+        reasonStatusCode: EnumReasonStatusCode.INVALID_PASSWORD,
       });
     }
 
@@ -257,10 +260,10 @@ class AccessService {
     });
 
     if (!tokens) {
-      throw new ErrorResponse({
-        statusCode: 403,
-        message: 'Create token pair failed',
-        reasonStatusCode: EnumMessageStatus.FORBIDDEN_403,
+      throw new ErrorDTODataResponse({
+        statusCode: 401,
+        message: 'Create Token Pair Failed !!!',
+        reasonStatusCode: EnumReasonStatusCode.CREATE_TOKEN_PAIR_FAILED,
       });
     }
 
@@ -271,8 +274,8 @@ class AccessService {
       refreshToken: tokens.refreshToken,
     });
 
-    return {
-      code: 200,
+    return new SuccessDTODataResponse({
+      statusCode: 200,
       metaData: {
         user: getInformationData({
           fields: ['userId', 'name', 'email', 'roles'],
@@ -280,8 +283,9 @@ class AccessService {
         }),
         tokens,
       },
-      reasonStatusCode: EnumMessageStatus.SUCCESS_200,
-    };
+      message: 'Login Successfully !!!',
+      reasonStatusCode: EnumReasonStatusCode.LOGIN_SUCCESSFULLY,
+    });
   };
 
   //=====================================================================
@@ -291,11 +295,12 @@ class AccessService {
       id: keyStore._id,
     });
 
-    return {
-      code: 200,
+    return new SuccessDTODataResponse({
+      statusCode: 200,
       metaData: { delKey },
-      reasonStatusCode: EnumMessageStatus.SUCCESS_200,
-    };
+      message: 'Logout Successfully !!!',
+      reasonStatusCode: EnumReasonStatusCode.LOGOUT_SUCCESSFULLY,
+    });
   };
 
   //=====================================================================
@@ -316,10 +321,10 @@ class AccessService {
     const holderUser = await UserModel.findOne({ email }).lean();
 
     if (holderUser) {
-      throw new ErrorResponse({
-        statusCode: 403,
-        message: 'User already exists',
-        reasonStatusCode: EnumMessageStatus.FORBIDDEN_403,
+      throw new ErrorDTODataResponse({
+        statusCode: 401,
+        message: 'Existed User !!!',
+        reasonStatusCode: EnumReasonStatusCode.EXISTED_USER,
       });
     }
 
@@ -348,10 +353,10 @@ class AccessService {
       });
 
       if (!keyStore) {
-        throw new ErrorResponse({
-          statusCode: 403,
-          message: 'Create key token failed',
-          reasonStatusCode: EnumMessageStatus.FORBIDDEN_403,
+        throw new ErrorDTODataResponse({
+          statusCode: 401,
+          message: 'Create Key Token Failed !!!',
+          reasonStatusCode: EnumReasonStatusCode.CREATE_KEY_TOKEN_FAILED,
         });
       }
 
@@ -362,15 +367,15 @@ class AccessService {
       });
 
       if (!tokens) {
-        throw new ErrorResponse({
-          statusCode: 403,
-          message: 'Create token pair failed',
-          reasonStatusCode: EnumMessageStatus.FORBIDDEN_403,
+        throw new ErrorDTODataResponse({
+          statusCode: 401,
+          message: 'Create Token Pair Failed !!!',
+          reasonStatusCode: EnumReasonStatusCode.CREATE_TOKEN_PAIR_FAILED,
         });
       }
 
-      return {
-        code: 201,
+      return new SuccessDTODataResponse({
+        statusCode: 201,
         metaData: {
           user: getInformationData({
             fields: ['userId', 'name', 'email', 'roles'],
@@ -378,14 +383,17 @@ class AccessService {
           }),
           tokens,
         },
-      };
+        message: 'Sign Up Successfully !!!',
+        reasonStatusCode: EnumReasonStatusCode.SIGN_UP_SUCCESSFULLY,
+      });
     }
 
-    return {
-      code: 200,
+    return new SuccessDTODataResponse({
+      statusCode: 201,
       metaData: null,
-      reasonStatusCode: EnumMessageStatus.SUCCESS_200,
-    };
+      message: 'Sign Up Successfully !!!',
+      reasonStatusCode: EnumReasonStatusCode.SIGN_UP_SUCCESSFULLY,
+    });
   };
 }
 

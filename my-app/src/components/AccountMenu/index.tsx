@@ -35,9 +35,9 @@ export default function AccountMenu() {
         navigate('/login');
       }
 
-      return returnLogout;
+      // return returnLogout;
     } catch (error) {
-      console.log(error);
+      console.error('show error message ===>', { error });
     }
   };
 

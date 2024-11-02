@@ -1,23 +1,48 @@
 import { PRODUCT_API } from '@services/constant';
-import AxiosConfigService from '@services/http';
+import AxiosConfigService from '@services/axios';
 import { InterfaceProductDetailItem, InterfaceProductList } from './type';
+
+import cloneDeepWith from 'lodash/cloneDeepWith';
+import isObject from 'lodash/isObject';
+import omitBy from 'lodash/omitBy';
+import { DEFAULT_MAX_PRICE, DEFAULT_MIN_PRICE } from '@utils/constant';
 
 class ProductApiService {
   // ===========================================================================
   // get all product list
   static getAllProductList = ({
-    limit,
+    searchName,
+    selectedCategory,
+    priceRange,
     page,
+    limit,
   }: {
-    limit: number;
+    searchName: string;
+    selectedCategory: string;
+    priceRange: number[];
     page: number;
+    limit: number;
   }) => {
+    const params = cloneDeepWith(
+      {
+        searchName,
+        selectedCategory,
+        priceMin: priceRange[0] || DEFAULT_MIN_PRICE,
+        priceMax: priceRange[1] || DEFAULT_MAX_PRICE,
+        page,
+        limit,
+      },
+      (value) => {
+        if (isObject(value)) {
+          return omitBy(value, (v) => v === null || v === '' || v === undefined);
+        }
+      }
+    );
+
     return new Promise((resolve, reject) => {
       AxiosConfigService.getData({
-        url: PRODUCT_API.ALL({
-          limit,
-          page,
-        }),
+        url: PRODUCT_API.ALL(),
+        params,
       })
         .then((data: unknown) => {
           // console.log('23 data getAllProductList ===>', data);
@@ -25,8 +50,8 @@ class ProductApiService {
 
           resolve(productListData.metaData);
         })
-        .catch((err) => {
-          reject(err);
+        .catch((error) => {
+          reject(error.response.data);
         });
     });
   };
@@ -46,8 +71,8 @@ class ProductApiService {
 
           resolve(productDetailData.metaData);
         })
-        .catch((err) => {
-          reject(err);
+        .catch((error) => {
+          reject(error.response.data);
         });
     });
   };
@@ -64,8 +89,8 @@ class ProductApiService {
 
           resolve(data);
         })
-        .catch((err) => {
-          reject(err);
+        .catch((error) => {
+          reject(error.response.data);
         });
     });
   };
@@ -101,8 +126,8 @@ class ProductApiService {
 
           resolve(data);
         })
-        .catch((err) => {
-          reject(err);
+        .catch((error) => {
+          reject(error.response.data);
         });
     });
   };
@@ -141,8 +166,8 @@ class ProductApiService {
 
           resolve(data);
         })
-        .catch((err) => {
-          reject(err);
+        .catch((error) => {
+          reject(error.response.data);
         });
     });
   };

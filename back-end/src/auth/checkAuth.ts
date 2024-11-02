@@ -3,9 +3,10 @@ import {
   EnumHeaderKey,
   EnumMessageStatus,
   EnumPermission,
+  EnumReasonStatusCode,
 } from '@root/src/utils/type';
 import { NextFunction, Request, Response } from 'express';
-import ErrorResponse from '../core/error.response';
+import ErrorDTODataResponse from '../core/error.dto.response';
 
 interface WithObjKeyRequest extends Request {
   objKey: any;
@@ -20,20 +21,20 @@ export const apiKeys = async (
     const apiKey = req.headers[EnumHeaderKey.API_KEY]?.toString();
 
     if (!apiKey) {
-      return res.status(401).json({
-        status: '401',
-        error: EnumMessageStatus.UNAUTHORIZED_401,
-        message: 'Not Have API Key !!!',
+      throw new ErrorDTODataResponse({
+        statusCode: 401,
+        reasonStatusCode: EnumReasonStatusCode.NOT_FOUND_API_KEY,
+        message: 'Not Found API Key!!!',
       });
     }
 
     const objKey = await ApiKeyService.findApiKeyById({ key: apiKey });
 
     if (!objKey) {
-      return res.status(403).json({
-        status: '403',
-        error: EnumMessageStatus.FORBIDDEN_403,
-        message: 'Invalid API Key !!!',
+      throw new ErrorDTODataResponse({
+        statusCode: 401,
+        reasonStatusCode: EnumReasonStatusCode.INVALID_API_KEY,
+        message: 'Invalid API Key!!!',
       });
     }
 
@@ -42,11 +43,10 @@ export const apiKeys = async (
     // return next(req); ---> ERROR
     return next();
   } catch (error) {
-    // console.log('show error apiKey =========>', { error });
-    throw new ErrorResponse({
+    throw new ErrorDTODataResponse({
       statusCode: 401,
-      message: 'Invalid API Key !!!',
-      reasonStatusCode: EnumMessageStatus.UNAUTHORIZED_401,
+      message: (error as Error).message,
+      reasonStatusCode: EnumReasonStatusCode.UNAUTHORIZED,
     });
   }
 };
@@ -54,24 +54,22 @@ export const apiKeys = async (
 export const permission = (permission: EnumPermission) => {
   return (req: WithObjKeyRequest, res: Response, next: NextFunction) => {
     if (!req?.objKey?.permissions) {
-      return res.status(401).json({
-        status: '401',
-        error: EnumMessageStatus.UNAUTHORIZED_401,
+      throw new ErrorDTODataResponse({
+        statusCode: 403,
         message: 'Not Have Permission !!!',
+        reasonStatusCode: EnumReasonStatusCode.NOT_HAVE_PERMISSION,
       });
     }
 
     const { permissions } = req?.objKey;
 
-    // console.log('permissions 46 =======>', { permissions });
-
-    const validPermission = req.objKey.permissions.includes(permission);
+    const validPermission = permissions.includes(permission);
 
     if (!validPermission) {
-      return res.status(403).json({
-        status: '403',
-        error: EnumMessageStatus.FORBIDDEN_403,
-        message: 'Invalid Permission !!!',
+      throw new ErrorDTODataResponse({
+        statusCode: 403,
+        message: 'Forbidden Permission !!!',
+        reasonStatusCode: EnumReasonStatusCode.FORBIDDEN_PERMISSION,
       });
     }
 

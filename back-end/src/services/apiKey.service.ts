@@ -1,7 +1,7 @@
 import ApiKeyModel from '@models/apiKey.model';
 import cryto from 'crypto';
 import { EnumMessageStatus, EnumPermission } from '../utils/type';
-import ErrorResponse from '../core/error.response';
+import ErrorDTODataResponse from '../core/error.dto.response';
 import { DEFAULT_PERMISSION } from '../utils/constant';
 
 class ApiKeyService {
@@ -32,9 +32,9 @@ class ApiKeyService {
 
       return objKey;
     } catch (error) {
-      throw new ErrorResponse({
+      throw new ErrorDTODataResponse({
         statusCode: 401,
-        message: 'Invalid API Key Find !!!',
+        message: (error as Error).message,
         reasonStatusCode: EnumMessageStatus.UNAUTHORIZED_401,
       });
     }

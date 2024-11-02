@@ -1,70 +1,240 @@
 import { Types } from 'mongoose';
-import ErrorResponse from '../core/error.response';
+import ErrorDTODataResponse from '../core/error.dto.response';
 import ProductModel from '../models/product.model';
 import { EnumMessageStatus } from '../utils/type';
 
 class ProductService {
-  static getAllProductList = async ({
+  // query params: limit, page, priceMin, priceMax, searchName, selectedCategory
+
+  static getAllProductListV2 = async ({
     limit,
     page,
+    priceMin,
+    priceMax,
+    searchName,
+    selectedCategory,
   }: {
     limit: number;
     page: number;
+    priceMin: number;
+    priceMax: number;
+    searchName: string;
+    selectedCategory: string;
   }) => {
-    // const products = await ProductModel.find()
-    //   .limit(limit)
-    //   .skip(limit * (page - 1)).select({
-    //     product_name: 1,
-    //     product_price: 1,
-    //     product_image: 1,
-    //     order_quantity: 1,
-    //     product_description: 1,
-    //   })
-    //   .lean();
+    const pipeline = [];
 
-    const products = await ProductModel.aggregate([
-      {
-        $facet: {
-          overview: [
-            {
-              $count: 'totalCount', // Đếm tổng số sản phẩm
+    if (searchName) {
+      pipeline.push({
+        $search: {
+          index: 'default',
+          text: {
+            query: searchName,
+            path: ['product_name'],
+            fuzzy: {
+              maxEdits: 2,
             },
-          ],
-          data: [
-            {
-              $skip: limit * (page - 1), // Bỏ qua số sản phẩm đã chỉ định
-            },
-            {
-              $limit: limit, // Giới hạn số sản phẩm trả về
-            },
-            {
-              $project: {
-                product_name: 1,
-                product_price: 1,
-                product_image: 1,
-                order_quantity: 1,
-                product_description: 1,
-                productId: '$_id', // Đổi tên trường _id thành productId
-                _id: 0,
-              },
-            },
-          ],
+          },
+        },
+      });
+    }
+    if (selectedCategory) {
+      pipeline.push({
+        $match: { categoriesIds: new Types.ObjectId(selectedCategory) },
+      });
+    }
+    pipeline.push({
+      $match: {
+        product_price: {
+          $gte: priceMin,
+          $lte: priceMax,
         },
       },
-    ]);
+    });
 
-    // Sau đó bạn có thể xử lý và trích xuất metaData và data như sau:
-    const totalCount = products[0].overview[0]
-      ? products[0].overview[0].totalCount
-      : 0;
-    const items = products[0].data;
+    // =================================================================
+    // for pagination
+    const data = [];
+    data.push({
+      $skip: (page - 1) * limit,
+    });
+    data.push({
+      $limit: limit,
+    });
+    // =================================================================
 
-    // console.log({ products, totalCount, items });
+    // dùng $count thì không dùng được $project nữa
+    // data.push({
+    //   $count: 'totalProductSearch',
+    // });
+    // data.push({
+    //   $group: {
+    //     _id: null,
+    //     totalProductSearch: { $sum: 1 }, // Tổng số sản phẩm đã tìm kiếm   product_name: 1,
+    //   },
+    // });
+    data.push({
+      $project: {
+        product_name: 1,
+        product_price: 1,
+        product_image: 1,
+        order_quantity: 1,
+        product_description: 1,
+        productId: '$_id', // Đổi tên trường _id thành productId
+        // totalProductSearch: 1,
+        _id: 0,
+      },
+    });
+    data.push({
+      $sort: { createdAt: -1 } as Record<string, 1 | -1>, // Sắp xếp theo ngày tạo
+    });
+    // data.push({
+    //   $group: {
+    //     _id: '$productId',
+    //     product_name: { $first: '$product_name' },
+    //     product_price: { $first: '$product_price' },
+    //     totalProductSearch: { $sum: 1 },
+    //   },
+    // });
+
+    pipeline.push({
+      $facet: {
+        data: data,
+        overview: [
+          {
+            $count: 'totalSearchCount', // Đếm tổng số sản phẩm
+            // $addFields: {
+            //   totalProductSearch: '$totalProductSearch',
+            // },
+          },
+        ],
+      },
+    });
+
+    const products = await ProductModel.aggregate(pipeline);
+
+    console.log('products ===>', { products });
 
     return {
       code: 200,
       metaData: {
-        products,
+        products: { ...products },
+      },
+      reasonStatusCode: EnumMessageStatus.SUCCESS_200,
+    };
+  };
+
+  static getAllProductList = async ({
+    limit,
+    page,
+    priceMin,
+    priceMax,
+    searchName,
+    selectedCategory,
+  }: {
+    limit: number;
+    page: number;
+    priceMin: number;
+    priceMax: number;
+    searchName: string;
+    selectedCategory: string;
+  }) => {
+    // const products = await ProductModel.find({
+    //   $text: { $search: searchName },
+    // }).sort({
+    //   score: { $meta: 'scoreText' },
+    // });
+
+    // const products = await ProductModel.aggregate([
+    //   {
+    //     $match: {
+    //       $text: { $search: searchName },
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       product_name: 1,
+    //       product_description: 1,
+    //       score: { $meta: 'textScore' }, // Lấy điểm số
+    //     },
+    //   },
+    //   {
+    //     $sort: { score: -1 }, // Sắp xếp theo điểm số
+    //   },
+    // ]);
+
+    const pipeline = [];
+
+    if (searchName) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { $text: { $search: searchName } },
+            { product_name: { $regex: searchName, $options: 'i' } },
+          ],
+        },
+      });
+    }
+    if (selectedCategory) {
+      pipeline.push({
+        $match: { categoriesIds: new Types.ObjectId(selectedCategory) },
+      });
+    }
+    pipeline.push({
+      $match: {
+        product_price: {
+          $gte: priceMin,
+          $lte: priceMax,
+        },
+      },
+    });
+
+    // =================================================================
+    // for pagination
+    const data = [];
+    data.push({
+      $skip: (page - 1) * limit,
+    });
+    data.push({
+      $limit: limit,
+    });
+    // =================================================================
+    data.push({
+      $project: {
+        product_name: 1,
+        product_price: 1,
+        product_image: 1,
+        order_quantity: 1,
+        product_description: 1,
+        productId: '$_id',
+        _id: 0,
+
+        ...(searchName ? { score: { $meta: 'textScore' } } : {}),
+      },
+    });
+    data.push({
+      $sort: { createdAt: -1, ...(searchName ? { score: -1 } : {}) } as Record<
+        string,
+        1 | -1
+      >,
+    });
+
+    pipeline.push({
+      $facet: {
+        data: data,
+        overview: [
+          {
+            $count: 'totalSearchCount',
+          },
+        ],
+      },
+    });
+
+    const products = await ProductModel.aggregate(pipeline);
+
+    return {
+      code: 200,
+      metaData: {
+        products: { ...products },
       },
       reasonStatusCode: EnumMessageStatus.SUCCESS_200,
     };
@@ -100,8 +270,8 @@ class ProductService {
         reasonStatusCode: EnumMessageStatus.SUCCESS_200,
       };
     } catch (error) {
-      throw new ErrorResponse({
-        message: 'Invalid Product Id !!!',
+      throw new ErrorDTODataResponse({
+        message: (error as Error).message,
         statusCode: 400,
         reasonStatusCode: EnumMessageStatus.BAD_REQUEST_400,
       });
@@ -194,7 +364,7 @@ class ProductService {
     });
 
     if (!product) {
-      throw new ErrorResponse({
+      throw new ErrorDTODataResponse({
         message: 'Product not found !!!',
         statusCode: 400,
         reasonStatusCode: EnumMessageStatus.BAD_REQUEST_400,

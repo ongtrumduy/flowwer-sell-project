@@ -5,6 +5,8 @@ import { EnumMessageStatus, EnumPermission } from '@root/src/utils/type';
 
 import accessRouter from './access';
 import productRouter from './product';
+import categoryRouter from './category';
+
 import apiKeyRouter from './api_key';
 
 const router = express.Router();
@@ -42,6 +44,11 @@ router.get('/test', (req: any, res: any) => {
 //=================================================
 // for product
 router.use('/v1/api/product', productRouter);
+//=================================================
+
+//=================================================
+// for category
+router.use('/v1/api/category', categoryRouter);
 //=================================================
 
 //=================================================

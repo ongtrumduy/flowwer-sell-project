@@ -10,7 +10,7 @@ export interface InterfaceProductItem {
 export interface InterfaceProductMetaData {
   products: {
     overview: {
-      totalCount: number;
+      totalSearchCount: number;
     }[];
     data: InterfaceProductItem[];
   }[];

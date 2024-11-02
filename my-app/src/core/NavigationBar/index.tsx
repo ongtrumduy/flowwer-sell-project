@@ -1,10 +1,10 @@
 import { AppBar, Box, Button, Container, Toolbar, Typography } from '@mui/material';
 
 import AccountMenu from '@components/AccountMenu';
-import { Call, Home, LoginCurve, Notification, ShoppingCart } from 'iconsax-react';
+import useGetAuthInformationMetaData from '@hooks/useGetAuthInformationMetaData';
+import { DocumentSketch, Home, LoginCurve, Notification, ShoppingCart } from 'iconsax-react';
 import { useNavigate } from 'react-router';
 import flower_shop_logo from '../../assets/images/flower.png';
-import useGetAuthInformationMetaData from '@hooks/useGetAuthInformationMetaData';
 
 function NavigationBar() {
   const navigate = useNavigate();
@@ -47,9 +47,10 @@ function NavigationBar() {
               <Home size="32" color="#FF8A65" />
               Trang chủ
             </Button>
-            <Button color="inherit" onClick={() => navigate('/contact')}>
-              <Call size="32" color="#FF8A65" />
-              Liên hệ
+            <Button color="inherit" onClick={() => navigate('/order')}>
+              {/* <Call size="32" color="#FF8A65" /> */}
+              <DocumentSketch size="32" color="#FF8A65" />
+              Đơn hàng
             </Button>
             <Button color="inherit" onClick={() => navigate('/notification')}>
               <Notification size="32" color="#FF8A65" />
