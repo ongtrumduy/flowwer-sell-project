@@ -1,8 +1,16 @@
 import AuthInformationMetadataService from '@services/auth';
 import { ACCESS_API } from '@services/constant';
 import { API_KEY, REQUEST_TIMEOUT, SERVER_API_ENDPOINT } from '@utils/constant';
-import { EnumReasonStatusCode, InterfaceAuthInformationMetaData, InterfaceErrorResponse } from '@utils/type';
-import axios, { AxiosError, AxiosHeaders, InternalAxiosRequestConfig } from 'axios';
+import {
+  EnumReasonStatusCode,
+  InterfaceAuthInformationMetaData,
+  InterfaceErrorResponse,
+} from '@utils/type';
+import axios, {
+  AxiosError,
+  AxiosHeaders,
+  InternalAxiosRequestConfig,
+} from 'axios';
 import { toast } from 'react-toastify';
 
 const AxiosClientInstance = axios.create({
@@ -41,7 +49,9 @@ AxiosClientInstance.interceptors.request.use(
 let isRefreshing = false;
 const refreshSubscribers: (({ token }: { token: string }) => void)[] = [];
 
-const subscribeTokenRefresh = (callback: ({ token }: { token: string }) => void) => {
+const subscribeTokenRefresh = (
+  callback: ({ token }: { token: string }) => void
+) => {
   refreshSubscribers.push(callback);
 };
 
@@ -56,6 +66,13 @@ const onTokenRefreshed = ({ token }: { token: string }) => {
 // middleware for response handlers
 AxiosClientInstance.interceptors.response.use(
   (response) => {
+    toast.success(response?.data?.message, {
+      position: 'top-right',
+      autoClose: 4000,
+    });
+
+    console.log('63 response ===>', { response });
+
     return response.data;
   },
   async (error: AxiosError<InterfaceErrorResponse, unknown>) => {
@@ -65,8 +82,10 @@ AxiosClientInstance.interceptors.response.use(
 
     if (
       error.response &&
-      (error.response.data.reasonStatusCode === EnumReasonStatusCode.INVALID_ACCESS_TOKEN ||
-        error.response.data.reasonStatusCode === EnumReasonStatusCode.EXPIRED_ACCESS_TOKEN) &&
+      (error.response.data.reasonStatusCode ===
+        EnumReasonStatusCode.INVALID_ACCESS_TOKEN ||
+        error.response.data.reasonStatusCode ===
+          EnumReasonStatusCode.EXPIRED_ACCESS_TOKEN) &&
       error.response.status === 401 &&
       originalRequest
       // !originalRequest?._retry
@@ -101,14 +120,17 @@ AxiosClientInstance.interceptors.response.use(
 
         // Cập nhật token và gửi lại request ban đầu
         originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
-        originalRequest.headers['x-client-id'] = refreshTokenResponse.user.userId;
+        originalRequest.headers['x-client-id'] =
+          refreshTokenResponse.user.userId;
 
         // Thông báo tất cả request đang chờ về token mới
         onTokenRefreshed({ token: newAccessToken });
 
         return AxiosClientInstance(originalRequest);
       } catch (refreshTokenCallError) {
-        console.log('111 refreshTokenCallError ===>', { refreshTokenCallError });
+        console.log('111 refreshTokenCallError ===>', {
+          refreshTokenCallError,
+        });
 
         // toast.error('Refresh token failed', {
         //   position: 'top-right',
@@ -166,7 +188,11 @@ class AxiosConfigService {
     customHeaders?: AxiosHeaders;
     config?: InternalAxiosRequestConfig;
   }): Promise<typeOfResponse> => {
-    return AxiosClientInstance.post(url, data, { ...config, params, headers: customHeaders });
+    return AxiosClientInstance.post(url, data, {
+      ...config,
+      params,
+      headers: customHeaders,
+    });
   };
 
   // ========================================================================

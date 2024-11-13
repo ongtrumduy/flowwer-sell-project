@@ -1,6 +1,9 @@
 export enum EnumRole {
   ADMIN = 'ADMIN',
   USER = 'USER',
+  GUEST = 'GUEST',
+  'SHIPPER' = 'SHIPPER',
+  'EMPLOYEE' = 'EMPLOYEE',
 }
 
 export interface InterfaceAuthInformationMetaData {
@@ -9,11 +12,13 @@ export interface InterfaceAuthInformationMetaData {
     name: string;
     email: string;
     roles: string[];
+    address: string;
   };
   tokens: {
     accessToken: string;
     refreshToken: string;
   };
+  roleList: Array<string>;
 }
 
 export interface InterfaceErrorResponse {

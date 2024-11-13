@@ -1,6 +1,7 @@
 import UserModel from '@models/user.model';
 import { EnumMessageStatus, EnumRole } from '../utils/type';
 import ErrorDTODataResponse from '../core/error.dto.response';
+import bcrypt from 'bcryptjs';
 
 class UserService {
   // =========================================================================
@@ -28,6 +29,22 @@ class UserService {
         message: (error as Error).message,
         reasonStatusCode: EnumMessageStatus.BAD_REQUEST_400,
       });
+    }
+  };
+
+  static ensureAdminAccountExists = async () => {
+    const existingAdmin = await UserModel.findOne({ role: 'admin' });
+    if (!existingAdmin) {
+      const hashedPassword = await bcrypt.hash('yourAdminPassword', 10);
+      const adminUser = new UserModel({
+        username: 'admin',
+        email: 'admin@example.com',
+        password: hashedPassword,
+        role: 'admin',
+      });
+
+      await adminUser.save();
+      console.log('Admin account created.');
     }
   };
 }

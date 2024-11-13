@@ -1,10 +1,9 @@
-import ApiKeyService from '@services/apiKey.service';
 import {
   EnumHeaderKey,
-  EnumMessageStatus,
   EnumPermission,
   EnumReasonStatusCode,
 } from '@root/src/utils/type';
+import ApiKeyService from '@services/apiKey.service';
 import { NextFunction, Request, Response } from 'express';
 import ErrorDTODataResponse from '../core/error.dto.response';
 
@@ -40,7 +39,14 @@ export const apiKeys = async (
 
     req.objKey = objKey;
 
+    // res.json({
+    //   objKey,
+    // });
+
     // return next(req); ---> ERROR
+
+    // remember debug both permissions and check method POST GET PUT PATCH DELETE request
+    // you can use wrong method
     return next();
   } catch (error) {
     throw new ErrorDTODataResponse({
@@ -74,6 +80,8 @@ export const permission = (permission: EnumPermission) => {
     }
 
     // return next(req); ---> ERROR
+
+    // when use all next() in router ---> will use middleware in app
     return next();
   };
 };

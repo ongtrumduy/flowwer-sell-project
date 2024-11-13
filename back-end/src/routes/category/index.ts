@@ -5,7 +5,7 @@ import CategoryController from '@root/src/controllers/category.controller';
 import { authenticationV2 } from '@auth/authUtils';
 import { asyncHandler } from '@helpers/asyncHandler';
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true }); // Bật mergeParams
 
 // get all category
 // query params: limit, page
@@ -26,7 +26,7 @@ router.get('/search', asyncHandler(CategoryController.findListSearchCategory));
 // authenticate
 // must be authenticated ---> must be authenticated with access token
 // can call endpoints that require authenticated user
-router.use(authenticationV2);
+router.use(asyncHandler(authenticationV2));
 // ==================================================
 
 // create new category

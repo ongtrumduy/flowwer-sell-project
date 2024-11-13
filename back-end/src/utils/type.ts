@@ -1,3 +1,21 @@
+import { Request } from 'express';
+
+export interface WithKeyStoreRequest extends Request {
+  keyStore: any;
+}
+
+export interface WithKeyStoreV2Request extends Request {
+  keyStore: any;
+  user: any;
+  refreshToken: any;
+}
+
+export interface WithCartRequest extends Request {
+  cart: any;
+  cartId: string;
+  user: any;
+}
+
 export enum EnumMessageStatus {
   SUCCESS_200 = 'Success',
   CREATED_201 = 'Created',
@@ -30,6 +48,18 @@ export enum EnumPermission {
 export enum EnumRole {
   ADMIN = 'ADMIN',
   USER = 'USER',
+  SHIPPER = 'SHIPPER',
+  EMPLOYEE = 'EMPLOYEE',
+  GUEST = 'GUEST',
+}
+
+export enum EnumStatusOfOrder {
+  PENDING = 'PENDING',
+  PAYMENT_SUCCESS = 'PAYMENT_SUCCESS',
+  PICKED_UP = 'PICKED_UP',
+  IN_TRANSIT = 'IN_TRANSIT',
+  DELIVERED = 'DELIVERED',
+  CANCELLED = 'CANCELLED',
 }
 
 export enum EnumReasonStatusCode {
@@ -42,8 +72,8 @@ export enum EnumReasonStatusCode {
   EXPIRED_REFRESH_TOKEN = 'EXPIRED_REFRESH_TOKEN',
   REFRESH_TOKEN_SUCCESSFULLY = 'REFRESH_TOKEN_SUCCESSFULLY',
   FORBIDDEN_PERMISSION = 'FORBIDDEN_PERMISSION',
-  SUCCESS = 'SUCCESS',
-  NOT_FOUND = 'NOT_FOUND',
+  SUCCESS_200 = 'SUCCESS_200',
+  NOT_FOUND_404 = 'NOT_FOUND_404',
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
   BAD_REQUEST = 'BAD_REQUEST',
   NOT_FOUND_USER = 'NOT_FOUND_USER',
@@ -93,4 +123,7 @@ export enum EnumReasonStatusCode {
   LOGIN_SUCCESSFULLY = 'LOGIN_SUCCESSFULLY',
   INVALID_PASSWORD = 'INVALID_PASSWORD',
   CREATED_SUCCESSFULLY = 'CREATED_SUCCESSFULLY',
+  GET_LIST_SUCCESSFULLY = 'GET_LIST_SUCCESSFULLY',
+  UPDATED_SUCCESSFULLY = 'UPDATED_SUCCESSFULLY',
+  REMOVED_SUCCESSFULLY = 'REMOVED_SUCCESSFULLY',
 }

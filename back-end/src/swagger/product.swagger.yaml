@@ -1,0 +1,96 @@
+// swagger/productSwagger.js
+
+/**
+ * @swagger
+ * /api/products:
+ *   get:
+ *     summary: Retrieve a list of products
+ *     description: Retrieve an array of products from the database.
+ *   - in: header
+ *         name: x-api-key
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: API key để xác thực người dùng
+ *       - in: header
+ *         name: x-request-id
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: ID của yêu cầu để theo dõi các log
+ *     responses:
+ *       200:
+ *         description: A list of products.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     example: 1
+ *                   name:
+ *                     type: string
+ *                     example: "Sample Product"
+ *                   price:
+ *                     type: number
+ *                     example: 29.99
+ *       400:
+ *         description: Bad Request - Invalid query parameters.
+ *       401:
+ *         description: Unauthorized - Authentication credentials are missing or invalid.
+ *       403:
+ *         description: Forbidden - You do not have permission to access this resource.
+ *       404:
+ *         description: Not Found - No products found.
+ *       500:
+ *         description: Internal Server Error - Something went wrong on the server side.
+ */
+
+/**
+ * @swagger
+ * /api/products:
+ *   post:
+ *     summary: Add a new product
+ *     description: Creates a new product with the provided details.
+ *   - in: header
+ *         name: x-api-key
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: API key để xác thực người dùng
+ *       - in: header
+ *         name: x-request-id
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: ID của yêu cầu để theo dõi các log
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "New Product"
+ *               price:
+ *                 type: number
+ *                 example: 39.99
+ *     responses:
+ *       201:
+ *         description: Product created successfully.
+ *       400:
+ *         description: Bad Request - Invalid input.
+ *       401:
+ *         description: Unauthorized - Authentication credentials are missing or invalid.
+ *       403:
+ *         description: Forbidden - You do not have permission to perform this action.
+ *       409:
+ *         description: Conflict - The product already exists.
+ *       500:
+ *         description: Internal Server Error - Something went wrong on the server side.
+ */

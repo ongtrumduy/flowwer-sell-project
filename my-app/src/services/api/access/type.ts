@@ -4,11 +4,13 @@ export interface InterfaceAuthInformationMetaData {
     name: string;
     email: string;
     roles: string[];
+    address: string;
   };
   tokens: {
     accessToken: string;
     refreshToken: string;
   };
+  roleList: Array<string>;
 }
 
 export interface InterfaceAuthInformation {

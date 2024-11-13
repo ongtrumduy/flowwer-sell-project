@@ -3,27 +3,18 @@ import JWT, { JwtPayload } from 'jsonwebtoken';
 import { asyncHandler } from '@helpers/asyncHandler';
 
 import KeyTokenService from '@services/keyToken.service';
-import {
-  EnumHeaderKey,
-  EnumMessageStatus,
-  EnumReasonStatusCode,
-} from '../utils/type';
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Response } from 'express';
 import ErrorDTODataResponse from '../core/error.dto.response';
 import {
   ACCESS_TOKEN_EXPIRES_IN,
   REFRESH_TOKEN_EXPIRES_IN,
 } from '../utils/constant';
-
-export interface WithKeyStoreRequest extends Request {
-  keyStore: any;
-}
-
-export interface WithKeyStoreV2Request extends Request {
-  keyStore: any;
-  user: any;
-  refreshToken: any;
-}
+import {
+  EnumHeaderKey,
+  EnumReasonStatusCode,
+  WithKeyStoreRequest,
+  WithKeyStoreV2Request,
+} from '../utils/type';
 
 export const createTokenPair = async ({
   payload,

@@ -1,0 +1,39 @@
+.shipper_sidebar {
+  width: 400px;
+  height: calc(100vh - 24px);
+  background-color: rgb(103, 255, 89, 0.8);
+  color: #ecf0f1;
+  // position: fixed;
+  display: flex;
+  flex-direction: column;
+  // padding-top: 20px;
+
+  user-select: none;
+}
+
+.shipper_sidebar h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.shipper_sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.shipper_sidebar ul li {
+  margin: 20px 0;
+}
+
+.shipper_sidebar ul li a {
+  color: #ecf0f1;
+  text-decoration: none;
+  font-size: 18px;
+  padding: 10px 20px;
+  display: block;
+}
+
+.shipper_sidebar ul li a:hover {
+  background-color: rgb(20, 242, 0);
+  border-radius: 4px;
+}

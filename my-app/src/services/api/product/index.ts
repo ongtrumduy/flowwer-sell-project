@@ -34,7 +34,10 @@ class ProductApiService {
       },
       (value) => {
         if (isObject(value)) {
-          return omitBy(value, (v) => v === null || v === '' || v === undefined);
+          return omitBy(
+            value,
+            (v) => v === null || v === '' || v === undefined
+          );
         }
       }
     );
@@ -99,13 +102,13 @@ class ProductApiService {
   // create new product
   static createNewProduct = ({
     product_name,
-    order_quantity,
+    product_quantity,
     product_price,
     product_image,
     product_description,
   }: {
     product_name: string;
-    order_quantity: number;
+    product_quantity: number;
     product_price: number;
     product_image: string;
     product_description: string;
@@ -115,7 +118,7 @@ class ProductApiService {
         url: PRODUCT_API.CREATE(),
         data: {
           product_name,
-          order_quantity,
+          product_quantity,
           product_price,
           product_image,
           product_description,
@@ -136,14 +139,14 @@ class ProductApiService {
   // update product
   static updateProduct = ({
     product_name,
-    order_quantity,
+    product_quantity,
     product_price,
     product_image,
     product_description,
     productId,
   }: {
     product_name: string;
-    order_quantity: number;
+    product_quantity: number;
     product_price: number;
     product_image: string;
     product_description: string;
@@ -154,7 +157,7 @@ class ProductApiService {
         url: PRODUCT_API.UPDATE(),
         data: {
           product_name,
-          order_quantity,
+          product_quantity,
           product_price,
           product_image,
           product_description,

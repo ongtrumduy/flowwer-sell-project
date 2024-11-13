@@ -2,8 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import ProductService from '@services/product.service';
 
 import SuccessResponse from '@core/success.response';
-import { EnumMessageStatus } from '@root/src/utils/type';
-import { WithKeyStoreV2Request } from '@auth/authUtils';
+import { EnumMessageStatus, WithKeyStoreV2Request } from '@root/src/utils/type';
 import {
   DEFAULT_LIMIT,
   DEFAULT_MAX_PRICE,
@@ -99,7 +98,7 @@ class ProductController {
   ) => {
     const data = await ProductService.createNewProduct({
       product_name: req.body.product_name,
-      order_quantity: req.body.order_quantity,
+      product_quantity: req.body.product_quantity,
       product_price: req.body.product_price,
       product_image: req.body.product_image,
       product_description: req.body.product_description,
@@ -125,7 +124,7 @@ class ProductController {
   ) => {
     const data = await ProductService.updateProduct({
       product_name: req.body.product_name,
-      order_quantity: req.body.order_quantity,
+      product_quantity: req.body.product_quantity,
       product_price: req.body.product_price,
       product_image: req.body.product_image,
       product_description: req.body.product_description,

@@ -6,14 +6,18 @@ import express, {
 } from 'express';
 import morgan from 'morgan';
 import helmet from 'helmet';
-
 import cors from 'cors';
 import compression from 'compression';
-
-import instanceMongodb from '@dbs/init.mongodb';
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
 
 import router from '@routes/index';
-import ErrorResponse from './core/error.response';
+import ErrorResponse from '@core/error.response';
+import instanceMongodb from '@dbs/init.mongodb';
+import swaggerSpec from '@swagger/index';
+import { EnumReasonStatusCode } from './utils/type';
+
+// const swaggerDocument = YAML.load('./swagger.yaml');
 
 const appExpress = express();
 
@@ -34,6 +38,10 @@ instanceMongodb();
 //=================================================
 
 //=================================================
+// init swagger
+appExpress.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+//=================================================
 // init routes
 appExpress.use('/', router);
 //=================================================
@@ -42,11 +50,14 @@ appExpress.use('/', router);
 // handling errors
 // after handling in routes
 appExpress.use((req: Request, res: Response, next: NextFunction) => {
-  const error = new Error('Not found');
+  const error = new Error();
 
   const middleError = error as any;
 
-  middleError.status = 404;
+  middleError.statusCode = 404;
+  middleError.message =
+    'Resource Not Found Or Not FoundApi Endpoint Or Wrong Api Method !!!';
+  middleError.reasonStatusCode = EnumReasonStatusCode.NOT_FOUND_404;
 
   next(middleError);
 });
@@ -62,7 +73,9 @@ const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  return new ErrorResponse({
+  console.log('inside here errorHandler', { error });
+  // return
+  new ErrorResponse({
     status: 'ERROR',
     reasonStatusCode: error.reasonStatusCode,
     message: error.message || 'Internal Server Error',

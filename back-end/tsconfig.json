@@ -22,7 +22,8 @@
       "@services/*": ["./src/services/*"],
       "@utils/*": ["./src/utils/*"],
       "@postman/*": ["./src/postman/*"],
-      "@test/*": ["./src/test/*"]
+      "@test/*": ["./src/test/*"],
+      "@swagger/*": ["./src/swagger/*"]
     }
   },
   "include": ["src/**/*.ts", "server.ts"], // Bao gồm tất cả file .ts trong src và file server.ts

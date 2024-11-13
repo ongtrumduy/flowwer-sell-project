@@ -17,7 +17,8 @@
     "@routes": "src/routes",
     "@services": "src/services",
     "@postman": "src/postman",
-    "@test": "src/test"
+    "@test": "src/test",
+    "@swagger": "src/swagger"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -30,7 +31,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
@@ -40,7 +43,11 @@
     "lodash": "^4.17.21",
     "module-alias": "^2.2.3",
     "mongoose": "^8.7.3",
-    "slugify": "^1.6.6"
+    "nanoid": "^5.0.8",
+    "slugify": "^1.6.6",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "yamljs": "^0.3.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -52,6 +59,9 @@
     "@types/mongoose": "^5.11.96",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.8.1",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.7",
+    "@types/yamljs": "^0.2.34",
     "compression": "^1.7.4",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",

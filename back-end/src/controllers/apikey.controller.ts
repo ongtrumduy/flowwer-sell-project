@@ -1,9 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import AccessService from '@services/access.service';
 
 import SuccessResponse from '@core/success.response';
 import { EnumMessageStatus } from '@root/src/utils/type';
-import { WithKeyStoreV2Request } from '@auth/authUtils';
 import ApiKeyService from '../services/apiKey.service';
 
 class ApiKeyController {

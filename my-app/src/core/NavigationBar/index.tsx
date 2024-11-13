@@ -1,10 +1,26 @@
-import { AppBar, Box, Button, Container, Toolbar, Typography } from '@mui/material';
+import {
+  AppBar,
+  Box,
+  Button,
+  Container,
+  Toolbar,
+  Typography,
+} from '@mui/material';
 
-import AccountMenu from '@components/AccountMenu';
+import AccountMenu from '@components/CommonComponent/AccountMenu';
 import useGetAuthInformationMetaData from '@hooks/useGetAuthInformationMetaData';
-import { DocumentSketch, Home, LoginCurve, Notification, ShoppingCart } from 'iconsax-react';
+import {
+  DocumentSketch,
+  Home,
+  LoginCurve,
+  Notification,
+  ShoppingCart,
+} from 'iconsax-react';
 import { useNavigate } from 'react-router';
 import flower_shop_logo from '../../assets/images/flower.png';
+
+import styles from './NavigationBar.module.scss';
+import { AppRoutes } from '@helpers/app.router';
 
 function NavigationBar() {
   const navigate = useNavigate();
@@ -12,7 +28,16 @@ function NavigationBar() {
   const { isAuthenticated } = useGetAuthInformationMetaData();
 
   return (
-    <AppBar position="static" sx={{ alignItems: 'center', background: 'white', height: '80px' }}>
+    <AppBar
+      position="static"
+      sx={{
+        alignItems: 'center',
+        background: 'white',
+        height: '80px',
+        fontSize: '20px',
+      }}
+      className={styles.navigation_bar_custom}
+    >
       <Container maxWidth="lg" sx={{ maxWidth: '1200px !important' }}>
         <Toolbar disableGutters sx={{ width: '100%' }}>
           {/* // ----------------------------------------------------------- */}
@@ -28,7 +53,11 @@ function NavigationBar() {
               justifyContent: 'start',
             }}
           >
-            <img src={flower_shop_logo} alt="" style={{ width: '48px', height: '48px', marginRight: '8px' }} />
+            <img
+              src={flower_shop_logo}
+              alt=""
+              style={{ width: '48px', height: '48px', marginRight: '8px' }}
+            />
             Hoa xinh SHOP
           </Typography>
           {/* // ----------------------------------------------------------- */}
@@ -43,21 +72,40 @@ function NavigationBar() {
               marginRight: 4,
             }}
           >
-            <Button color="inherit" onClick={() => navigate('/')}>
+            <Button
+              color="inherit"
+              onClick={() => navigate(`${AppRoutes.BASE()}`)}
+            >
               <Home size="32" color="#FF8A65" />
-              Trang chủ
+              <span>Trang chủ</span>
             </Button>
-            <Button color="inherit" onClick={() => navigate('/order')}>
+            <Button
+              color="inherit"
+              onClick={() =>
+                navigate(`${AppRoutes.BASE()}/${AppRoutes.ORDER()}`)
+              }
+            >
               {/* <Call size="32" color="#FF8A65" /> */}
               <DocumentSketch size="32" color="#FF8A65" />
-              Đơn hàng
+              <span> Đơn hàng</span>
             </Button>
-            <Button color="inherit" onClick={() => navigate('/notification')}>
+            <Button
+              color="inherit"
+              onClick={() =>
+                navigate(`${AppRoutes.BASE()}/${AppRoutes.NOTIFY()}`)
+              }
+            >
               <Notification size="32" color="#FF8A65" />
-              Thông báo
+              <span> Thông báo</span>
             </Button>
-            <Button color="inherit" onClick={() => navigate('/cart')}>
-              <ShoppingCart size="32" color="#FF8A65" /> Giỏ hàng
+            <Button
+              color="inherit"
+              onClick={() =>
+                navigate(`${AppRoutes.BASE()}/${AppRoutes.CART()}`)
+              }
+            >
+              <ShoppingCart size="32" color="#FF8A65" />
+              <span> Giỏ hàng</span>
             </Button>
           </Box>
           {/* // ----------------------------------------------------------- */}

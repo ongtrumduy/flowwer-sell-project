@@ -26,25 +26,32 @@ const CartItemSchema = new Schema({
 
 const CartSchema = new Schema(
   {
-    cart_state: {
-      type: String,
-      trim: true,
-      unique: true,
-      required: true,
-    },
-    cart_items: {
+    // cart_state: {
+    //   type: String,
+    //   trim: true,
+    //   unique: true,
+    //   required: true,
+    // },
+    cart_item_list: {
       type: [CartItemSchema],
       default: [],
+      required: true,
     },
     cart_quantity: {
       type: Number,
       default: 0,
+      required: true,
     },
     userId: {
       type: Schema.Types.ObjectId,
       ref: USER_DOCUMENT_NAME,
       required: true,
       unique: true,
+    },
+    total_price: {
+      type: Number,
+      default: 0,
+      required: true,
     },
   },
   {
@@ -56,7 +63,23 @@ const CartSchema = new Schema(
 const CartModel = model(CART_DOCUMENT_NAME, CartSchema);
 
 // =======================================================
+// create middleware
+CartSchema.pre('save', function (next) {
+  this.cart_quantity = this.cart_item_list.reduce(
+    (acc, item) => acc + item.product_quantity,
+    0
+  );
+
+  this.total_price = this.cart_item_list.reduce(
+    (acc, item) => acc + item.product_quantity * item.product_price_now,
+    0
+  );
+
+  next();
+});
+
+// =======================================================
 // create index for search
-CartSchema.index({ product_name: 'text' });
+// CartSchema.index({ product_name: 'text' });
 
 export default CartModel;

@@ -34,7 +34,7 @@
       "@modules/*": ["src/modules/*"],
       "@shared/*": ["src/shared/*"],
       "@hooks/*": ["src/hooks/*"],
-      "@helpers/*": ["src/shared/*"],
+      "@helpers/*": ["src/helpers/*"],
       "@mock/*": ["src/hooks/*"],
 
       "@core/*": ["src/core/"]

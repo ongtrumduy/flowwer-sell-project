@@ -2,8 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import CategoryService from '@services/category.service';
 
 import SuccessResponse from '@core/success.response';
-import { EnumMessageStatus } from '@root/src/utils/type';
-import { WithKeyStoreV2Request } from '@auth/authUtils';
+import { EnumMessageStatus, WithKeyStoreV2Request } from '@root/src/utils/type';
 
 class CategoryController {
   //=========================================================

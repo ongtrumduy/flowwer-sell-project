@@ -1,3 +1,4 @@
+import { AppRoutes } from '@helpers/app.router';
 import useGetAuthInformationMetaData from '@hooks/useGetAuthInformationMetaData';
 import { EnumRole } from '@utils/type';
 import { Navigate } from 'react-router';
@@ -5,25 +6,112 @@ import { Navigate } from 'react-router';
 export const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useGetAuthInformationMetaData();
 
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  return isAuthenticated ? (
+    children
+  ) : (
+    <Navigate to={`${AppRoutes.BASE()}/${AppRoutes.LOGIN()}`} />
+  );
 };
 
-export const ProtectedRoleRoute = ({ children, requiredRole }: { children: React.ReactNode; requiredRole: EnumRole }) => {
+export const ProtectedRoleRoute = ({
+  children,
+  requiredRole,
+}: {
+  children: React.ReactNode;
+  requiredRole: string[];
+}) => {
   const { accessToken, userInformation } = useGetAuthInformationMetaData();
 
-  if (!accessToken && !userInformation) return <Navigate to="/login" />;
+  // if (requiredRole.indexOf(EnumRole.GUEST) > -1) {
+  //   if (userInformation.roles.indexOf(EnumRole.ADMIN) > -1) {
+  //     return <Navigate to={`${AppRoutes.ADMIN_BASE()}`} />;
+  //   }
 
-  if (!userInformation.roles.includes(requiredRole)) {
-    return <Navigate to="/unauthorized" />;
+  //   if (userInformation.roles.indexOf(EnumRole.SHIPPER) > -1) {
+  //     return <Navigate to={`${AppRoutes.SHIPPER_BASE()}`} />;
+  //   }
+
+  //   if (userInformation.roles.indexOf(EnumRole.EMPLOYEE) > -1) {
+  //     return <Navigate to={`${AppRoutes.EMPLOYEE_BASE()}`} />;
+  //   }
+
+  //   if (userInformation.roles.indexOf(EnumRole.USER) > -1) {
+  //     return <Navigate to={`${AppRoutes.BASE()}`} />;
+  //   }
+  // }
+
+  if (requiredRole.indexOf(EnumRole.GUEST) > -1 || !requiredRole.length) {
+    return children;
+  }
+
+  if (!accessToken && !userInformation)
+    return <Navigate to={`${AppRoutes.BASE()}/${AppRoutes.LOGIN()}`} />;
+
+  if (
+    !userInformation.roles.some((role) => {
+      return requiredRole.indexOf(role) > -1;
+    })
+  ) {
+    if (
+      userInformation.roles.indexOf(EnumRole.ADMIN) > -1 &&
+      requiredRole.indexOf(EnumRole.ADMIN) > -1
+    ) {
+      return <Navigate to={`${AppRoutes.ADMIN_BASE()}`} />;
+    }
+
+    if (
+      userInformation.roles.indexOf(EnumRole.SHIPPER) > -1 &&
+      requiredRole.indexOf(EnumRole.SHIPPER) > -1
+    ) {
+      return <Navigate to={`${AppRoutes.SHIPPER_BASE()}`} />;
+    }
+
+    if (
+      userInformation.roles.indexOf(EnumRole.EMPLOYEE) > -1 &&
+      requiredRole.indexOf(EnumRole.EMPLOYEE) > -1
+    ) {
+      return <Navigate to={`${AppRoutes.EMPLOYEE_BASE()}`} />;
+    }
+
+    if (
+      userInformation.roles.indexOf(EnumRole.USER) > -1 &&
+      requiredRole.indexOf(EnumRole.USER) > -1
+    ) {
+      return <Navigate to={`${AppRoutes.BASE()}`} />;
+    }
+
+    return <Navigate to={`${AppRoutes.PAGE_UNAUTHORIZED()}`} />;
   }
 
   return children;
 };
 
-export const VerifiedUserRoute = ({ children }: { children: React.ReactNode }) => {
+export const VerifiedUserRoute = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const { accessToken, userInformation } = useGetAuthInformationMetaData();
 
-  if (accessToken && userInformation) return <Navigate to="/home" />;
+  if (accessToken && userInformation) {
+    if (userInformation.roles.indexOf(EnumRole.ADMIN) > -1) {
+      return <Navigate to={`${AppRoutes.ADMIN_BASE()}`} />;
+    }
+
+    if (userInformation.roles.indexOf(EnumRole.SHIPPER) > -1) {
+      return <Navigate to={`${AppRoutes.SHIPPER_BASE()}`} />;
+    }
+
+    if (userInformation.roles.indexOf(EnumRole.EMPLOYEE) > -1) {
+      return <Navigate to={`${AppRoutes.EMPLOYEE_BASE()}`} />;
+    }
+
+    if (userInformation.roles.indexOf(EnumRole.USER) > -1) {
+      return <Navigate to={`${AppRoutes.BASE()}`} />;
+    }
+
+    return <Navigate to={`${AppRoutes.BASE()}/${AppRoutes.HOME()}`} />;
+  }
 
   return children;
 };

@@ -17,7 +17,7 @@ import {
 
 import { JwtPayload } from 'jsonwebtoken';
 import ErrorDTODataResponse from '@root/src/core/error.dto.response';
-import { DEFAULT_ROLE } from '../utils/constant';
+import { DEFAULT_ROLE, DEFAULT_ROLE_LIST } from '../utils/constant';
 import SuccessDTODataResponse from '../core/success.dto.response';
 
 class AccessService {
@@ -91,10 +91,11 @@ class AccessService {
       statusCode: 201,
       metaData: {
         user: getInformationData({
-          fields: ['userId', 'name', 'email', 'roles'],
+          fields: ['userId', 'name', 'email', 'roles', 'address'],
           object: { ...user },
         }),
         tokens,
+        roles: DEFAULT_ROLE,
       },
       reasonStatusCode: EnumReasonStatusCode.CREATED_SUCCESSFULLY,
       message: 'Refresh Token Successfully !!!',
@@ -278,10 +279,11 @@ class AccessService {
       statusCode: 200,
       metaData: {
         user: getInformationData({
-          fields: ['userId', 'name', 'email', 'roles'],
+          fields: ['userId', 'name', 'email', 'roles', 'address'],
           object: { ...foundUser, userId },
         }),
         tokens,
+        roleList: DEFAULT_ROLE_LIST,
       },
       message: 'Login Successfully !!!',
       reasonStatusCode: EnumReasonStatusCode.LOGIN_SUCCESSFULLY,
@@ -378,10 +380,11 @@ class AccessService {
         statusCode: 201,
         metaData: {
           user: getInformationData({
-            fields: ['userId', 'name', 'email', 'roles'],
+            fields: ['userId', 'name', 'email', 'roles', 'address'],
             object: { ...newUser.toObject(), userId },
           }),
           tokens,
+          roleList: DEFAULT_ROLE_LIST,
         },
         message: 'Sign Up Successfully !!!',
         reasonStatusCode: EnumReasonStatusCode.SIGN_UP_SUCCESSFULLY,

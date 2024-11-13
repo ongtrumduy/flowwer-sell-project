@@ -1,9 +1,12 @@
 import AccessService from '@services/access.service';
 import { NextFunction, Request, Response } from 'express';
 
-import { WithKeyStoreV2Request } from '@auth/authUtils';
 import SuccessResponse from '@core/success.response';
-import { EnumMessageStatus, EnumReasonStatusCode } from '@root/src/utils/type';
+import {
+  EnumMessageStatus,
+  EnumReasonStatusCode,
+  WithKeyStoreV2Request,
+} from '@root/src/utils/type';
 
 class AccessController {
   //=========================================================

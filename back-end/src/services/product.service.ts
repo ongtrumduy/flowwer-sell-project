@@ -1,11 +1,13 @@
 import { Types } from 'mongoose';
 import ErrorDTODataResponse from '../core/error.dto.response';
 import ProductModel from '../models/product.model';
-import { EnumMessageStatus } from '../utils/type';
+import { EnumMessageStatus, EnumReasonStatusCode } from '../utils/type';
+import { DEFAULT_CATEGORY_ID } from '../utils/constant';
+import SuccessDTODataResponse from '../core/success.dto.response';
 
 class ProductService {
-  // query params: limit, page, priceMin, priceMax, searchName, selectedCategory
-
+  //=====================================================================
+  // get all product list version2
   static getAllProductListV2 = async ({
     limit,
     page,
@@ -77,7 +79,7 @@ class ProductService {
         product_name: 1,
         product_price: 1,
         product_image: 1,
-        order_quantity: 1,
+        product_quantity: 1,
         product_description: 1,
         productId: '$_id', // Đổi tên trường _id thành productId
         // totalProductSearch: 1,
@@ -112,17 +114,20 @@ class ProductService {
 
     const products = await ProductModel.aggregate(pipeline);
 
-    console.log('products ===>', { products });
+    // console.log('products ===>', { products });
 
-    return {
-      code: 200,
+    return new SuccessDTODataResponse({
+      statusCode: 200,
       metaData: {
         products: { ...products },
       },
-      reasonStatusCode: EnumMessageStatus.SUCCESS_200,
-    };
+      reasonStatusCode: EnumReasonStatusCode.GET_LIST_SUCCESSFULLY,
+      message: 'Get List Product Successfully !!!',
+    });
   };
 
+  //=====================================================================
+  // get all product list
   static getAllProductList = async ({
     limit,
     page,
@@ -174,7 +179,7 @@ class ProductService {
         },
       });
     }
-    if (selectedCategory) {
+    if (selectedCategory && selectedCategory !== DEFAULT_CATEGORY_ID) {
       pipeline.push({
         $match: { categoriesIds: new Types.ObjectId(selectedCategory) },
       });
@@ -203,7 +208,7 @@ class ProductService {
         product_name: 1,
         product_price: 1,
         product_image: 1,
-        order_quantity: 1,
+        product_quantity: 1,
         product_description: 1,
         productId: '$_id',
         _id: 0,
@@ -240,6 +245,8 @@ class ProductService {
     };
   };
 
+  //=====================================================================
+  // get product item detail
   static getProductItemDetail = async ({
     productId,
   }: {
@@ -254,7 +261,7 @@ class ProductService {
           product_name: 1,
           product_price: 1,
           product_image: 1,
-          order_quantity: 1,
+          product_quantity: 1,
           product_description: 1,
           _id: 0,
         })
@@ -278,6 +285,8 @@ class ProductService {
     }
   };
 
+  //=====================================================================
+  // find list search product
   static findListSearchProduct = async ({
     key_search,
   }: {
@@ -311,20 +320,20 @@ class ProductService {
   // create new product
   static createNewProduct = async ({
     product_name,
-    order_quantity,
+    product_quantity,
     product_price,
     product_image,
     product_description,
   }: {
     product_name: string;
-    order_quantity: number;
+    product_quantity: number;
     product_price: number;
     product_image: string;
     product_description: string;
   }) => {
     const newProduct = await ProductModel.create({
       product_name,
-      order_quantity,
+      product_quantity,
       product_price,
       product_image,
       product_description,
@@ -344,16 +353,18 @@ class ProductService {
     };
   };
 
+  //=====================================================================
+  // update product
   static updateProduct = async ({
     product_name,
-    order_quantity,
+    product_quantity,
     product_price,
     product_image,
     product_description,
     productId,
   }: {
     product_name: string;
-    order_quantity: number;
+    product_quantity: number;
     product_price: number;
     product_image: string;
     product_description: string;
@@ -371,9 +382,9 @@ class ProductService {
       });
     }
 
-    product.order_quantity = order_quantity
-      ? order_quantity
-      : product.order_quantity;
+    product.product_quantity = product_quantity
+      ? product_quantity
+      : product.product_quantity;
     product.product_name = product_name ? product_name : product.product_name;
     product.product_price = product_price
       ? product_price
@@ -396,6 +407,8 @@ class ProductService {
     };
   };
 
+  //=====================================================================
+  // delete product
   static deleteProduct = async ({ productId }: { productId: string }) => {
     const deletedProduct = await ProductModel.findByIdAndDelete({
       _id: new Types.ObjectId(productId),

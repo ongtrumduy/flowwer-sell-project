@@ -35,7 +35,7 @@ class SuccessResponse {
 
     this.reasonStatusCode = reasonStatusCode
       ? reasonStatusCode
-      : EnumReasonStatusCode.SUCCESS;
+      : EnumReasonStatusCode.SUCCESS_200;
 
     this.statusCode = statusCode ? statusCode : StatusCode.OK;
 

@@ -11,6 +11,19 @@ const DEFAULT_MIN_PRICE = 0;
 const DEFAULT_MAX_PRICE = 1000000;
 const DEFAULT_PAGE = 1;
 const DEFAULT_CATEGORY_ID = 'ALL';
+const DEFAULT_PORT = 8888;
+const DEFAULT_DOMAIN = 'http://localhost';
+
+const PORT = process.env.PORT || DEFAULT_PORT;
+const DEFAULT_APP_NAME = '';
+
+const DOMAIN = process.env.DOMAIN || DEFAULT_DOMAIN;
+const APP_NAME = process.env.APP_NAME || DEFAULT_APP_NAME;
+
+const DEFAULT_PICK_UP_ADDRESS =
+  'Số nhà AA, ngõ 111, phường XX, quận YY, thành phố S';
+
+const DEFAULT_ROLE_LIST = Object.values(EnumRole);
 
 export {
   DEFAULT_ROLE,
@@ -22,4 +35,10 @@ export {
   DEFAULT_MAX_PRICE,
   DEFAULT_PAGE,
   DEFAULT_CATEGORY_ID,
+  DEFAULT_PORT,
+  PORT,
+  DOMAIN,
+  APP_NAME,
+  DEFAULT_PICK_UP_ADDRESS,
+  DEFAULT_ROLE_LIST,
 };

@@ -12,7 +12,7 @@ const ProductSchema = new Schema(
       unique: true,
       required: true,
     },
-    order_quantity: {
+    product_quantity: {
       type: Number,
       default: 0,
     },
@@ -38,6 +38,16 @@ const ProductSchema = new Schema(
         required: true,
       },
     ],
+    discount: {
+      type: Number,
+      default: 0,
+      min: [0, 'Discount cannot be negative'],
+      max: [100, 'Discount cannot exceed 100%'],
+    },
+    discounted_Price: {
+      type: Number,
+      min: 0,
+    },
   },
   {
     timestamps: true,
@@ -46,8 +56,44 @@ const ProductSchema = new Schema(
 );
 
 // =======================================================
+// visual
+ProductSchema.virtual('productId').get(function () {
+  return this._id;
+});
+// =======================================================
+
+// =======================================================
 // create index for search
 ProductSchema.index({ product_name: 'text' });
+// =======================================================
+
+// =======================================================
+// create middleware
+ProductSchema.pre('save', function (next) {
+  if (this.isModified('product_price') || this.isModified('discount')) {
+    this.discounted_Price = this.product_price * (1 - this.discount / 100);
+  }
+
+  next();
+});
+
+ProductSchema.pre('validate', function (next) {
+  if (this.discount > 100) {
+    throw new Error('Discount cannot exceed 100%');
+  }
+  if (
+    this.isModified('discounted_Price') &&
+    this.discounted_Price !== undefined &&
+    this.discounted_Price !== null &&
+    this.discounted_Price < 0
+  ) {
+    throw new Error('Discounted price must be non-negative');
+  }
+
+  next();
+});
+
+// =======================================================
 
 const ProductModel = model(PRODUCT_DOCUMENT_NAME, ProductSchema);
 
