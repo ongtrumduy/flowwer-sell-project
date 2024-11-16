@@ -1,11 +1,12 @@
+import { AppRoutes } from '@helpers/app.router';
 import { Box, Button, Container, Typography } from '@mui/material';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 
 const NotFound = () => {
   const navigate = useNavigate();
 
   const handleGoBack = () => {
-    navigate('/');
+    navigate(`${AppRoutes.BASE()}`);
   };
 
   return (

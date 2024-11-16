@@ -1,4 +1,4 @@
-import Payment from '@components/UserComponent/Payment';
+import { Payment } from '@mui/icons-material';
 
 function PaymentPage() {
   return <Payment />;

@@ -14,7 +14,7 @@ import {
   InterfaceProductItem,
 } from '@services/api/product/type';
 import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router';
+import { useParams } from 'react-router-dom';
 
 const ProductDetail = () => {
   const { productId } = useParams();

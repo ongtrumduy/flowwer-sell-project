@@ -1,7 +1,7 @@
 import { AppRoutes } from '@helpers/app.router';
 import useGetAuthInformationMetaData from '@hooks/useGetAuthInformationMetaData';
 import { EnumRole } from '@utils/type';
-import { Navigate } from 'react-router';
+import { Navigate } from 'react-router-dom';
 
 export const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useGetAuthInformationMetaData();
@@ -9,7 +9,7 @@ export const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   return isAuthenticated ? (
     children
   ) : (
-    <Navigate to={`${AppRoutes.BASE()}/${AppRoutes.LOGIN()}`} />
+    <Navigate to={`${AppRoutes.BASE()}${AppRoutes.LOGIN()}`} />
   );
 };
 
@@ -45,7 +45,7 @@ export const ProtectedRoleRoute = ({
   }
 
   if (!accessToken && !userInformation)
-    return <Navigate to={`${AppRoutes.BASE()}/${AppRoutes.LOGIN()}`} />;
+    return <Navigate to={`${AppRoutes.BASE()}${AppRoutes.LOGIN()}`} />;
 
   if (
     !userInformation.roles.some((role) => {
@@ -110,7 +110,7 @@ export const VerifiedUserRoute = ({
       return <Navigate to={`${AppRoutes.BASE()}`} />;
     }
 
-    return <Navigate to={`${AppRoutes.BASE()}/${AppRoutes.HOME()}`} />;
+    return <Navigate to={`${AppRoutes.BASE()}${AppRoutes.HOME()}`} />;
   }
 
   return children;

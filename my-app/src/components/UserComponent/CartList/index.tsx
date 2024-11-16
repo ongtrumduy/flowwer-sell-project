@@ -19,7 +19,7 @@ import PaginationCartProductList from '../PaginationCartProductList';
 import OrderApiService from '@services/api/order';
 import useGetAuthInformationMetaData from '@hooks/useGetAuthInformationMetaData';
 import { AppRoutes } from '@helpers/app.router';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 
 const CartList = () => {
   const [cartProductList, setCartProductList] = useState<
@@ -181,7 +181,7 @@ const CartList = () => {
           if (returnOrder) {
             console.log('returnOrder ================>', { returnOrder });
             // Redirect to payment page
-            navigate(`${AppRoutes.BASE()}/${AppRoutes.PAYMENT()}`);
+            navigate(`${AppRoutes.BASE()}${AppRoutes.PAYMENT()}`);
           }
         })
         .catch(() => {})

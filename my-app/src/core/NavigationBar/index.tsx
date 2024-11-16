@@ -9,18 +9,12 @@ import {
 
 import AccountMenu from '@components/CommonComponent/AccountMenu';
 import useGetAuthInformationMetaData from '@hooks/useGetAuthInformationMetaData';
-import {
-  DocumentSketch,
-  Home,
-  LoginCurve,
-  Notification,
-  ShoppingCart,
-} from 'iconsax-react';
-import { useNavigate } from 'react-router';
+import { DocumentSketch, Home, LoginCurve, ShoppingCart } from 'iconsax-react';
 import flower_shop_logo from '../../assets/images/flower.png';
 
-import styles from './NavigationBar.module.scss';
 import { AppRoutes } from '@helpers/app.router';
+import { useNavigate } from 'react-router-dom';
+import styles from './NavigationBar.module.scss';
 
 function NavigationBar() {
   const navigate = useNavigate();
@@ -82,14 +76,14 @@ function NavigationBar() {
             <Button
               color="inherit"
               onClick={() =>
-                navigate(`${AppRoutes.BASE()}/${AppRoutes.ORDER()}`)
+                navigate(`${AppRoutes.BASE()}${AppRoutes.ORDER()}`)
               }
             >
               {/* <Call size="32" color="#FF8A65" /> */}
               <DocumentSketch size="32" color="#FF8A65" />
               <span> Đơn hàng</span>
             </Button>
-            <Button
+            {/* <Button
               color="inherit"
               onClick={() =>
                 navigate(`${AppRoutes.BASE()}/${AppRoutes.NOTIFY()}`)
@@ -97,12 +91,10 @@ function NavigationBar() {
             >
               <Notification size="32" color="#FF8A65" />
               <span> Thông báo</span>
-            </Button>
+            </Button> */}
             <Button
               color="inherit"
-              onClick={() =>
-                navigate(`${AppRoutes.BASE()}/${AppRoutes.CART()}`)
-              }
+              onClick={() => navigate(`${AppRoutes.BASE()}${AppRoutes.CART()}`)}
             >
               <ShoppingCart size="32" color="#FF8A65" />
               <span> Giỏ hàng</span>

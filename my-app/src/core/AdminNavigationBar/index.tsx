@@ -16,7 +16,7 @@ const AdminNavigationBar = () => {
         (await AccessApiService.logout()) as InterfaceLogoutResponseMetaData;
 
       if (returnLogout) {
-        navigate(`${AppRoutes.BASE()}/${AppRoutes.LOGIN()}`);
+        navigate(`${AppRoutes.BASE()}${AppRoutes.LOGIN()}`);
       }
 
       // return returnLogout;

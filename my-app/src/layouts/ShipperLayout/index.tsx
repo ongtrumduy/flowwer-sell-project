@@ -1,4 +1,4 @@
-import { Outlet, RouteProps } from 'react-router';
+import { Outlet, RouteProps } from 'react-router-dom';
 import ShipperNavigationBar from '../../core/ShipperNavigationBar';
 
 import styles from './ShipperLayout.module.scss';

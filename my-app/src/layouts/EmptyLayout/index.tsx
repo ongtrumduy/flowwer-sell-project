@@ -1,4 +1,4 @@
-import { Outlet, RouteProps } from 'react-router';
+import { Outlet, RouteProps } from 'react-router-dom';
 import styles from './EmptyLayout.module.scss';
 
 const EmptyLayout: React.FC<RouteProps> = () => {

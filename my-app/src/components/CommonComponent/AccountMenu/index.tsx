@@ -13,7 +13,7 @@ import Tooltip from '@mui/material/Tooltip';
 import AccessApiService from '@services/api/access';
 import { InterfaceLogoutResponseMetaData } from '@services/api/access/type';
 import * as React from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 
 function AccountMenu() {
   const navigate = useNavigate();
@@ -37,7 +37,7 @@ function AccountMenu() {
         (await AccessApiService.logout()) as InterfaceLogoutResponseMetaData;
 
       if (returnLogout) {
-        navigate(`${AppRoutes.BASE()}/${AppRoutes.LOGIN()}`);
+        navigate(`${AppRoutes.BASE()}${AppRoutes.LOGIN()}`);
       }
 
       // return returnLogout;
@@ -50,7 +50,7 @@ function AccountMenu() {
     handleClose();
 
     navigate(
-      `${AppRoutes.BASE()}/${AppRoutes.USER_PROFILE({
+      `${AppRoutes.BASE()}${AppRoutes.USER_PROFILE({
         userId: userInformation?.userId,
       })}`
     );
@@ -68,7 +68,16 @@ function AccountMenu() {
             aria-haspopup="true"
             aria-expanded={open ? 'true' : undefined}
           >
-            <Avatar sx={{ width: 40, height: 40 }}>M</Avatar>
+            {userInformation?.avatar_url ? (
+              <Avatar
+                sx={{ width: 40, height: 40 }}
+                src={userInformation?.avatar_url}
+              ></Avatar>
+            ) : (
+              <Avatar sx={{ width: 40, height: 40 }}>
+                {userInformation?.name[0]}
+              </Avatar>
+            )}
           </IconButton>
         </Tooltip>
       </Box>
@@ -109,9 +118,7 @@ function AccountMenu() {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem onClick={handleViewProfileDetail}>
-          <Avatar /> Xem trang cá nhân
-        </MenuItem>
+        <MenuItem onClick={handleViewProfileDetail}>Xem trang cá nhân</MenuItem>
         {/* <MenuItem onClick={handleClose}>
           <Avatar /> My account
         </MenuItem> */}

@@ -20,10 +20,10 @@ import {
   DEFAULT_PAGE,
 } from '@utils/constant';
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 import ProductItem from './ProductItem';
 import { AppRoutes } from '@helpers/app.router';
+import { useNavigate } from 'react-router-dom';
 
 function ProductList() {
   const navigate = useNavigate();
@@ -48,7 +48,7 @@ function ProductList() {
   });
 
   const handleShowProductDetail = ({ productId }: { productId: string }) => {
-    navigate(`${AppRoutes.BASE()}/${AppRoutes.PRODUCT_DETAIL({ productId })}`);
+    navigate(`${AppRoutes.BASE()}${AppRoutes.PRODUCT_DETAIL({ productId })}`);
   };
 
   const handleSearchProduct = ({

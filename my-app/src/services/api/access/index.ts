@@ -61,13 +61,13 @@ class AccessApiService {
   static signUp = ({
     email,
     name,
-    phoneNumber,
+    phone_number,
     address,
     password,
   }: {
     email: string;
     name: string;
-    phoneNumber: string;
+    phone_number: string;
     address: string;
     password: string;
   }) => {
@@ -77,7 +77,7 @@ class AccessApiService {
         data: {
           email,
           name,
-          phoneNumber,
+          phone_number,
           address,
           password,
         },
@@ -119,6 +119,83 @@ class AccessApiService {
             key: EnumLocalStorage.AUTH_INFORMATION,
             value: refreshTokenReturnValue.metaData,
           });
+
+          resolve(refreshTokenReturnValue.metaData);
+        })
+        .catch((error) => {
+          reject(error.response.data);
+        });
+    });
+  };
+
+  // ===========================================================================
+  // Change Password
+  static changePassword = ({
+    oldPassword,
+    newPassword,
+  }: {
+    oldPassword: string;
+    newPassword: string;
+  }) => {
+    return new Promise((resolve, reject) => {
+      AxiosConfigService.postData({
+        url: ACCESS_API.CHANGE_PASSWORD(),
+        data: {
+          oldPassword,
+          newPassword,
+        },
+      })
+        .then((data) => {
+          const refreshTokenReturnValue = data as InterfaceAuthInformation;
+
+          resolve(refreshTokenReturnValue.metaData);
+        })
+        .catch((error) => {
+          reject(error.response.data);
+        });
+    });
+  };
+
+  // ===========================================================================
+  // Forgot Password
+  static resetPassword = ({
+    resetPasswordToken,
+    newPassword,
+  }: {
+    resetPasswordToken: string;
+    newPassword: string;
+  }) => {
+    return new Promise((resolve, reject) => {
+      AxiosConfigService.postData({
+        url: ACCESS_API.RESET_PASSWORD(),
+        data: {
+          resetPasswordToken,
+          newPassword,
+        },
+      })
+        .then((data) => {
+          const refreshTokenReturnValue = data as InterfaceAuthInformation;
+
+          resolve(refreshTokenReturnValue.metaData);
+        })
+        .catch((error) => {
+          reject(error.response.data);
+        });
+    });
+  };
+
+  // ===========================================================================
+  // Verify Forgot Password
+  static verifyForgotPassword = ({ emailTo }: { emailTo: string }) => {
+    return new Promise((resolve, reject) => {
+      AxiosConfigService.postData({
+        url: ACCESS_API.POST_MAIL_TO_RESET_PASSWORD(),
+        data: {
+          emailTo,
+        },
+      })
+        .then((data) => {
+          const refreshTokenReturnValue = data as InterfaceAuthInformation;
 
           resolve(refreshTokenReturnValue.metaData);
         })

@@ -1,4 +1,4 @@
-import { Outlet, RouteProps } from 'react-router';
+import { Outlet, RouteProps } from 'react-router-dom';
 import EmployeeNavigationBar from '../../core/EmployeeNavigationBar';
 
 import styles from './EmployeeLayout.module.scss';

@@ -1,4 +1,4 @@
-const BASE_NAME = '';
+const BASE_NAME = '/';
 
 export const AppRoutes = {
   // ================================================================================
@@ -6,10 +6,15 @@ export const AppRoutes = {
   HOME: () => `home`,
   LOGIN: () => `login`,
   SIGN_UP: () => `sign-up`,
+  FORGOT_PASSWORD: () => `forgot-password`,
   PROFILE: () => `profile`,
   CART: () => `cart`,
   ORDER: () => 'order',
   PAYMENT: () => 'payment',
+  COMPLETION: () => 'completion',
+
+  IMAGE_UPLOAD: () => 'image-upload',
+
   NOTIFY: () => 'notify',
 
   PRODUCT_DETAIL: ({ productId = '' }: { productId?: string }) =>
@@ -23,7 +28,7 @@ export const AppRoutes = {
 
   // ================================================================================
   // ADMIN
-  ADMIN_BASE: () => `${BASE_NAME}/admin`,
+  ADMIN_BASE: () => `${BASE_NAME}admin`,
   ADMIN_DASHBOARD: () => `dashboard`,
   ADMIN_CATEGORY: () => `category`,
   ADMIN_PRODUCT: () => `product`,
@@ -36,7 +41,7 @@ export const AppRoutes = {
 
   // ================================================================================
   // EMPLOYEE
-  EMPLOYEE_BASE: () => `${BASE_NAME}/employee`,
+  EMPLOYEE_BASE: () => `${BASE_NAME}employee`,
   EMPLOYEE_ORDER: () => `order`,
   EMPLOYEE_PRODUCT: () => `product`,
   EMPLOYEE_VOUCHER: () => `voucher`,
@@ -46,7 +51,7 @@ export const AppRoutes = {
 
   // ================================================================================
   // SHIPPER
-  SHIPPER_BASE: () => `${BASE_NAME}/shipper`,
+  SHIPPER_BASE: () => `${BASE_NAME}shipper`,
   SHIPPER_ORDER: () => `order`,
 
   // ================================================================================

@@ -1,4 +1,4 @@
-import { Outlet, RouteProps } from 'react-router';
+import { Outlet, RouteProps } from 'react-router-dom';
 import AdminNavigationBar from '../../core/AdminNavigationBar';
 
 import styles from './AdminLayout.module.scss';

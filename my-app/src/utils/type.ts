@@ -13,6 +13,10 @@ export interface InterfaceAuthInformationMetaData {
     email: string;
     roles: string[];
     address: string;
+    avatar_url: string;
+    phone_number: string;
+    status: boolean;
+    verified: boolean;
   };
   tokens: {
     accessToken: string;

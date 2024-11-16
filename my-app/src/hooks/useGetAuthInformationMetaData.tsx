@@ -6,14 +6,17 @@ import { useEffect, useMemo, useState } from 'react';
 export default function useGetAuthInformationMetaData() {
   // ----------------------------------------------------------------
   // ------------------------------------------------------------------
-  const [authInformationMetaData, setMetaDataAuthInformation] = useState<InterfaceAuthInformationMetaData>(() => {
-    const authTokenReturnValue = LocalStorageService.getItem({
-      key: EnumLocalStorage.AUTH_INFORMATION,
-    });
+  const [authInformationMetaData, setMetaDataAuthInformation] =
+    useState<InterfaceAuthInformationMetaData>(() => {
+      const authTokenReturnValue = LocalStorageService.getItem({
+        key: EnumLocalStorage.AUTH_INFORMATION,
+      });
 
-    return authTokenReturnValue;
+      return authTokenReturnValue;
+    });
+  const [accessToken, setAccessToken] = useState(() => {
+    return authInformationMetaData?.tokens?.accessToken;
   });
-  const [accessToken, setAccessToken] = useState('');
 
   // ----------------------------------------------------------------
   // ------------------------------------------------------------------
@@ -51,7 +54,9 @@ export default function useGetAuthInformationMetaData() {
         localStorage.clear();
       }
 
-      LocalStorageService.removeItem({ key: EnumLocalStorage.AUTH_INFORMATION });
+      LocalStorageService.removeItem({
+        key: EnumLocalStorage.AUTH_INFORMATION,
+      });
 
       return;
     }
@@ -59,5 +64,10 @@ export default function useGetAuthInformationMetaData() {
     setAccessToken(authInformationMetaData?.tokens?.accessToken);
   }, [authInformationMetaData?.tokens?.accessToken]);
 
-  return { authInformationMetaData, isAuthenticated, userInformation, accessToken };
+  return {
+    authInformationMetaData,
+    isAuthenticated,
+    userInformation,
+    accessToken,
+  };
 }
