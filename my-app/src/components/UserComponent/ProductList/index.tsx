@@ -1,6 +1,7 @@
 import NoData from '@components/CommonComponent/NoData';
 import PaginationProductList from '@components/UserComponent/PaginationProductList';
 import SearchProductForm from '@components/UserComponent/SearchProductForm';
+import { AppRoutes } from '@helpers/app.router';
 import { Container, Grid2 } from '@mui/material';
 import CategoryApiService from '@services/api/category';
 import {
@@ -20,10 +21,8 @@ import {
   DEFAULT_PAGE,
 } from '@utils/constant';
 import React, { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
-import ProductItem from './ProductItem';
-import { AppRoutes } from '@helpers/app.router';
 import { useNavigate } from 'react-router-dom';
+import ProductItem from './ProductItem';
 
 function ProductList() {
   const navigate = useNavigate();
@@ -86,17 +85,13 @@ function ProductList() {
         setTotalSearchCount(
           productList.products[0].overview[0].totalSearchCount
         );
-
-        setSearchParams((searchParams) => {
-          return { ...searchParams, isPendingCall: false };
-        });
       })
-      .catch(() => {
+      .catch(() => {})
+      .finally(() => {
         setSearchParams((searchParams) => {
           return { ...searchParams, isPendingCall: false };
         });
       });
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(searchParams)]);
 
@@ -109,14 +104,7 @@ function ProductList() {
           return [...prev, ...categoryList.categories[0].data];
         });
       })
-      .catch((error) => {
-        toast.error(
-          error.message ||
-            error.message.message ||
-            'Get category list error !!!',
-          { type: 'error' }
-        );
-      });
+      .catch(() => {});
   }, []);
 
   return (

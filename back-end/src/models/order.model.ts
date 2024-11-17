@@ -1,4 +1,4 @@
-import { model, Schema } from 'mongoose';
+import { model, Schema, Types } from 'mongoose';
 import { nanoid } from 'nanoid';
 import { EnumStatusOfOrder } from '../utils/type';
 import { PRODUCT_DOCUMENT_NAME } from './product.model';
@@ -7,6 +7,31 @@ import { DEFAULT_PICK_UP_ADDRESS } from '../utils/constant';
 
 export const ORDER_DOCUMENT_NAME = 'Orders';
 const ORDER_COLLECTION_NAME = 'Orders_Collection';
+
+interface InterfaceOrder extends Document {
+  order_code: string;
+  total_amount: number;
+  delivery_address: string;
+  order_item_list: Array<{
+    productId: Types.ObjectId;
+    product_quantity: number;
+    product_price_now: number;
+  }>;
+  order_date: Date;
+  shipperId: Types.ObjectId;
+  customerId: Types.ObjectId;
+  pickup_address: string;
+  order_status_stage: EnumStatusOfOrder;
+  delivery_date: Date;
+  pickup_date: Date;
+  process_timeline: {
+    event: EnumStatusOfOrder;
+    timestamp: Date;
+    currentTime?: Date; // Add this property
+  }[];
+
+  generateOrderCode(): string;
+}
 
 const OrderItemSchema = new Schema({
   productId: {
@@ -27,7 +52,7 @@ const OrderItemSchema = new Schema({
   },
 });
 
-const OrderSchema = new Schema(
+const OrderSchema = new Schema<InterfaceOrder>(
   {
     order_code: {
       type: String,
@@ -83,7 +108,7 @@ const OrderSchema = new Schema(
       type: Date,
       default: Date.now,
     },
-    timeline: [
+    process_timeline: [
       {
         event: {
           enum: Object.values(EnumStatusOfOrder),
@@ -92,6 +117,10 @@ const OrderSchema = new Schema(
           // required: true,
         },
         timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+        currentTime: {
           type: Date,
           default: Date.now,
         },
@@ -128,6 +157,8 @@ OrderSchema.pre('save', function (next) {
   this.total_amount = this.order_item_list.reduce((acc, item) => {
     return acc + item.product_quantity * item.product_price_now;
   }, 0);
+
+  this.order_code = this.generateOrderCode();
 
   next();
 });

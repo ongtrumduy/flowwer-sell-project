@@ -15,7 +15,7 @@ export const ACCESS_API = {
 //===============================================================================================================
 export const PRODUCT_API = {
   ALL: () => `/v1/api/product/all`,
-  CREATE: () => `/v1/api/product/add`,
+  CREATE: () => `/v1/api/product/create`,
   UPDATE: () => `/v1/api/product/update`,
   DELETE: () => `/v1/api/product/delete`,
   PRODUCT_DETAIL: ({ productId }: { productId: string }) =>

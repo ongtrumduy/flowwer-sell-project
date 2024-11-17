@@ -2,8 +2,12 @@ import express from 'express';
 
 import ProductController from '@root/src/controllers/product.controller';
 
+import { authenticationV2 } from '@auth/authUtils';
 import { asyncHandler } from '@helpers/asyncHandler';
-import { authentication, authenticationV2 } from '@auth/authUtils';
+import {
+  uploadProductMulter,
+  uploadSingleImageMulter,
+} from '@root/src/configs/config.multer';
 
 const router = express.Router({ mergeParams: true }); // Bật mergeParams
 
@@ -27,7 +31,12 @@ router.use(asyncHandler(authenticationV2));
 // ==================================================
 
 // create new product
-router.post('/create', asyncHandler(ProductController.createNewProduct));
+router.post(
+  '/create',
+  // uploadSingleImageMulter({ fieldName: 'product_image' }),
+  uploadProductMulter,
+  asyncHandler(ProductController.createNewProduct)
+);
 
 router.patch(
   '/update/:productId',

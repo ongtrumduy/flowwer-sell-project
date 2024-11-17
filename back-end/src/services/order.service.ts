@@ -67,7 +67,7 @@ class OrderService {
     customerId: string;
     delivery_address: string;
     order_item_list: {
-      cartProductId: string;
+      productId: string;
       product_quantity: number;
       product_price_now: number;
     }[];
@@ -79,7 +79,7 @@ class OrderService {
     try {
       session.startTransaction();
 
-      const newOrder = OrderModel.create(
+      const newOrder = await OrderModel.create(
         [
           {
             customerId: new Types.ObjectId(customerId),
@@ -99,9 +99,9 @@ class OrderService {
         {
           $pull: {
             cart_item_list: {
-              $in: order_item_list.map((item) => ({
-                _id: new Types.ObjectId(item.cartProductId),
-              })),
+              $in: order_item_list.map((item) => {
+                return new Types.ObjectId(item.productId);
+              }),
             },
           },
         },
@@ -152,8 +152,14 @@ class OrderService {
         reasonStatusCode: EnumReasonStatusCode.CREATED_SUCCESSFULLY,
         message: 'Create Order Successfully!!!',
       });
-    } catch {
+    } catch (error) {
       await session.abortTransaction();
+
+      throw new ErrorDTODataResponse({
+        statusCode: 500,
+        reasonStatusCode: EnumReasonStatusCode.INTERNAL_SERVER_ERROR,
+        message: (error as Error).message || 'Create Order Failed!!!',
+      });
     } finally {
       session.endSession();
     }

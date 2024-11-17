@@ -35,7 +35,7 @@ const ProductSchema = new Schema(
       {
         type: Schema.Types.ObjectId,
         ref: CATEGORY_DOCUMENT_NAME,
-        required: true,
+        // required: true,
       },
     ],
     discount: {

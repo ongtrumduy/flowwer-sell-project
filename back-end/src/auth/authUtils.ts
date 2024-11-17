@@ -12,7 +12,6 @@ import {
 import {
   EnumHeaderKey,
   EnumReasonStatusCode,
-  WithKeyStoreRequest,
   WithKeyStoreV2Request,
 } from '../utils/type';
 
@@ -21,7 +20,17 @@ export const createTokenPair = async ({
   publicKey,
   privateKey,
 }: {
-  payload: { userId: string; name: string; email: string; roles: string[] };
+  payload: {
+    userId: string;
+    name: string;
+    email: string;
+    roles: string[];
+    avatar_url: string;
+    address: string;
+    phone_number: string;
+    status: boolean;
+    verified: boolean;
+  };
   publicKey: string;
   privateKey: string;
 }) => {
@@ -54,63 +63,63 @@ export const createTokenPair = async ({
   }
 };
 
-export const authentication = asyncHandler(
-  async (req: WithKeyStoreRequest, res: Response, next: NextFunction) => {
-    const reqHeader = req.headers;
+// export const authentication = asyncHandler(
+//   async (req: WithKeyStoreRequest, res: Response, next: NextFunction) => {
+//     const reqHeader = req.headers;
 
-    const userId = reqHeader[EnumHeaderKey.CLIEND_ID]?.toString();
+//     const userId = reqHeader[EnumHeaderKey.CLIEND_ID]?.toString();
 
-    if (!userId) {
-      throw new ErrorDTODataResponse({
-        statusCode: 401,
-        message: 'Not Found User Id!!!',
-        reasonStatusCode: EnumReasonStatusCode.NOT_FOUND_USER_ID,
-      });
-    }
+//     if (!userId) {
+//       throw new ErrorDTODataResponse({
+//         statusCode: 401,
+//         message: 'Not Found User Id!!!',
+//         reasonStatusCode: EnumReasonStatusCode.NOT_FOUND_USER_ID,
+//       });
+//     }
 
-    const keyStore = await KeyTokenService.findKeyTokenByUserId(userId);
+//     const keyStore = await KeyTokenService.findKeyTokenByUserId(userId);
 
-    if (!keyStore) {
-      throw new ErrorDTODataResponse({
-        statusCode: 401,
-        message: 'Invalid User Id !!!',
-        reasonStatusCode: EnumReasonStatusCode.INVALID_USER_ID,
-      });
-    }
+//     if (!keyStore) {
+//       throw new ErrorDTODataResponse({
+//         statusCode: 401,
+//         message: 'Invalid User Id !!!',
+//         reasonStatusCode: EnumReasonStatusCode.INVALID_USER_ID,
+//       });
+//     }
 
-    const accessToken = reqHeader[EnumHeaderKey.TOKEN]?.toString();
+//     const accessToken = reqHeader[EnumHeaderKey.TOKEN]?.toString();
 
-    if (!accessToken) {
-      throw new ErrorDTODataResponse({
-        statusCode: 401,
-        reasonStatusCode: EnumReasonStatusCode.NOT_HAVE_ACCESS_TOKEN,
-        message: 'Not Have Access Token !!!',
-      });
-    }
+//     if (!accessToken) {
+//       throw new ErrorDTODataResponse({
+//         statusCode: 401,
+//         reasonStatusCode: EnumReasonStatusCode.NOT_HAVE_ACCESS_TOKEN,
+//         message: 'Not Have Access Token !!!',
+//       });
+//     }
 
-    try {
-      const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
+//     try {
+//       const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
 
-      if (userId !== (decodeUser as JwtPayload).userId) {
-        throw new ErrorDTODataResponse({
-          statusCode: 401,
-          reasonStatusCode: EnumReasonStatusCode.INVALID_USER_ID,
-          message: 'Invalid UserId !!!',
-        });
-      }
+//       if (userId !== (decodeUser as JwtPayload).userId) {
+//         throw new ErrorDTODataResponse({
+//           statusCode: 401,
+//           reasonStatusCode: EnumReasonStatusCode.INVALID_USER_ID,
+//           message: 'Invalid UserId !!!',
+//         });
+//       }
 
-      req.keyStore = keyStore;
+//       req.keyStore = keyStore;
 
-      return next();
-    } catch (error) {
-      throw new ErrorDTODataResponse({
-        statusCode: 401,
-        message: (error as Error).message,
-        reasonStatusCode: EnumReasonStatusCode.EXPIRED_ACCESS_TOKEN,
-      });
-    }
-  }
-);
+//       return next();
+//     } catch (error) {
+//       throw new ErrorDTODataResponse({
+//         statusCode: 401,
+//         message: (error as Error).message,
+//         reasonStatusCode: EnumReasonStatusCode.EXPIRED_ACCESS_TOKEN,
+//       });
+//     }
+//   }
+// );
 
 export const authenticationV2 = asyncHandler(
   async (req: WithKeyStoreV2Request, res: Response, next: NextFunction) => {
@@ -130,7 +139,7 @@ export const authenticationV2 = asyncHandler(
     if (!keyStore) {
       throw new ErrorDTODataResponse({
         statusCode: 401,
-        message: 'Invalid User Id !!!',
+        message: 'Invalid User Id With Key Store !!!',
         reasonStatusCode: EnumReasonStatusCode.INVALID_USER_ID,
       });
     }
@@ -146,7 +155,7 @@ export const authenticationV2 = asyncHandler(
           throw new ErrorDTODataResponse({
             statusCode: 401,
             reasonStatusCode: EnumReasonStatusCode.INVALID_USER_ID,
-            message: 'Invalid UserId !!!',
+            message: 'Invalid UserId Decode User Refresh Token !!!',
           });
         }
 
@@ -173,7 +182,7 @@ export const authenticationV2 = asyncHandler(
       throw new ErrorDTODataResponse({
         statusCode: 401,
         reasonStatusCode: EnumReasonStatusCode.NOT_HAVE_ACCESS_TOKEN,
-        message: 'Not Have Access Token !!!',
+        message: 'Not Have Access Token  !!!',
       });
     }
 
@@ -184,7 +193,7 @@ export const authenticationV2 = asyncHandler(
         throw new ErrorDTODataResponse({
           statusCode: 401,
           reasonStatusCode: EnumReasonStatusCode.INVALID_USER_ID,
-          message: 'Invalid UserId !!!',
+          message: 'Invalid UserId With Decode User With Access Token !!!',
         });
       }
 

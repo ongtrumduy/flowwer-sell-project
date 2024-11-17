@@ -5,9 +5,13 @@ import { EnumMessageStatus, EnumPermission } from '@root/src/utils/type';
 
 import accessRouter from './access';
 import productRouter from './product';
+import userRouter from './user';
+
 import categoryRouter from './category';
 import cartRouter from './cart';
 import orderRouter from './order';
+import stripePaymentRouter from './stripe_payment';
+import cloudinaryUploadRouter from './cloudinary_upload';
 
 import apiKeyRouter from './api_key';
 import { asyncHandler } from '../helpers/asyncHandler';
@@ -51,6 +55,11 @@ router.get('/test', (req: any, res: any) => {
 
 //=================================================
 // for product
+router.use('/v1/api/user', userRouter);
+//=================================================
+
+//=================================================
+// for product
 router.use('/v1/api/product', productRouter);
 //=================================================
 
@@ -67,6 +76,16 @@ router.use('/v1/api/cart', cartRouter);
 //=================================================
 // for order
 router.use('/v1/api/order', orderRouter);
+//=================================================
+
+//=================================================
+// for stripe payment
+router.use('/v1/api/stripe_payment', stripePaymentRouter);
+//=================================================
+
+//=================================================
+// for cloudinary upload image
+router.use('/v1/api/cloudinary_upload', cloudinaryUploadRouter);
 //=================================================
 
 //=================================================

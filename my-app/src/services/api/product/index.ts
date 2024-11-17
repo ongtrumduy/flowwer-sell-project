@@ -6,6 +6,7 @@ import cloneDeepWith from 'lodash/cloneDeepWith';
 import isObject from 'lodash/isObject';
 import omitBy from 'lodash/omitBy';
 import { DEFAULT_MAX_PRICE, DEFAULT_MIN_PRICE } from '@utils/constant';
+import { AxiosHeaders } from 'axios';
 
 class ProductApiService {
   // ===========================================================================
@@ -100,29 +101,15 @@ class ProductApiService {
 
   // ===========================================================================
   // create new product
-  static createNewProduct = ({
-    product_name,
-    product_quantity,
-    product_price,
-    product_image,
-    product_description,
-  }: {
-    product_name: string;
-    product_quantity: number;
-    product_price: number;
-    product_image: string;
-    product_description: string;
-  }) => {
+  static createNewProduct = ({ formData }: { formData: FormData }) => {
+    const headers = new AxiosHeaders();
+    headers.set('Content-Type', 'multipart/form-data');
+
     return new Promise((resolve, reject) => {
       AxiosConfigService.postData({
         url: PRODUCT_API.CREATE(),
-        data: {
-          product_name,
-          product_quantity,
-          product_price,
-          product_image,
-          product_description,
-        },
+        data: formData,
+        customHeaders: headers,
       })
         .then((data) => {
           console.log('98 data createNewProduct ===>', data);

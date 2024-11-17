@@ -4,6 +4,11 @@ import ProductModel from '../models/product.model';
 import { EnumMessageStatus, EnumReasonStatusCode } from '../utils/type';
 import { DEFAULT_CATEGORY_ID } from '../utils/constant';
 import SuccessDTODataResponse from '../core/success.dto.response';
+import { nanoid } from 'nanoid';
+import cloudinaryConfig from '../configs/config.cloudinary';
+
+const cloudinary = cloudinaryConfig();
+import fs from 'fs';
 
 class ProductService {
   //=====================================================================
@@ -322,35 +327,59 @@ class ProductService {
     product_name,
     product_quantity,
     product_price,
-    product_image,
+    productImagePath,
+    productImageFieldName,
     product_description,
+    product_category,
   }: {
     product_name: string;
     product_quantity: number;
     product_price: number;
-    product_image: string;
+    productImagePath: string;
     product_description: string;
+    productImageFieldName: string;
+    product_category: string[];
   }) => {
-    const newProduct = await ProductModel.create({
-      product_name,
-      product_quantity,
-      product_price,
-      product_image,
-      product_description,
-    });
+    try {
+      const suffix_folder = '_cloudinary_upload';
 
-    const newReturnProduct = {
-      ...newProduct,
-      productId: String(newProduct._id),
-    };
+      const result = await cloudinary.uploader.upload(productImagePath, {
+        folder: productImageFieldName + suffix_folder, // Đặt tên thư mục trên Cloudinary
+        public_id: `${productImageFieldName}_${nanoid(8)}_${Date.now()}`, // Tên ảnh trên Cloudinary
+        resource_type: 'auto',
+      });
 
-    return {
-      code: 200,
-      metaData: {
-        newReturnProduct,
-      },
-      reasonStatusCode: EnumMessageStatus.SUCCESS_200,
-    };
+      // Xóa file tạm sau khi upload xong
+      fs.unlinkSync(productImagePath);
+
+      const newProduct = await ProductModel.create({
+        product_name,
+        product_quantity,
+        product_price,
+        product_image: result.secure_url,
+        product_description,
+      });
+
+      const newReturnProduct = {
+        ...newProduct,
+        productId: String(newProduct._id),
+      };
+
+      return new SuccessDTODataResponse({
+        statusCode: 201,
+        metaData: {
+          newReturnProduct,
+        },
+        reasonStatusCode: EnumReasonStatusCode.SUCCESS_200,
+        message: 'Create new product successfully !!!',
+      });
+    } catch (error) {
+      throw new ErrorDTODataResponse({
+        statusCode: 400,
+        message: (error as Error).message || 'Create new product fail !!!',
+        reasonStatusCode: EnumReasonStatusCode.BAD_REQUEST,
+      });
+    }
   };
 
   //=====================================================================

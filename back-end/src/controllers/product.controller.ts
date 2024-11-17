@@ -100,14 +100,17 @@ class ProductController {
       product_name: req.body.product_name,
       product_quantity: req.body.product_quantity,
       product_price: req.body.product_price,
-      product_image: req.body.product_image,
+      // product_image: req.body.product_image,
+      product_category: req.body.product_category,
+      productImagePath: req.file ? req.file.path : '',
+      productImageFieldName: 'product_image',
       product_description: req.body.product_description,
     });
 
     new SuccessResponse({
       metaData: data?.metaData,
       message: 'Create new product successfully !!!',
-      statusCode: data?.code || 201,
+      statusCode: data?.statusCode || 201,
       reasonStatusCode: data?.reasonStatusCode || EnumMessageStatus.CREATED_201,
     }).send({
       res,
