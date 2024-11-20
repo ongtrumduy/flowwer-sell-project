@@ -1,5 +1,6 @@
 import AuthInformationMetadataService from '@services/auth';
 import { ACCESS_API } from '@services/constant';
+import LocalStorageService from '@services/local-storage';
 import { API_KEY, REQUEST_TIMEOUT, SERVER_API_ENDPOINT } from '@utils/constant';
 import {
   EnumReasonStatusCode,
@@ -103,7 +104,10 @@ AxiosClientInstance.interceptors.response.use(
         });
       }
 
-      isRefreshing = false;
+      // isRefreshing = false;
+
+      // Đặt isRefreshing = true ngay khi bắt đầu refresh token
+      isRefreshing = true;
 
       try {
         const refreshToken = AuthInformationMetadataService.getRefreshToken();
@@ -136,6 +140,9 @@ AxiosClientInstance.interceptors.response.use(
         //   position: 'top-right',
         //   autoClose: 4000,
         // });
+
+        LocalStorageService.removeAll({}); // Xóa token cũ
+        window.location.href = '/login'; // Chuyển hướng đến trang login
 
         return Promise.reject(refreshTokenCallError);
       } finally {

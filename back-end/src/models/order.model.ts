@@ -37,8 +37,8 @@ const OrderItemSchema = new Schema({
   productId: {
     type: Schema.Types.ObjectId,
     ref: PRODUCT_DOCUMENT_NAME,
-    unique: true,
     required: true,
+    // unique: true,
   },
   product_quantity: {
     type: Number,

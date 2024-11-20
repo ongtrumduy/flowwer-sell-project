@@ -303,17 +303,17 @@ class CartService {
 
   //=====================================================================
   // update product
-  static addProductInCartItems = async ({
-    userId,
-    cartId,
-    productId,
-    product_quantity,
-  }: {
-    userId: string;
-    cartId: string;
-    productId: string;
-    product_quantity: number;
-  }) => {};
+  // static addProductInCartItems = async ({
+  //   userId,
+  //   cartId,
+  //   productId,
+  //   product_quantity,
+  // }: {
+  //   userId: string;
+  //   cartId: string;
+  //   productId: string;
+  //   product_quantity: number;
+  // }) => {};
 
   //=====================================================================
   // delete product in cart
@@ -431,10 +431,11 @@ class CartService {
     productId: string;
     product_quantity: number;
   }) => {
-    // const session = await mongoose.startSession();
-    // session.startTransaction();
+    const session = await mongoose.startSession();
 
     try {
+      session.startTransaction();
+
       // Tìm sản phẩm để lấy giá hiện tại
       const product = await ProductModel.findById(
         new Types.ObjectId(productId)
@@ -464,7 +465,8 @@ class CartService {
         },
         {
           new: true,
-          // session,
+          upsert: false,
+          session,
         }
       );
 
@@ -487,7 +489,7 @@ class CartService {
           {
             new: true,
             upsert: true,
-            // session,
+            session,
           }
         );
       }
@@ -551,7 +553,7 @@ class CartService {
         ],
         {
           new: true,
-          // session
+          session,
         }
       );
 
@@ -590,7 +592,7 @@ class CartService {
       //   },
       // ]);
 
-      // await session.commitTransaction();
+      await session.commitTransaction();
 
       return new SuccessDTODataResponse({
         message: 'Add Product In Cart Items Successfully !!!',
@@ -604,7 +606,7 @@ class CartService {
         reasonStatusCode: EnumMessageStatus.CREATED_201,
       });
     } catch (error) {
-      // await session.abortTransaction();
+      await session.abortTransaction();
 
       throw new ErrorDTODataResponse({
         message: (error as any).message,
@@ -612,7 +614,159 @@ class CartService {
         reasonStatusCode: EnumReasonStatusCode.INTERNAL_SERVER_ERROR,
       });
     } finally {
-      // await session.endSession();
+      await session.endSession();
+    }
+  };
+
+  //=====================================================================
+  // add product in cart items version 3
+  static addProductInCartItemsV3 = async ({
+    productId,
+    cartId,
+    userId,
+    product_quantity,
+  }: {
+    userId: string;
+    cartId: string;
+    productId: string;
+    product_quantity: number;
+  }) => {
+    const session = await mongoose.startSession();
+
+    try {
+      session.startTransaction();
+
+      // Tìm sản phẩm để lấy giá hiện tại
+      const product = await ProductModel.findById(
+        new Types.ObjectId(productId)
+      ).session(session);
+
+      if (!product) {
+        throw new ErrorDTODataResponse({
+          statusCode: 404,
+          reasonStatusCode: EnumReasonStatusCode.NOT_FOUND_404,
+          message: 'Product Not Found !!!',
+        });
+      }
+
+      // Cập nhật hoặc thêm sản phẩm vào giỏ hàng
+      const cart = await CartModel.findOneAndUpdate(
+        {
+          userId: new Types.ObjectId(userId),
+          'cart_item_list.productId': new Types.ObjectId(productId),
+        },
+        {
+          $inc: {
+            'cart_item_list.$.product_quantity': product_quantity,
+          },
+          $set: {
+            'cart_item_list.$.product_price_now': product.product_price,
+          },
+        },
+        {
+          new: true,
+          upsert: false,
+          session,
+        }
+      );
+
+      if (!cart) {
+        // Nếu sản phẩm chưa tồn tại trong giỏ hàng, thêm sản phẩm mới
+        await CartModel.findOneAndUpdate(
+          {
+            userId: new Types.ObjectId(userId),
+            _id: new Types.ObjectId(cartId),
+          },
+          {
+            $push: {
+              cart_item_list: {
+                productId: new Types.ObjectId(productId),
+                product_quantity: product_quantity,
+                product_price_now: product.product_price,
+              },
+            },
+          },
+          {
+            new: true,
+            upsert: true,
+            session,
+          }
+        );
+      }
+
+      // Tính toán cart_quantity và total_price thông qua aggregation
+      const cartStats = await CartModel.aggregate([
+        {
+          $match: {
+            userId: new Types.ObjectId(userId),
+          },
+        },
+        {
+          $unwind: {
+            path: '$cart_item_list',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $group: {
+            _id: '$_id',
+            cart_quantity: { $sum: '$cart_item_list.product_quantity' },
+            total_price: {
+              $sum: {
+                $multiply: [
+                  '$cart_item_list.product_quantity',
+                  '$cart_item_list.product_price_now',
+                ],
+              },
+            },
+          },
+        },
+      ]).session(session);
+
+      if (cartStats.length === 0) {
+        throw new ErrorDTODataResponse({
+          statusCode: 404,
+          reasonStatusCode: EnumReasonStatusCode.NOT_FOUND_404,
+          message: 'Cart Not Found !!!',
+        });
+      }
+
+      // Cập nhật lại cart_quantity và total_price vào giỏ hàng
+      await CartModel.findByIdAndUpdate(
+        cartStats[0]._id,
+        {
+          cart_quantity: cartStats[0].cart_quantity,
+          total_price: cartStats[0].total_price,
+        },
+        { session }
+      );
+
+      await session.commitTransaction();
+
+      return new SuccessDTODataResponse({
+        message: 'Add Product In Cart Items Successfully !!!',
+        metaData: {
+          cart: {
+            cartId: cartStats[0]._id.toString(),
+            cart_quantity: cartStats[0].cart_quantity,
+            total_price: cartStats[0].total_price,
+          },
+        },
+        statusCode: 201,
+        reasonStatusCode: EnumMessageStatus.CREATED_201,
+      });
+    } catch (error) {
+      console.error('Error during addProductInCartItemsV2:', error);
+
+      await session.abortTransaction();
+
+      throw new ErrorDTODataResponse({
+        message: (error as Error).message || 'Internal Server Error !!!',
+        statusCode: 500,
+        reasonStatusCode: EnumReasonStatusCode.INTERNAL_SERVER_ERROR,
+      });
+    } finally {
+      await session.endSession();
     }
   };
 }

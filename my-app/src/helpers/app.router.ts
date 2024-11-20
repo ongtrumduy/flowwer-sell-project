@@ -10,7 +10,8 @@ export const AppRoutes = {
   PROFILE: () => `profile`,
   CART: () => `cart`,
   ORDER: () => 'order',
-  PAYMENT: () => 'payment',
+  PAYMENT: ({ orderId = '' }: { orderId?: string }) =>
+    `payment/${orderId ? orderId : ':orderId'}`,
   COMPLETION: () => 'completion',
 
   IMAGE_UPLOAD: () => 'image-upload',

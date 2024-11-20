@@ -166,13 +166,13 @@ class CartController {
   // };
 
   // =========================================================
-  // add product in cart items version 2
-  static addProductInCartItemsV2 = async (
+  // add product in cart items version 3
+  static addProductInCartItemsV3 = async (
     req: WithCartRequest,
     res: Response,
     next: NextFunction
   ) => {
-    const data = await CartService.addProductInCartItemsV2({
+    const data = await CartService.addProductInCartItemsV3({
       productId: req.body.productId,
       product_quantity: req.body.product_quantity,
       userId: req?.user.userId,

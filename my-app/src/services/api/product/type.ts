@@ -2,9 +2,10 @@ export interface InterfaceProductItem {
   product_name: string;
   product_quantity: number;
   product_price: number;
-  product_image: string;
+  product_image: string | null;
   product_description: string;
   productId: string;
+  product_category: string[];
 }
 
 export interface InterfaceProductMetaData {

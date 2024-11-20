@@ -8,6 +8,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
   FormControl,
   InputLabel,
@@ -30,6 +31,7 @@ import {
 } from '@services/api/category/type';
 import ProductApiService from '@services/api/product';
 import {
+  InterfaceProductDetailItemMetaData,
   InterfaceProductItem,
   InterfaceProductMetaData,
 } from '@services/api/product/type';
@@ -39,15 +41,16 @@ import {
   DEFAULT_MIN_PRICE,
   DEFAULT_PAGE,
 } from '@utils/constant';
+import { cloneDeep } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
 interface Product {
   productId?: string;
   product_name: string;
-  product_quantity: string;
-  product_price: string;
-  product_category: string[];
+  product_quantity: number;
+  product_price: number;
+  product_category?: string[];
   product_description: string;
   product_image: File | null;
 }
@@ -56,13 +59,15 @@ const AdminProduct: React.FC = () => {
   const [productList, setProductList] = useState<InterfaceProductItem[]>([]);
   const [open, setOpen] = useState(false);
 
+  const [deleteProductId, setDeleteProductId] = useState('');
+
   const { control, handleSubmit, reset } = useForm({
     defaultValues: {
       product_name: '',
-      product_quantity: '',
-      product_price: '',
+      product_quantity: 0,
+      product_price: 0,
       product_description: '',
-      product_category: [],
+      product_category: [] as string[],
       product_image: null as File | null,
     },
   });
@@ -87,6 +92,16 @@ const AdminProduct: React.FC = () => {
     // },
   ]);
 
+  const [productDetail, setProductDetail] = useState<InterfaceProductItem>({
+    product_name: '',
+    product_quantity: 0,
+    product_price: 0,
+    product_image: '',
+    product_description: '',
+    productId: '',
+    product_category: [],
+  });
+
   const handleAddProduct = (data: Product) => {
     const newProduct: Product = {
       product_name: data.product_name,
@@ -102,17 +117,19 @@ const AdminProduct: React.FC = () => {
     // Tạo FormData
     const formData = new FormData();
     formData.append('product_name', data.product_name);
-    formData.append('product_quantity', data.product_quantity);
-    formData.append('product_price', data.product_price);
+    formData.append('product_quantity', String(data.product_quantity));
+    formData.append('product_price', String(data.product_price));
     formData.append('product_description', data.product_description);
 
     if (data.product_image) {
       formData.append('product_image', data.product_image); // Đảm bảo giá trị là File
     }
 
-    data.product_category.forEach((category) => {
-      formData.append('product_category[]', category); // Mảng category
-    });
+    if (data.product_category && data.product_category.length) {
+      data.product_category.forEach((category) => {
+        formData.append('product_category[]', category); // Mảng category
+      });
+    }
 
     // setProducts((prev) => [...prev, newProduct]);
 
@@ -152,14 +169,45 @@ const AdminProduct: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (productDetail) {
+      const temp = cloneDeep(productDetail) as Product;
+
+      temp.product_image = null;
+
+      reset(temp, {
+        keepDirty: true,
+        keepTouched: true,
+        keepValues: true,
+      });
+    }
+  }, [JSON.stringify(productDetail)]);
+
   const handleEdit = ({ productId }: { productId: string | undefined }) => {
     console.log(`Edit product with productId ${productId}`);
+
+    if (productId) {
+      ProductApiService.getProductItemDetail({ productId }).then((data) => {
+        const productDetail = data as InterfaceProductDetailItemMetaData;
+
+        setProductDetail(productDetail.productDetail);
+
+        handleDialogOpen();
+      });
+    }
   };
 
   const handleDelete = ({ productId }: { productId: string | undefined }) => {
-    setProductList((prev) =>
-      prev.filter((product) => product.productId !== productId)
-    );
+    if (productId) {
+      // ProductApiService.getProductItemDetail({ productId }).then((data) => {
+      //   const productDetail = data as InterfaceProductDetailItemMetaData;
+
+      //   setProductDetail(productDetail.productDetail);
+      // });
+
+      handleOpenDelete();
+      setDeleteProductId(productId);
+    }
   };
 
   const handleDialogOpen = () => setOpen(true);
@@ -202,78 +250,122 @@ const AdminProduct: React.FC = () => {
       .catch(() => {});
   }, []);
 
+  //============================================================================
+  const [openDelete, setOpenDelete] = useState(false);
+
+  // Mở popup
+  const handleOpenDelete = () => {
+    setOpenDelete(true);
+  };
+
+  // Đóng popup
+  const handleCloseDelete = () => {
+    setOpenDelete(false);
+  };
+
+  // Xác nhận xóa
+  const handleConfirmDelete = () => {
+    ProductApiService.deleteProduct({ productId: deleteProductId })
+      .then((data) => {
+        const productList = data as InterfaceProductMetaData;
+
+        console.log(`Edit product with productList ${productList}`);
+      })
+      .catch(() => {})
+      .finally(() => {
+        setDeleteProductId('');
+      });
+
+    setOpenDelete(false); // Đóng popup
+  };
+
+  //============================================================================
+
   return (
-    <Box sx={{ padding: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Quản lý sản phẩm
-      </Typography>
+    <>
+      <Box sx={{ padding: 3 }}>
+        <Typography variant="h4" gutterBottom>
+          Quản lý sản phẩm
+        </Typography>
 
-      <Card>
-        <CardContent>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{ mb: 2 }}
-            onClick={handleDialogOpen}
-          >
-            Thêm mới sản phẩm
-          </Button>
+        <Card>
+          <CardContent>
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ mb: 2 }}
+              onClick={handleDialogOpen}
+            >
+              Thêm mới sản phẩm
+            </Button>
 
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Tên</TableCell>
-                  {/* <TableCell>Danh mục</TableCell> */}
-                  <TableCell>Giá</TableCell>
-                  <TableCell>Hành động</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {productList.map((product) => (
-                  <TableRow key={product.productId}>
-                    <TableCell>{product.productId}</TableCell>
-                    <TableCell>{product.product_name}</TableCell>
-                    {/* <TableCell>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Ảnh</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Tên</TableCell>
+                    {/* <TableCell>Danh mục</TableCell> */}
+                    <TableCell sx={{ fontWeight: 'bold' }}>Giá</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Hành động</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {productList.map((product) => (
+                    <TableRow key={product.productId}>
+                      <TableCell>{product.productId}</TableCell>{' '}
+                      <TableCell>
+                        <img
+                          src={product.product_image as string}
+                          alt=""
+                          width={100}
+                          height={100}
+                        />
+                      </TableCell>
+                      <TableCell>{product.product_name}</TableCell>
+                      {/* <TableCell>
                       {product.product_category.map((c) => {
                         return c;
                       })}
                     </TableCell> */}
-                    <TableCell>${product.product_price}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outlined"
-                        color="primary"
-                        onClick={() =>
-                          handleEdit({ productId: product?.productId })
-                        }
-                        sx={{ mr: 1 }}
-                      >
-                        Sửa
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        color="secondary"
-                        onClick={() =>
-                          handleDelete({ productId: product?.productId })
-                        }
-                      >
-                        Xóa
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                      <TableCell>${product.product_price}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          onClick={() =>
+                            handleEdit({ productId: product?.productId })
+                          }
+                          sx={{ mr: 1 }}
+                        >
+                          Sửa
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          color="secondary"
+                          onClick={() =>
+                            handleDelete({ productId: product?.productId })
+                          }
+                        >
+                          Xóa
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
 
-          <PaginationProductList
-            totalPages={Math.ceil(totalSearchCount / DEFAULT_LIMIT)}
-            onPageChange={handlePageChange}
-          />
-        </CardContent>
-      </Card>
+            <Card sx={{ mt: 4 }}>
+              <PaginationProductList
+                totalPages={Math.ceil(totalSearchCount / DEFAULT_LIMIT)}
+                onPageChange={handlePageChange}
+              />
+            </Card>
+          </CardContent>
+        </Card>
+      </Box>
 
       {/* Dialog for Adding Product */}
       <Dialog open={open} onClose={handleDialogClose} fullWidth maxWidth="sm">
@@ -430,7 +522,34 @@ const AdminProduct: React.FC = () => {
           </DialogActions>
         </form>
       </Dialog>
-    </Box>
+
+      {/* Popup xác nhận */}
+      <Dialog
+        open={openDelete}
+        onClose={handleCloseDelete}
+        aria-labelledby="delete-confirmation-dialog"
+      >
+        <DialogTitle id="delete-confirmation-dialog">Xác nhận xóa</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Bạn có chắc chắn muốn xóa sản phẩm này không? Hành động này không
+            thể hoàn tác.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDelete} color="primary">
+            Hủy
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            color="secondary"
+            variant="contained"
+          >
+            Xác nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 

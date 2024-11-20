@@ -121,7 +121,7 @@ const RootRouter = React.memo(() => {
           }
         />
         <Route
-          path={AppRoutes.PAYMENT()}
+          path={AppRoutes.PAYMENT({})}
           element={
             <ProtectedRoleRoute requiredRole={[EnumRole.USER]}>
               <StripePaymentPage />
@@ -129,7 +129,7 @@ const RootRouter = React.memo(() => {
           }
         />
         <Route
-          path={AppRoutes.PAYMENT() + '/' + AppRoutes.COMPLETION()}
+          path={AppRoutes.PAYMENT({}) + '/' + AppRoutes.COMPLETION()}
           element={
             <ProtectedRoleRoute requiredRole={[EnumRole.USER]}>
               <CompletionPage />

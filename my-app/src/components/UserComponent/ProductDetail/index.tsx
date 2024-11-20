@@ -26,6 +26,7 @@ const ProductDetail = () => {
     product_image: '',
     product_description: '',
     productId: '',
+    product_category: [],
   });
 
   const [quantity, setQuantity] = useState(1); // Khởi tạo state cho số lượng sản phẩm
@@ -68,9 +69,11 @@ const ProductDetail = () => {
       CartApiService.addProductToCart({
         productId: productDetail.productId,
         product_quantity: quantity,
-      }).then((data) => {
-        console.log('response data from =================', { data });
-      });
+      })
+        .then((data) => {
+          console.log('response data from =================', { data });
+        })
+        .catch(() => {});
     }
   };
 
@@ -103,7 +106,7 @@ const ProductDetail = () => {
           <Card>
             <CardMedia
               component="img"
-              image={productDetail.product_image}
+              image={productDetail.product_image || ''}
               alt={productDetail.product_name}
               sx={{
                 width: '560px',

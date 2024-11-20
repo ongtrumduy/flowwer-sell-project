@@ -6,8 +6,15 @@ import { AppRoutes } from '@helpers/app.router';
 import { useNavigate } from 'react-router-dom';
 import queryString from 'query-string';
 import styles from './CheckoutForm.module.scss';
+import OrderApiService from '@services/api/order';
 
-function CheckoutForm({ clientSecret }: { clientSecret: string }) {
+function CheckoutForm({
+  clientSecret,
+  orderId,
+}: {
+  clientSecret: string;
+  orderId: string;
+}) {
   const stripe = useStripe();
   const elements = useElements();
 
@@ -22,6 +29,11 @@ function CheckoutForm({ clientSecret }: { clientSecret: string }) {
   //   status: string;
   //   created: number;
   // } | null>(null); // Trạng thái và thông tin thanh toán
+
+  const handleReload = () => {
+    // Điều hướng tới chính trang hiện tại để làm mới
+    navigate(0);
+  };
 
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
@@ -70,6 +82,10 @@ function CheckoutForm({ clientSecret }: { clientSecret: string }) {
           const queryStringParams = queryString.stringify(tempPaymentInfo);
 
           navigate(`${AppRoutes.COMPLETION()}?${queryStringParams}`);
+
+          OrderApiService.updatePaymentSuccessOrder({
+            orderId: orderId,
+          });
         }
         setIsProcessing(false);
 
@@ -115,6 +131,17 @@ function CheckoutForm({ clientSecret }: { clientSecret: string }) {
           </Button>
           {/* Show any error or success messages */}
           {message && <div className={styles.message_text}>{message}</div>}
+
+          {isProcessing || !stripe || !elements ? (
+            <Button
+              onClick={handleReload}
+              sx={{ fontSize: '10px', textDecoration: 'underline' }}
+            >
+              Thử lại
+            </Button>
+          ) : (
+            <></>
+          )}
         </form>
       </Card>
     </Container>

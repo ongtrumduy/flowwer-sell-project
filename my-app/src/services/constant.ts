@@ -27,6 +27,16 @@ export const PRODUCT_API = {
 //===============================================================================================================
 export const ORDER_API = {
   CREATE: () => `/v1/api/order/create`,
+  GET_ORDER_INFORMATION_TO_PAYMENT: ({ orderId }: { orderId: string }) =>
+    `/v1/api/order/get/information/payment/${orderId}`,
+  UPDATE_SUCCESS_PAYMENT: () => '/v1/api/order/update/success/payment',
+  GET_ALL_ORDER_OF_CUSTOMER_LIST: () => '/v1/api/order/get/all/customer',
+
+  DESTROY_ORDER_ITEM: ({ orderId }: { orderId: string }) =>
+    `/v1/api/order/destroy/item/${orderId}`,
+
+  GET_DETAIL_OF_ORDER: ({ orderId }: { orderId: string }) =>
+    `/v1/api/order/get/detail/${orderId}`,
 };
 
 //===============================================================================================================

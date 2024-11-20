@@ -1,6 +1,8 @@
 const SERVER_API_ENDPOINT = import.meta.env.VITE_SERVER_BACKEND_ENDPOINT || 'l';
 const API_KEY = import.meta.env.VITE_API_KEY || '';
-const REQUEST_TIMEOUT = Number(import.meta.env.VITE_REQUEST_TIMEOUT || 15 * 10000);
+const REQUEST_TIMEOUT = Number(
+  import.meta.env.VITE_REQUEST_TIMEOUT || 8 * 1000
+);
 
 const DEFAULT_LIMIT = 8;
 const DEFAULT_MIN_PRICE = 0;
