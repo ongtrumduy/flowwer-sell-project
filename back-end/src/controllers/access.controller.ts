@@ -5,7 +5,7 @@ import SuccessResponse from '@core/success.response';
 import {
   EnumMessageStatus,
   EnumReasonStatusCode,
-  WithKeyStoreV2Request,
+  InterfaceWithKeyStoreV2Request,
 } from '@root/src/utils/type';
 
 class AccessController {
@@ -36,7 +36,7 @@ class AccessController {
   //=========================================================
   // Handler Refresh Token v2
   static handlerRefreshTokenV2 = async (
-    req: WithKeyStoreV2Request,
+    req: InterfaceWithKeyStoreV2Request,
     res: Response,
     next: NextFunction
   ) => {
@@ -62,7 +62,7 @@ class AccessController {
   //=========================================================
   // logout
   static logout = async (
-    req: WithKeyStoreV2Request,
+    req: InterfaceWithKeyStoreV2Request,
     res: Response,
     next: NextFunction
   ) => {
@@ -159,6 +159,7 @@ class AccessController {
     const data = await AccessService.resetPassword({
       resetPasswordToken: String(req.body.resetPasswordToken),
       newPassword: String(req.body.newPassword),
+      linkToSupportUser: String(req.body.linkToSupportUser),
     });
 
     new SuccessResponse({
@@ -177,14 +178,15 @@ class AccessController {
   //=========================================================
   // reset password
   static changePassword = async (
-    req: WithKeyStoreV2Request,
+    req: InterfaceWithKeyStoreV2Request,
     res: Response,
     next: NextFunction
   ) => {
     const data = await AccessService.changePassword({
-      userId: req.user.id,
+      userId: req.user.userId,
       oldPassword: String(req.body.oldPassword),
       newPassword: String(req.body.newPassword),
+      linkToSupportUser: String(req.body.linkToSupportUser),
     });
 
     new SuccessResponse({
@@ -203,18 +205,20 @@ class AccessController {
   //=========================================================
   // post email to reset password
   static postEmailToResetPassword = async (
-    req: WithKeyStoreV2Request,
+    req: InterfaceWithKeyStoreV2Request,
     res: Response,
     next: NextFunction
   ) => {
     const data = await AccessService.postEmailToResetPassword({
       emailTo: req.body.emailTo,
+      linkToResetPassword: req.body.linkToResetPassword,
+      linkToSupportUser: req.body.linkToSupportUser,
     });
 
     new SuccessResponse({
       metaData: data?.metaData,
       message:
-        data?.metaData ||
+        data?.message ||
         'If This Email Exists, You Will Receive A Reset Link Shortly !!!',
       statusCode: data?.statusCode || 200,
       reasonStatusCode:
@@ -229,12 +233,14 @@ class AccessController {
   //=========================================================
   // post email to reset password
   static updateAllInformation = async (
-    req: WithKeyStoreV2Request,
+    req: InterfaceWithKeyStoreV2Request,
     res: Response,
     next: NextFunction
   ) => {
     const data = await AccessService.postEmailToResetPassword({
       emailTo: req.body.emailTo,
+      linkToResetPassword: req.body.linkToResetPassword,
+      linkToSupportUser: req.body.linkToSupportUser,
     });
 
     new SuccessResponse({

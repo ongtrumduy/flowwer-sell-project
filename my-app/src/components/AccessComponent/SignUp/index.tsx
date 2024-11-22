@@ -1,3 +1,4 @@
+import { AppRoutes } from '@helpers/app.router';
 import { Box, Button, TextField, Typography } from '@mui/material';
 import AccessApiService from '@services/api/access';
 import { EnumRole, InterfaceAuthInformationMetaData } from '@utils/type';
@@ -39,18 +40,18 @@ function SignUp() {
       })) as InterfaceAuthInformationMetaData;
 
       if (returnSignUp) {
-        if (returnSignUp.user.roles.includes(EnumRole.ADMIN)) {
-          navigate('/admin');
+        if (returnSignUp.user.role_list.includes(EnumRole.ADMIN)) {
+          navigate(`${AppRoutes.ADMIN_BASE()}`);
           return;
-        } else if (returnSignUp.user.roles.includes(EnumRole.SHIPPER)) {
-          navigate('/shipper');
+        } else if (returnSignUp.user.role_list.includes(EnumRole.SHIPPER)) {
+          navigate(`${AppRoutes.SHIPPER_BASE()}`);
           return;
-        } else if (returnSignUp.user.roles.includes(EnumRole.EMPLOYEE)) {
-          navigate('/employee');
+        } else if (returnSignUp.user.role_list.includes(EnumRole.EMPLOYEE)) {
+          navigate(`${AppRoutes.EMPLOYEE_BASE()}`);
           return;
         }
 
-        navigate('/home');
+        navigate(`${AppRoutes.BASE()}`);
       }
 
       return returnSignUp;
@@ -75,37 +76,15 @@ function SignUp() {
         gap: 4,
         boxShadow: 4,
         borderRadius: 4,
+        width: '600px',
       }}
     >
       <Typography variant="h4" align="center" gutterBottom>
         Đăng ký
       </Typography>
-      <TextField
-        label="Tên"
-        name="name"
-        variant="outlined"
-        value={formData.name}
-        onChange={handleChange}
-        required
-      />
-      <TextField
-        label="Email"
-        name="email"
-        type="email"
-        variant="outlined"
-        value={formData.email}
-        onChange={handleChange}
-        required
-      />
-      <TextField
-        label="Mật khẩu"
-        name="password"
-        type="password"
-        variant="outlined"
-        value={formData.password}
-        onChange={handleChange}
-        required
-      />
+      <TextField label="Tên" name="name" variant="outlined" value={formData.name} onChange={handleChange} required />
+      <TextField label="Email" name="email" type="email" variant="outlined" value={formData.email} onChange={handleChange} required />
+      <TextField label="Mật khẩu" name="password" type="password" variant="outlined" value={formData.password} onChange={handleChange} required />
       <TextField
         label="Số điện thoại"
         name="phone_number"
@@ -115,15 +94,7 @@ function SignUp() {
         onChange={handleChange}
         required
       />
-      <TextField
-        label="Địa chỉ"
-        name="address"
-        type="address"
-        variant="outlined"
-        value={formData.address}
-        onChange={handleChange}
-        required
-      />
+      <TextField label="Địa chỉ" name="address" type="address" variant="outlined" value={formData.address} onChange={handleChange} required />
       <Button type="submit" variant="contained" color="primary" size="large">
         Đăng ký
       </Button>

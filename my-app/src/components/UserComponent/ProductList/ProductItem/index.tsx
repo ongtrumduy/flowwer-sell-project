@@ -1,12 +1,6 @@
-import {
-  Card,
-  CardContent,
-  CardMedia,
-  Grid2,
-  Paper,
-  Typography,
-} from '@mui/material';
+import { Card, CardContent, CardMedia, Grid2, Paper, Typography } from '@mui/material';
 import { InterfaceProductItem } from '@services/api/product/type';
+import { NumericFormat } from 'react-number-format';
 
 const ProductItem = ({
   product,
@@ -18,11 +12,7 @@ const ProductItem = ({
   handleShowProductDetail: ({ productId }: { productId: string }) => void;
 }) => {
   return (
-    <Grid2
-      size={{ xs: 12, sm: 6, md: 3 }}
-      key={product.productId || index}
-      sx={{ marginBottom: 4 }}
-    >
+    <Grid2 size={{ xs: 12, sm: 6, md: 3 }} key={product.productId || index} sx={{ marginBottom: 4 }}>
       <Paper>
         <Card
           sx={{ maxWidth: 250, margin: 'auto', cursor: 'pointer' }}
@@ -32,18 +22,20 @@ const ProductItem = ({
             })
           }
         >
-          <CardMedia
-            component="img"
-            height="150"
-            image={product.product_image}
-            alt={product.product_name}
-          />
+          <CardMedia component="img" height="150" image={String(product.product_image)} alt={product.product_name} />
           <CardContent>
             <Typography variant="h6" component="div">
               {product.product_name}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {product.product_price}
+              <NumericFormat
+                value={Number(product.product_price || 0)}
+                thousandSeparator={'.'}
+                decimalSeparator={','}
+                displayType={'text'}
+                suffix={' VNĐ'}
+                className="money"
+              />{' '}
             </Typography>
           </CardContent>
           {/* <CardActions sx={{ display: 'flex', justifyContent: 'space-between' }}>

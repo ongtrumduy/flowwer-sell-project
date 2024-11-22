@@ -40,7 +40,7 @@ const CartItem = ({
         <img
           src={item.productId.product_image}
           alt={item.productId.product_name}
-          style={{ width: '100%' }}
+          style={{ width: '100px', height: '100px' }}
         />
       </Grid2>
       <Grid2 size={4}>

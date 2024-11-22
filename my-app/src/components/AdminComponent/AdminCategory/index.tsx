@@ -1,173 +1,203 @@
-import { Add, Delete, Edit } from '@mui/icons-material';
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-  Typography,
-} from '@mui/material';
-import React, { useState } from 'react';
+import { Box, Button, Card, CardContent, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 
-// Dữ liệu mẫu
-interface Category {
-  id: string;
-  name: string;
-  description: string;
-}
-
-const initialCategories: Category[] = [
-  { id: '1', name: 'Electronics', description: 'Gadgets and devices' },
-  { id: '2', name: 'Clothing', description: 'Fashion and apparel' },
-  { id: '3', name: 'Food', description: 'Edible products' },
-];
+import CategoryApiService from '@services/api/category';
+import { InterfaceCategoryDetailItemMetaData, InterfaceCategoryItem, InterfaceCategoryMetaData } from '@services/api/category/type';
+import { DEFAULT_LIMIT, DEFAULT_PAGE } from '@utils/constant';
+import React, { useEffect, useState } from 'react';
+import AdminPaginationCategoryList from './AdminPaginationCategoryList';
+import ModalAddNewCategory from './ModalAddNewCategory';
+import ModalDeleteCategory from './ModalDeleteCategory';
+import ModalEditCategory from './ModalEditCategory';
 
 const AdminCategory: React.FC = () => {
-  const [openDialog, setOpenDialog] = useState(false);
-  const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
-  const [categoryName, setCategoryName] = useState('');
-  const [categoryDescription, setCategoryDescription] = useState('');
+  // =============================================================================
+  // =============================================================================
+  const [categoryList, setCategoryList] = useState<InterfaceCategoryItem[]>([]);
+  const [searchParams, setSearchParams] = useState({
+    searchName: '',
+    page: DEFAULT_PAGE,
+    limit: DEFAULT_LIMIT,
+    isPendingCall: false,
+  });
+  const [totalSearchCount, setTotalSearchCount] = useState(0);
+  // const [roleList, setRoleList] = useState<{ roleName: string; roleId: string }[]>([]);
+  const [categoryDetail, setCategoryDetail] = useState<InterfaceCategoryItem>({
+    category_name: '',
+    category_description: '',
+    categoryId: '',
+  });
 
-  const handleOpenDialog = (category?: Category) => {
-    if (category) {
-      setCurrentCategory(category);
-      setCategoryName(category.name);
-      setCategoryDescription(category.description);
-    } else {
-      setCurrentCategory(null);
-      setCategoryName('');
-      setCategoryDescription('');
+  const [openAddNewPopup, setOpenAddNewPopup] = useState(false);
+  const [openEditPopup, setOpenEditPopup] = useState(false);
+  const [openDeletePopup, setOpenDeletePopup] = useState(false);
+
+  const [deleteCategoryId, setDeleteCategoryId] = useState('');
+
+  //============================================================================
+  //============================================================================
+  const handlePageChange = ({ page }: { page: number }) => {
+    setSearchParams((searchParams) => {
+      return { ...searchParams, page };
+    });
+  };
+
+  const handleOpenAddNewPopup = () => {
+    setOpenAddNewPopup(true);
+  };
+
+  const handleOpenEditPopup = ({ categoryId }: { categoryId: string | undefined }) => {
+    if (categoryId) {
+      CategoryApiService.getCategoryItemDetail_ForAdmin({ categoryId })
+        .then((data) => {
+          const categoryDetail = data as InterfaceCategoryDetailItemMetaData;
+
+          setCategoryDetail(categoryDetail.categoryDetail);
+        })
+        .then(() => {
+          setOpenEditPopup(true);
+        });
     }
-    setOpenDialog(true);
   };
 
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-  };
-
-  const handleSaveCategory = () => {
-    if (currentCategory) {
-      // Cập nhật danh mục
-      setCategories(
-        categories.map((cat) =>
-          cat.id === currentCategory.id
-            ? { ...cat, name: categoryName, description: categoryDescription }
-            : cat
-        )
-      );
-    } else {
-      // Thêm danh mục mới
-      const newCategory: Category = {
-        id: (categories.length + 1).toString(),
-        name: categoryName,
-        description: categoryDescription,
-      };
-      setCategories([...categories, newCategory]);
+  const handleOpenDeletePopup = ({ categoryId }: { categoryId: string | undefined }) => {
+    if (categoryId) {
+      setOpenDeletePopup(true);
+      setDeleteCategoryId(categoryId);
     }
-    handleCloseDialog();
   };
 
-  const handleDeleteCategory = (id: string) => {
-    setCategories(categories.filter((category) => category.id !== id));
+  const handleCloseAddNewPopup = () => {
+    setOpenAddNewPopup(false);
   };
 
+  const handleCloseEditPopup = () => {
+    setOpenEditPopup(false);
+  };
+
+  const handleCloseDeletePopup = () => {
+    setOpenDeletePopup(false);
+  };
+
+  // =============================================================================
+  // =============================================================================
+
+  const handleGetCategoryList = () => {
+    CategoryApiService.getAllCategoryList_ForAdmin(searchParams)
+      .then((data) => {
+        const categoryList = data as InterfaceCategoryMetaData;
+
+        setCategoryList(categoryList.categories[0].data);
+        setTotalSearchCount(categoryList.categories[0].overview[0].totalSearchCount);
+      })
+      .catch(() => {})
+      .finally(() => {
+        setSearchParams((searchParams) => {
+          return { ...searchParams, isPendingCall: false };
+        });
+      });
+  };
+
+  // =============================================================================
+  // =============================================================================
+  useEffect(() => {
+    handleGetCategoryList();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(searchParams)]);
+
+  // useEffect(() => {
+  //   setRoleList(() => {
+  //     return [...Object.values(EnumRole).map((role) => ({ roleId: role, roleName: role }))];
+  //   });
+  // }, []);
+
+  //============================================================================
+  //============================================================================
   return (
-    <Box sx={{ padding: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Product Category Management
-      </Typography>
+    <>
+      <Box sx={{ padding: 3 }}>
+        <Typography variant="h4" gutterBottom>
+          Quản lý Danh mục
+        </Typography>
 
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<Add />}
-        onClick={() => handleOpenDialog()}
-      >
-        Add New Category
-      </Button>
+        <Card>
+          <CardContent>
+            <Button variant="contained" color="primary" sx={{ mb: 2 }} onClick={handleOpenAddNewPopup}>
+              Thêm mới Danh mục
+            </Button>
 
-      <Card sx={{ marginTop: 2 }}>
-        <CardContent>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Category Name</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {categories.map((category) => (
-                  <TableRow key={category.id}>
-                    <TableCell>{category.name}</TableCell>
-                    <TableCell>{category.description}</TableCell>
-                    <TableCell>
-                      <IconButton
-                        onClick={() => handleOpenDialog(category)}
-                        color="primary"
-                      >
-                        <Edit />
-                      </IconButton>
-                      <IconButton
-                        onClick={() => handleDeleteCategory(category.id)}
-                        color="secondary"
-                      >
-                        <Delete />
-                      </IconButton>
-                    </TableCell>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Tên</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Mô tả</TableCell>
+
+                    <TableCell sx={{ fontWeight: 'bold' }}>Hành động</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
+                </TableHead>
+                <TableBody>
+                  {categoryList.map((category) => (
+                    <TableRow key={category.categoryId}>
+                      <TableCell>{category.categoryId}</TableCell>
+                      <TableCell>{category.category_name}</TableCell>
+                      <TableCell>{category.category_description}</TableCell>
 
-      {/* Dialog for adding/editing category */}
-      <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>
-          {currentCategory ? 'Edit Category' : 'Add New Category'}
-        </DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Category Name"
-            fullWidth
-            value={categoryName}
-            onChange={(e) => setCategoryName(e.target.value)}
-            margin="normal"
-          />
-          <TextField
-            label="Description"
-            fullWidth
-            value={categoryDescription}
-            onChange={(e) => setCategoryDescription(e.target.value)}
-            margin="normal"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleSaveCategory} color="primary">
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+                      <TableCell>
+                        <Button variant="outlined" color="primary" onClick={() => handleOpenEditPopup({ categoryId: category?.categoryId })} sx={{ mr: 1 }}>
+                          Sửa
+                        </Button>
+                        <Button variant="outlined" color="secondary" onClick={() => handleOpenDeletePopup({ categoryId: category?.categoryId })}>
+                          Xóa
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            <Box sx={{ mt: 4 }}>
+              <AdminPaginationCategoryList totalPages={Math.ceil(totalSearchCount / DEFAULT_LIMIT)} onPageChange={handlePageChange} />
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
+      {/* // ============================================================================= */}
+      <ModalAddNewCategory
+        openAddNewPopup={openAddNewPopup}
+        handleDialogClose={handleCloseAddNewPopup}
+        // roleList={roleList}
+        // handleSubmit={handleSubmit}
+        // handleAddCategory={handleAddCategory}
+        // control={control}
+        // errors={errors}
+        setOpenAddNewPopup={setOpenAddNewPopup}
+        // handleGetCategoryList={handleGetCategoryList}
+      />
+      {/* // ============================================================================= */}
+      <ModalEditCategory
+        openEditPopup={openEditPopup}
+        handleCloseEditPopup={handleCloseEditPopup}
+        // roleList={roleList}
+        // handleSubmit={handleSubmit}
+        // handleEditCategory={handleEditCategory}
+        // control={control}
+        categoryDetail={categoryDetail}
+        // reset={reset}
+        setOpenEditPopup={setOpenEditPopup}
+      />
+      {/* // ============================================================================= */}
+      <ModalDeleteCategory
+        openDeletePopup={openDeletePopup}
+        handleCloseDeletePopup={handleCloseDeletePopup}
+        // handleDeleteCategory={handleDeleteCategory}
+        deleteCategoryId={deleteCategoryId}
+        setOpenDeletePopup={setOpenDeletePopup}
+      />
+      {/* // ============================================================================= */}
+    </>
   );
 };
 

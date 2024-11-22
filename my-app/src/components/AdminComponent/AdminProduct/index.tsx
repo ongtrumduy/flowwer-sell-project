@@ -1,72 +1,39 @@
-import PaginationProductList from '@components/UserComponent/PaginationProductList';
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Select,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { Box, Button, Card, CardContent, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import CategoryApiService from '@services/api/category';
-import {
-  InterfaceCategoryItem,
-  InterfaceCategoryMetaData,
-} from '@services/api/category/type';
+import { InterfaceCategoryItem, InterfaceCategoryMetaData } from '@services/api/category/type';
 import ProductApiService from '@services/api/product';
-import {
-  InterfaceProductItem,
-  InterfaceProductMetaData,
-} from '@services/api/product/type';
-import {
-  DEFAULT_LIMIT,
-  DEFAULT_MAX_PRICE,
-  DEFAULT_MIN_PRICE,
-  DEFAULT_PAGE,
-} from '@utils/constant';
+import { InterfaceProductDetailItemMetaData, InterfaceProductItem, InterfaceProductMetaData } from '@services/api/product/type';
+import { DEFAULT_LIMIT, DEFAULT_MAX_PRICE, DEFAULT_MIN_PRICE, DEFAULT_PAGE } from '@utils/constant';
 import React, { useEffect, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-
-interface Product {
-  productId?: string;
-  product_name: string;
-  product_quantity: string;
-  product_price: string;
-  product_category: string[];
-  product_description: string;
-  product_image: File | null;
-}
+import { NumericFormat } from 'react-number-format';
+import ModalAddNewProduct from './ModalAddNewProduct';
+import ModalDeleteProduct from './ModalDeleteProduct';
+import ModalEditProduct from './ModalEditProduct';
+import AdminPaginationProductList from './AdminPaginationProductList';
 
 const AdminProduct: React.FC = () => {
+  // =============================================================================
+  // =============================================================================
+  // const {
+  //   control,
+  //   handleSubmit,
+  //   reset,
+  //   formState: { errors },
+  // } = useForm({
+  //   defaultValues: {
+  //     product_name: '',
+  //     product_quantity: 0,
+  //     product_price: 0,
+  //     product_description: '',
+  //     product_category: [] as string[],
+  //     product_image: undefined as File | undefined,
+  //   },
+  //   resolver: yupResolver(productSchema),
+  // });
+
+  // =============================================================================
+  // =============================================================================
   const [productList, setProductList] = useState<InterfaceProductItem[]>([]);
-  const [open, setOpen] = useState(false);
-
-  const { control, handleSubmit, reset } = useForm({
-    defaultValues: {
-      product_name: '',
-      product_quantity: '',
-      product_price: '',
-      product_description: '',
-      product_category: [],
-      product_image: null as File | null,
-    },
-  });
-
   const [searchParams, setSearchParams] = useState({
     searchName: '',
     selectedCategory: '',
@@ -75,111 +42,231 @@ const AdminProduct: React.FC = () => {
     limit: DEFAULT_LIMIT,
     isPendingCall: false,
   });
-
-  const [previewUrl, setPreviewUrl] = useState<string>('');
   const [totalSearchCount, setTotalSearchCount] = useState(0);
+  const [categoryList, setCategoryList] = useState<InterfaceCategoryItem[]>([]);
+  const [productDetail, setProductDetail] = useState<InterfaceProductItem>({
+    product_name: '',
+    product_quantity: 0,
+    product_price: 0,
+    product_image: '',
+    product_description: '',
+    productId: '',
+    product_category: [],
+  });
 
-  const [categoryList, setCategoryList] = useState<InterfaceCategoryItem[]>([
-    // {
-    //   category_name: 'Tất cả',
-    //   categoryId: DEFAULT_CATEGORY_ID,
-    //   category_description: 'Tất cả',
-    // },
-  ]);
+  const [openAddNewPopup, setOpenAddNewPopup] = useState(false);
+  const [openEditPopup, setOpenEditPopup] = useState(false);
+  const [openDeletePopup, setOpenDeletePopup] = useState(false);
 
-  const handleAddProduct = (data: Product) => {
-    const newProduct: Product = {
-      product_name: data.product_name,
-      product_category: data.product_category,
-      product_price: data.product_price,
-      product_description: data.product_description,
-      product_image: data.product_image,
-      product_quantity: data.product_quantity,
-      // ? URL.createObjectURL(data.product_image)
-      // : '',
-    };
+  const [deleteProductId, setDeleteProductId] = useState('');
 
-    // Tạo FormData
-    const formData = new FormData();
-    formData.append('product_name', data.product_name);
-    formData.append('product_quantity', data.product_quantity);
-    formData.append('product_price', data.product_price);
-    formData.append('product_description', data.product_description);
-
-    if (data.product_image) {
-      formData.append('product_image', data.product_image); // Đảm bảo giá trị là File
-    }
-
-    data.product_category.forEach((category) => {
-      formData.append('product_category[]', category); // Mảng category
-    });
-
-    // setProducts((prev) => [...prev, newProduct]);
-
-    console.log('newProduct ===================>', newProduct);
-
-    try {
-      // Gửi dữ liệu đến API
-      ProductApiService.createNewProduct({
-        formData,
-      }).then((data) => {
-        const responseData = data as InterfaceProductMetaData;
-
-        console.log('responseData ====================>', responseData);
-
-        ProductApiService.getAllProductList(searchParams)
-          .then((data) => {
-            const productList = data as InterfaceProductMetaData;
-
-            setProductList(productList.products[0].data);
-            setTotalSearchCount(
-              productList.products[0].overview[0].totalSearchCount
-            );
-          })
-          .catch(() => {})
-          .finally(() => {
-            setSearchParams((searchParams) => {
-              return { ...searchParams, isPendingCall: false };
-            });
-          });
-      });
-
-      // Reset trạng thái form
-      setOpen(false);
-      reset(); // Reset form fields
-    } catch (error) {
-      console.error('Error while adding product:', error);
-    }
-  };
-
-  const handleEdit = ({ productId }: { productId: string | undefined }) => {
-    console.log(`Edit product with productId ${productId}`);
-  };
-
-  const handleDelete = ({ productId }: { productId: string | undefined }) => {
-    setProductList((prev) =>
-      prev.filter((product) => product.productId !== productId)
-    );
-  };
-
-  const handleDialogOpen = () => setOpen(true);
-  const handleDialogClose = () => setOpen(false);
-
+  //============================================================================
+  //============================================================================
   const handlePageChange = ({ page }: { page: number }) => {
     setSearchParams((searchParams) => {
       return { ...searchParams, page };
     });
   };
 
-  useEffect(() => {
+  const handleOpenAddNewPopup = () => {
+    setOpenAddNewPopup(true);
+  };
+
+  const handleOpenEditPopup = ({ productId }: { productId: string | undefined }) => {
+    console.log(`Edit product with productId ${productId}`);
+
+    if (productId) {
+      ProductApiService.getProductItemDetail({ productId })
+        .then((data) => {
+          const productDetail = data as InterfaceProductDetailItemMetaData;
+
+          setProductDetail(productDetail.productDetail);
+        })
+        .then(() => {
+          setOpenEditPopup(true);
+        });
+    }
+  };
+
+  const handleOpenDeletePopup = ({ productId }: { productId: string | undefined }) => {
+    if (productId) {
+      // ProductApiService.getProductItemDetail({ productId }).then((data) => {
+      //   const productDetail = data as InterfaceProductDetailItemMetaData;
+
+      //   setProductDetail(productDetail.productDetail);
+      // });
+
+      setOpenDeletePopup(true);
+      setDeleteProductId(productId);
+    }
+  };
+
+  const handleCloseAddNewPopup = () => {
+    setOpenAddNewPopup(false);
+  };
+
+  const handleCloseEditPopup = () => {
+    setOpenEditPopup(false);
+  };
+
+  const handleCloseDeletePopup = () => {
+    setOpenDeletePopup(false);
+  };
+
+  // =============================================================================
+  // =============================================================================
+  // const handleAddProduct = (data: InterfaceFormAddNewState) => {
+  //   const newProduct: InterfaceFormAddNewState = {
+  //     product_name: data.product_name,
+  //     product_category: data.product_category,
+  //     product_price: data.product_price,
+  //     product_description: data?.product_description || '',
+  //     product_image: data.product_image,
+  //     product_quantity: data.product_quantity,
+  //     // ? URL.createObjectURL(data.product_image)
+  //     // : '',
+  //   };
+
+  //   // Tạo FormData
+  //   const formData = new FormData();
+  //   formData.append('product_name', data.product_name);
+  //   formData.append('product_quantity', String(data.product_quantity));
+  //   formData.append('product_price', String(data.product_price));
+  //   formData.append('product_description', data?.product_description || '');
+
+  //   if (data.product_image) {
+  //     formData.append('product_image', data.product_image); // Đảm bảo giá trị là File
+  //   }
+
+  //   if (data.product_category && data.product_category.length) {
+  //     data.product_category.forEach((category: unknown) => {
+  //       formData.append('product_category[]', new Blob(category as BlobPart[])); // Mảng category
+  //     });
+  //   }
+
+  //   console.log('newProduct ===================>', newProduct);
+
+  //   try {
+  //     // Gửi dữ liệu đến API
+  //     ProductApiService.createNewProduct({
+  //       formData,
+  //     }).then((data) => {
+  //       const responseData = data as InterfaceProductMetaData;
+
+  //       console.log('responseData ====================>', responseData);
+
+  //       ProductApiService.getAllProductList(searchParams)
+  //         .then((data) => {
+  //           const productList = data as InterfaceProductMetaData;
+
+  //           setProductList(productList.products[0].data);
+  //           setTotalSearchCount(productList.products[0].overview[0].totalSearchCount);
+  //         })
+  //         .catch(() => {})
+  //         .finally(() => {
+  //           setSearchParams((searchParams) => {
+  //             return { ...searchParams, isPendingCall: false };
+  //           });
+  //         });
+  //     });
+
+  //     // Reset trạng thái form
+  //     setOpenAddNewPopup(false);
+  //     reset(); // Reset form fields
+  //   } catch (error) {
+  //     console.error('Error while adding product:', error);
+  //   }
+  // };
+
+  // const handleEditProduct = (data: InterfaceProductFormData) => {
+  //   if (!data.product_image) {
+  //     toast.error('Vui lòng chọn hình ảnh cho sản phẩm !!!');
+  //   }
+
+  //   const newProduct: InterfaceProductFormData = {
+  //     product_name: data.product_name,
+  //     product_category: data.product_category,
+  //     product_price: data.product_price,
+  //     product_description: data.product_description,
+  //     product_image: data.product_image,
+  //     product_quantity: data.product_quantity,
+  //     // ? URL.createObjectURL(data.product_image)
+  //     // : '',
+  //   };
+
+  //   // Tạo FormData
+  //   const formData = new FormData();
+  //   formData.append('product_name', data.product_name);
+  //   formData.append('product_quantity', String(data.product_quantity));
+  //   formData.append('product_price', String(data.product_price));
+  //   formData.append('product_description', data?.product_description || '');
+
+  //   if (data.product_image) {
+  //     formData.append('product_image', data.product_image); // Đảm bảo giá trị là File
+  //   }
+
+  //   if (data.product_category && data.product_category.length) {
+  //     data.product_category.forEach((category: string | Blob) => {
+  //       formData.append('product_category[]', category); // Mảng category
+  //     });
+  //   }
+
+  //   console.log('newProduct ===================>', newProduct);
+
+  //   try {
+  //     // Gửi dữ liệu đến API
+  //     ProductApiService.createNewProduct({
+  //       formData,
+  //     }).then((data) => {
+  //       const responseData = data as InterfaceProductMetaData;
+
+  //       console.log('responseData ====================>', responseData);
+
+  //       ProductApiService.getAllProductList(searchParams)
+  //         .then((data) => {
+  //           const productList = data as InterfaceProductMetaData;
+
+  //           setProductList(productList.products[0].data);
+  //           setTotalSearchCount(productList.products[0].overview[0].totalSearchCount);
+  //         })
+  //         .catch(() => {})
+  //         .finally(() => {
+  //           setSearchParams((searchParams) => {
+  //             return { ...searchParams, isPendingCall: false };
+  //           });
+  //         });
+  //     });
+
+  //     // Reset trạng thái form
+  //     setOpenEditPopup(false);
+  //     reset(); // Reset form fields
+  //   } catch (error) {
+  //     console.error('Error while adding product:', error);
+  //   }
+  // };
+
+  // const handleDeleteProduct = () => {
+  //   ProductApiService.deleteProduct({ productId: deleteProductId })
+  //     .then((data) => {
+  //       const productList = data as InterfaceProductMetaData;
+
+  //       console.log(`Edit product with productList ${productList}`);
+  //     })
+  //     .catch(() => {})
+  //     .finally(() => {
+  //       setDeleteProductId('');
+  //     });
+
+  //   setOpenDeletePopup(false); // Đóng popup
+  // };
+
+  const handleGetProductList = () => {
     ProductApiService.getAllProductList(searchParams)
       .then((data) => {
         const productList = data as InterfaceProductMetaData;
 
         setProductList(productList.products[0].data);
-        setTotalSearchCount(
-          productList.products[0].overview[0].totalSearchCount
-        );
+        setTotalSearchCount(productList.products[0].overview[0].totalSearchCount);
       })
       .catch(() => {})
       .finally(() => {
@@ -187,6 +274,13 @@ const AdminProduct: React.FC = () => {
           return { ...searchParams, isPendingCall: false };
         });
       });
+  };
+
+  // =============================================================================
+  // =============================================================================
+  useEffect(() => {
+    handleGetProductList();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(searchParams)]);
 
@@ -195,242 +289,115 @@ const AdminProduct: React.FC = () => {
       .then((data) => {
         const categoryList = data as InterfaceCategoryMetaData;
 
-        setCategoryList((prev) => {
-          return [...prev, ...categoryList.categories[0].data];
+        setCategoryList(() => {
+          return [...categoryList.categories[0].data];
         });
       })
       .catch(() => {});
   }, []);
 
+  //============================================================================
+  //============================================================================
   return (
-    <Box sx={{ padding: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Quản lý sản phẩm
-      </Typography>
+    <>
+      <Box sx={{ padding: 3 }}>
+        <Typography variant="h4" gutterBottom>
+          Quản lý sản phẩm
+        </Typography>
 
-      <Card>
-        <CardContent>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{ mb: 2 }}
-            onClick={handleDialogOpen}
-          >
-            Thêm mới sản phẩm
-          </Button>
+        <Card>
+          <CardContent>
+            <Button variant="contained" color="primary" sx={{ mb: 2 }} onClick={handleOpenAddNewPopup}>
+              Thêm mới sản phẩm
+            </Button>
 
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Tên</TableCell>
-                  {/* <TableCell>Danh mục</TableCell> */}
-                  <TableCell>Giá</TableCell>
-                  <TableCell>Hành động</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {productList.map((product) => (
-                  <TableRow key={product.productId}>
-                    <TableCell>{product.productId}</TableCell>
-                    <TableCell>{product.product_name}</TableCell>
-                    {/* <TableCell>
-                      {product.product_category.map((c) => {
-                        return c;
-                      })}
-                    </TableCell> */}
-                    <TableCell>${product.product_price}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outlined"
-                        color="primary"
-                        onClick={() =>
-                          handleEdit({ productId: product?.productId })
-                        }
-                        sx={{ mr: 1 }}
-                      >
-                        Sửa
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        color="secondary"
-                        onClick={() =>
-                          handleDelete({ productId: product?.productId })
-                        }
-                      >
-                        Xóa
-                      </Button>
-                    </TableCell>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    {/* <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell> */}
+                    <TableCell sx={{ fontWeight: 'bold' }}>Tên</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Ảnh</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Số lượng</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Mô tả</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Giá</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Hành động</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {productList.map((product) => (
+                    <TableRow key={product.productId}>
+                      {/* <TableCell>{product.productId}</TableCell> */}
+                      <TableCell>{product.product_name}</TableCell>
+                      <TableCell>
+                        <img src={product.product_image as string} alt="" width={100} height={100} />
+                      </TableCell>
+                      <TableCell>{product.product_quantity}</TableCell>
+                      <TableCell>{product.product_description}</TableCell>
+                      <TableCell>
+                        <NumericFormat
+                          value={Number(product.product_price || 0)}
+                          thousandSeparator={'.'}
+                          decimalSeparator={','}
+                          displayType={'text'}
+                          suffix={' VNĐ'}
+                          className="money"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="outlined" color="primary" onClick={() => handleOpenEditPopup({ productId: product?.productId })} sx={{ mr: 1 }}>
+                          Sửa
+                        </Button>
+                        <Button variant="outlined" color="secondary" onClick={() => handleOpenDeletePopup({ productId: product?.productId })}>
+                          Xóa
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
 
-          <PaginationProductList
-            totalPages={Math.ceil(totalSearchCount / DEFAULT_LIMIT)}
-            onPageChange={handlePageChange}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Dialog for Adding Product */}
-      <Dialog open={open} onClose={handleDialogClose} fullWidth maxWidth="sm">
-        <DialogTitle>Thêm mới sản phẩm</DialogTitle>
-        <form onSubmit={handleSubmit(handleAddProduct)}>
-          <DialogContent>
-            <Controller
-              name="product_name"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  label="Tên sản phẩm"
-                  variant="outlined"
-                  fullWidth
-                  margin="normal"
-                  required
-                  {...field}
-                />
-              )}
-            />
-            <Controller
-              name="product_quantity"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  label="Số lượng"
-                  type="number"
-                  variant="outlined"
-                  fullWidth
-                  margin="normal"
-                  required
-                  {...field}
-                />
-              )}
-            />
-            <Controller
-              name="product_category"
-              control={control}
-              render={({ field }) => (
-                <FormControl fullWidth margin="normal">
-                  <InputLabel>Danh mục sản phẩm</InputLabel>
-                  <Select
-                    multiple
-                    value={field.value}
-                    onChange={field.onChange}
-                    renderValue={(selected) => (
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {(selected as string[]).map((value) => (
-                          <Chip key={value} label={value} />
-                        ))}
-                      </Box>
-                    )}
-                  >
-                    {categoryList.map((category) => (
-                      <MenuItem
-                        key={category.categoryId}
-                        value={category.categoryId}
-                      >
-                        {category.category_name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              )}
-            />
-            <Controller
-              name="product_price"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  label="Giá"
-                  type="number"
-                  variant="outlined"
-                  fullWidth
-                  margin="normal"
-                  required
-                  {...field}
-                />
-              )}
-            />{' '}
-            <Controller
-              name="product_quantity"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  label="Số lượng"
-                  type="number"
-                  variant="outlined"
-                  fullWidth
-                  margin="normal"
-                  required
-                  {...field}
-                />
-              )}
-            />
-            <Controller
-              name="product_description"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  label="Mô tả sản phẩm"
-                  variant="outlined"
-                  fullWidth
-                  multiline
-                  rows={4}
-                  margin="normal"
-                  {...field}
-                />
-              )}
-            />
-            <Controller
-              name="product_image"
-              control={control}
-              render={({ field }) => (
-                <Button
-                  variant="contained"
-                  component="label"
-                  fullWidth
-                  sx={{ mt: 2 }}
-                >
-                  Tải ảnh sản phẩm
-                  <input
-                    type="file"
-                    accept="image/*"
-                    hidden
-                    onChange={(e) => {
-                      const file = e.target.files ? e.target.files[0] : null;
-
-                      field.onChange(file);
-                      setPreviewUrl(URL.createObjectURL(file as Blob));
-                    }}
-                  />
-                </Button>
-              )}
-            />
-            {previewUrl && (
-              <>
-                <p>Xem trước ảnh:</p>{' '}
-                <img
-                  src={previewUrl}
-                  alt="Preview"
-                  style={{ maxWidth: '300px' }}
-                />
-              </>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleDialogClose} color="secondary">
-              Hủy
-            </Button>
-            <Button type="submit" variant="contained" color="primary">
-              Thêm
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
-    </Box>
+            <Box sx={{ mt: 4 }}>
+              <AdminPaginationProductList totalPages={Math.ceil(totalSearchCount / DEFAULT_LIMIT)} onPageChange={handlePageChange} />
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
+      {/* // ============================================================================= */}
+      <ModalAddNewProduct
+        openAddNewPopup={openAddNewPopup}
+        handleDialogClose={handleCloseAddNewPopup}
+        categoryList={categoryList}
+        // handleSubmit={handleSubmit}
+        // handleAddProduct={handleAddProduct}
+        // control={control}
+        // errors={errors}
+        setOpenAddNewPopup={setOpenAddNewPopup}
+        // handleGetProductList={handleGetProductList}
+      />
+      {/* // ============================================================================= */}
+      <ModalEditProduct
+        openEditPopup={openEditPopup}
+        handleCloseEditPopup={handleCloseEditPopup}
+        categoryList={categoryList}
+        // handleSubmit={handleSubmit}
+        // handleEditProduct={handleEditProduct}
+        // control={control}
+        productDetail={productDetail}
+        // reset={reset}
+        setOpenEditPopup={setOpenEditPopup}
+      />
+      {/* // ============================================================================= */}
+      <ModalDeleteProduct
+        openDeletePopup={openDeletePopup}
+        handleCloseDeletePopup={handleCloseDeletePopup}
+        // handleDeleteProduct={handleDeleteProduct}
+        deleteProductId={deleteProductId}
+        setOpenDeletePopup={setOpenDeletePopup}
+      />
+      {/* // ============================================================================= */}
+    </>
   );
 };
 

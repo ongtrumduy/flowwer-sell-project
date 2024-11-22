@@ -1,7 +1,15 @@
+import { AppRoutes } from '@helpers/app.router';
+import useGetAuthInformationMetaData from '@hooks/useGetAuthInformationMetaData';
 import {
   Box,
   Button,
+  Chip,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
   Grid,
   Paper,
@@ -13,140 +21,311 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
+import OrderApiService from '@services/api/order';
+import { InterfaceOrderDetailMetadata } from '@services/api/order/type';
+import { useEffect, useState } from 'react';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import TimelineCustom from './TimelineCustom';
+import { EnumOrderStatusStage } from '@services/api/stripe_payment/type';
+import dayjs from 'dayjs';
+
+import 'dayjs/locale/vi'; // Import ngôn ngữ tiếng Việt
 
 // Sample order status timeline
 
-const OrderDetailComponent = () => {
-  const sampleOrder = {
-    orderId: '123456',
-    status: 'Delivered',
-    date: '2024-11-02',
-    customer: {
-      name: 'John Doe',
-      address: '123 Example St, Hanoi, Vietnam',
-      phone: '0123456789',
-    },
-    items: [
-      { id: 1, name: 'Product A', price: 300000, quantity: 2 },
-      { id: 2, name: 'Product B', price: 150000, quantity: 1 },
-    ],
-    total: 750000,
+// Đặt ngôn ngữ mặc định là tiếng Việt
+dayjs.locale('vi');
+
+const OrderDetail = () => {
+  const [orderDetail, setOrderDetail] =
+    useState<InterfaceOrderDetailMetadata | null>(null);
+
+  const { orderId } = useParams();
+
+  const navigate = useNavigate();
+  const { userInformation } = useGetAuthInformationMetaData();
+
+  const [openDeleteOrderPopup, setOpenDeleteOrderPopup] = useState(false);
+  const [orderDeleteId, setOrderDeleteId] = useState('');
+
+  const handleDestroyOrderItem = ({ orderId }: { orderId: string }) => {
+    OrderApiService.destroyOrderItem({
+      orderId,
+    })
+      .then((data) => {
+        console.log('43 data destroyOrderItem ===>', data);
+
+        setOrderDeleteId('');
+        setOpenDeleteOrderPopup(false);
+        navigate(`${AppRoutes.BASE()}${AppRoutes.ORDER()}`);
+      })
+      .catch((error) => {
+        console.log('46 error =================>', error);
+      });
   };
 
-  const { orderId, status, date, customer, items, total } = sampleOrder;
+  const handleDelete = () => {
+    handleDestroyOrderItem({ orderId: orderDeleteId });
+  };
 
-  const handleRequestToCancelOrder = () => {};
+  const handleCancel = () => {
+    setOpenDeleteOrderPopup(false);
+  };
+
+  const handleOpenPopupDestroyOrder = ({
+    orderId,
+  }: {
+    orderId: string | undefined;
+  }) => {
+    if (orderId) {
+      setOpenDeleteOrderPopup(true);
+      setOrderDeleteId(orderId);
+    }
+  };
+
+  const getStatusChipColor = ({
+    status,
+  }: {
+    status: EnumOrderStatusStage | undefined;
+  }) => {
+    switch (status) {
+      case EnumOrderStatusStage.PENDING:
+        return 'default';
+      case EnumOrderStatusStage.PAYMENT_SUCCESS:
+        return 'success';
+      case EnumOrderStatusStage.PICKED_UP:
+        return 'warning';
+      case EnumOrderStatusStage.IN_TRANSIT:
+        return 'secondary';
+      case EnumOrderStatusStage.DELIVERED:
+        return 'info';
+      case EnumOrderStatusStage.CANCELLED:
+        return 'error';
+      default:
+        return 'default';
+    }
+  };
+
+  useEffect(() => {
+    OrderApiService.getDetailOfOrder({ orderId: orderId || '' })
+      .then((data) => {
+        console.log('response data from =================', { data });
+        const returnDataResponse = data as InterfaceOrderDetailMetadata;
+
+        setOrderDetail(returnDataResponse);
+      })
+      .catch(() => {
+        navigate(AppRoutes.PAGE_UNAUTHORIZED());
+      });
+  }, [orderId]);
+
+  if (
+    (orderDetail?.order.customerId &&
+      orderDetail?.order.customerId !== userInformation.userId) ||
+    !orderId
+  ) {
+    return <Navigate to={`${AppRoutes.PAGE_UNAUTHORIZED()}`} />;
+  }
 
   return (
-    <Container
-      maxWidth="lg"
-      sx={{ maxWidth: '1200px !important', marginTop: 4 }}
-    >
-      {/* Order Timeline */}
-      <Paper sx={{ p: 2, mb: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Quá trình của Đơn hàng
-        </Typography>
+    <>
+      <Container
+        maxWidth="lg"
+        sx={{ maxWidth: '1200px !important', marginTop: 4 }}
+      >
+        {/* Order Timeline */}
+        <Paper sx={{ p: 2, mb: 4 }}>
+          <Typography variant="h4" gutterBottom>
+            Chi tiết Đơn hàng
+          </Typography>
 
-        <TimelineCustom />
-      </Paper>
+          <TimelineCustom
+            processTimeline={orderDetail?.order.process_timeline}
+          />
+        </Paper>
 
-      {/* Order Header */}
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Typography variant="h6">Đơn hàng #{orderId}</Typography>
-        <Typography color="textSecondary">Trạng thái: {status}</Typography>
-        <Typography color="textSecondary">Ngày đặt: {date}</Typography>
-      </Paper>
+        {/* Order Header */}
+        <Paper sx={{ p: 2, mb: 2 }}>
+          <Typography variant="h6">
+            <strong>Đơn hàng </strong>
+            {orderDetail?.order.order_code}
+          </Typography>
+          <Typography color="textSecondary">
+            <strong>Trạng thái:</strong>{' '}
+            <Chip
+              label={orderDetail?.order.order_status_stage}
+              color={getStatusChipColor({
+                status: orderDetail?.order.order_status_stage,
+              })}
+              sx={{ marginTop: '10px', marginBottom: '10px' }}
+            />
+          </Typography>
+          <Typography color="textSecondary">
+            <strong>Ngày đặt:</strong>{' '}
+            {dayjs(orderDetail?.order.order_date).format(
+              'HH:mm:ss [ngày] DD/MM/YYYY'
+            )}
+          </Typography>
+        </Paper>
 
-      {/* Customer Information */}
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Typography variant="h6">Thông tin người nhận</Typography>
-        <Divider sx={{ my: 1 }} />
-        <Typography>
-          <strong>Tên:</strong> {customer.name}
-        </Typography>
-        <Typography>
-          <strong>Địa chỉ:</strong> {customer.address}
-        </Typography>
-        <Typography>
-          <strong>Số điện thoại:</strong> {customer.phone}
-        </Typography>
-      </Paper>
+        {/* Customer Information */}
+        <Paper sx={{ p: 2, mb: 2 }}>
+          <Typography variant="h6">Thông tin người nhận</Typography>
+          <Divider sx={{ my: 1 }} />
+          <Typography>
+            <strong>Tên:</strong> {userInformation.name}
+          </Typography>
+          <Typography>
+            <strong>Tên:</strong> {userInformation.email}
+          </Typography>
+          <Typography>
+            <strong>Địa chỉ:</strong> {userInformation.address}
+          </Typography>
+          <Typography>
+            <strong>Số điện thoại:</strong> {userInformation.phone_number}
+          </Typography>
+        </Paper>
 
-      {/* Shipper Information */}
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Typography variant="h6">Thông tin người giao</Typography>
-        <Divider sx={{ my: 1 }} />
-        <Typography>
-          <strong>Tên:</strong> {customer.name}
-        </Typography>
-        <Typography>
-          <strong>Số điện thoại:</strong> {customer.phone}
-        </Typography>
-      </Paper>
+        {/* Shipper Information */}
+        {orderDetail?.order.order_status_stage !==
+          EnumOrderStatusStage.PENDING &&
+        orderDetail?.order.order_status_stage !==
+          EnumOrderStatusStage.PAYMENT_SUCCESS &&
+        orderDetail?.order.order_status_stage !==
+          EnumOrderStatusStage.CANCELLED ? (
+          <Paper sx={{ p: 2, mb: 2 }}>
+            <Typography variant="h6">Thông tin người giao</Typography>
+            <Divider sx={{ my: 1 }} />
+            <Typography>
+              <strong>Tên:</strong> {orderDetail?.order?.shipperId?.name}
+            </Typography>
+            <Typography>
+              <strong>Số điện thoại:</strong>
+              {orderDetail?.order?.shipperId?.phone_number}
+            </Typography>
+          </Paper>
+        ) : (
+          <></>
+        )}
 
-      {/* Order Items */}
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Typography variant="h6">Order Items</Typography>
-        <Divider sx={{ my: 1 }} />
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Sản phẩm</TableCell>
-                <TableCell align="right">Giá</TableCell>
-                <TableCell align="right">Số lượng</TableCell>
-                <TableCell align="right">Tổng cộng</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {items.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell align="right">
-                    {item.price.toLocaleString()} VND
+        {/* Order Items */}
+        <Paper sx={{ p: 2, mb: 2 }}>
+          <Divider sx={{ my: 1 }} />
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Sản phẩm</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Ảnh</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                    Giá
                   </TableCell>
-                  <TableCell align="right">{item.quantity}</TableCell>
-                  <TableCell align="right">
-                    {(item.price * item.quantity).toLocaleString()} VND
+                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                    Số lượng
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                    Tổng cộng
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+              </TableHead>
+              <TableBody>
+                {orderDetail?.order.order_item_list.map((item) => (
+                  <TableRow key={item._id}>
+                    <TableCell>{item.productId.product_name}</TableCell>
+                    <TableCell>
+                      <img
+                        src={item.productId.product_image}
+                        alt={item.productId.product_name}
+                        style={{ width: '56px', height: '56px' }}
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      {item.product_price_now.toLocaleString()} VND
+                    </TableCell>
+                    <TableCell align="right">{item.product_quantity}</TableCell>
+                    <TableCell align="right">
+                      {(
+                        item.product_price_now * item.product_quantity
+                      ).toLocaleString()}{' '}
+                      VND
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
 
-      {/* Order Summary */}
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Typography variant="h6">Tổng đơn hàng</Typography>
-        <Divider sx={{ my: 1 }} />
-        <Grid container>
-          <Grid item xs={6}>
-            <Typography>Thành tiền:</Typography>
+        {/* Order Summary */}
+        <Paper sx={{ p: 2, mb: 2 }}>
+          <Typography variant="h6">Tổng đơn hàng</Typography>
+          <Divider sx={{ my: 1 }} />
+          <Grid container>
+            <Grid item xs={6}>
+              <Typography>Thành tiền:</Typography>
+            </Grid>
+            <Grid item xs={6} style={{ textAlign: 'right' }}>
+              <Typography>
+                {orderDetail?.order.total_amount.toLocaleString()} VND
+              </Typography>
+            </Grid>
           </Grid>
-          <Grid item xs={6} style={{ textAlign: 'right' }}>
-            <Typography>{total.toLocaleString()} VND</Typography>
-          </Grid>
-        </Grid>
-      </Paper>
+        </Paper>
 
-      {/* Action Buttons */}
-      <Box sx={{ textAlign: 'center', mt: 2 }}>
-        {/* <Button variant="contained" color="primary" sx={{ mr: 2 }}>
+        {/* Action Buttons */}
+        <>
+          {orderDetail?.order.order_status_stage ===
+          EnumOrderStatusStage.PENDING ? (
+            <Box sx={{ textAlign: 'center', mt: 2 }}>
+              {/* <Button variant="contained" color="primary" sx={{ mr: 2 }}>
           Xem hóa đơn
         </Button> */}
-        <Button
-          variant="outlined"
-          color="error"
-          onClick={handleRequestToCancelOrder}
-        >
-          Yêu cầu hủy đơn
-        </Button>
-      </Box>
-    </Container>
+              <Button
+                variant="outlined"
+                color="error"
+                size="small"
+                sx={{ marginRight: '10px' }}
+                onClick={() =>
+                  handleOpenPopupDestroyOrder({
+                    orderId: orderDetail?.order.orderId,
+                  })
+                }
+              >
+                Yêu cầu hủy đơn
+              </Button>
+            </Box>
+          ) : (
+            <></>
+          )}
+        </>
+      </Container>
+      {/* // ================================================================= */}
+      {/* Popup */}
+      <Dialog
+        open={openDeleteOrderPopup}
+        onClose={handleCancel}
+        aria-labelledby="confirm-delete-title"
+        aria-describedby="confirm-delete-description"
+      >
+        <DialogTitle id="confirm-delete-title">Xác nhận hủy</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="confirm-delete-description">
+            Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này không
+            thể hoàn tác.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancel} color="primary">
+            Không hủy
+          </Button>
+          <Button onClick={handleDelete} color="error" variant="contained">
+            Hủy đơn
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* // ================================================================= */}
+    </>
   );
 };
 
-export default OrderDetailComponent;
+export default OrderDetail;

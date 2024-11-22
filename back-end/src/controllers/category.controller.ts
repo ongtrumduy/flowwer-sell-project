@@ -2,7 +2,10 @@ import { NextFunction, Request, Response } from 'express';
 import CategoryService from '@services/category.service';
 
 import SuccessResponse from '@core/success.response';
-import { EnumMessageStatus, WithKeyStoreV2Request } from '@root/src/utils/type';
+import {
+  EnumMessageStatus,
+  InterfaceWithKeyStoreV2Request,
+} from '@root/src/utils/type';
 
 class CategoryController {
   //=========================================================
@@ -28,7 +31,7 @@ class CategoryController {
   //=========================================================
   // get category item detail
   static getCategoryItemDetail = async (
-    req: WithKeyStoreV2Request,
+    req: InterfaceWithKeyStoreV2Request,
     res: Response,
     next: NextFunction
   ) => {
@@ -50,7 +53,7 @@ class CategoryController {
   //=========================================================
   // find list search category
   static findListSearchCategory = async (
-    req: WithKeyStoreV2Request,
+    req: InterfaceWithKeyStoreV2Request,
     res: Response,
     next: NextFunction
   ) => {

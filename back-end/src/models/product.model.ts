@@ -1,8 +1,9 @@
 import { model, Schema } from 'mongoose';
 import { CATEGORY_DOCUMENT_NAME } from './category.model';
+import { TYPE_PRODUCT_DOCUMENT_NAME } from './typeProduct.model';
 
 export const PRODUCT_DOCUMENT_NAME = 'Products';
-const PRODUCT_COLLECTION_NAME = 'Products_Collection';
+export const PRODUCT_COLLECTION_NAME = 'Products_Collection';
 
 const ProductSchema = new Schema(
   {
@@ -31,10 +32,17 @@ const ProductSchema = new Schema(
       required: true,
       trim: true,
     },
-    categoriesIds: [
+    product_category_list: [
       {
         type: Schema.Types.ObjectId,
         ref: CATEGORY_DOCUMENT_NAME,
+        // required: true,
+      },
+    ],
+    product_type_list: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: TYPE_PRODUCT_DOCUMENT_NAME,
         // required: true,
       },
     ],
@@ -81,12 +89,7 @@ ProductSchema.pre('validate', function (next) {
   if (this.discount > 100) {
     throw new Error('Discount cannot exceed 100%');
   }
-  if (
-    this.isModified('discounted_Price') &&
-    this.discounted_Price !== undefined &&
-    this.discounted_Price !== null &&
-    this.discounted_Price < 0
-  ) {
+  if (this.isModified('discounted_Price') && this.discounted_Price !== undefined && this.discounted_Price !== null && this.discounted_Price < 0) {
     throw new Error('Discounted price must be non-negative');
   }
 

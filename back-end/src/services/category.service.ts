@@ -12,7 +12,7 @@ class CategoryService {
         $facet: {
           overview: [
             {
-              $count: 'totalCount', // Đếm tổng số
+              $count: 'totalSearchCount', // Đếm tổng số
             },
           ],
           data: [
@@ -40,11 +40,7 @@ class CategoryService {
 
   // =======================================================
   // get all category item detail
-  static getCategoryItemDetail = async ({
-    categoryId,
-  }: {
-    categoryId: string;
-  }) => {
+  static getCategoryItemDetail = async ({ categoryId }: { categoryId: string }) => {
     try {
       const categoryDetail = await CategoryModel.findOne({
         _id: new Types.ObjectId(categoryId),
@@ -72,11 +68,7 @@ class CategoryService {
     }
   };
 
-  static findListSearchCategory = async ({
-    key_search,
-  }: {
-    key_search: string;
-  }) => {
+  static findListSearchCategory = async ({ key_search }: { key_search: string }) => {
     // const regexSearch = new RegExp(key_search, 'i');
 
     const searchCategories = await CategoryModel.find(
@@ -103,13 +95,7 @@ class CategoryService {
 
   //=====================================================================
   // create new category
-  static createNewCategory = async ({
-    category_name,
-    category_description,
-  }: {
-    category_name: string;
-    category_description: string;
-  }) => {
+  static createNewCategory = async ({ category_name, category_description }: { category_name: string; category_description: string }) => {
     const newCategory = await CategoryModel.create({
       category_name,
       category_description,
@@ -150,12 +136,8 @@ class CategoryService {
       });
     }
 
-    category.category_name = category_name
-      ? category_name
-      : category.category_name;
-    category.category_description = category_description
-      ? category_description
-      : category.category_description;
+    category.category_name = category_name ? category_name : category.category_name;
+    category.category_description = category_description ? category_description : category.category_description;
 
     category.save();
 

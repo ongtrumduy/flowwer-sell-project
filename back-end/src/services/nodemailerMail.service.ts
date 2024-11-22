@@ -1,16 +1,15 @@
-import crypto from 'crypto';
+import { google } from 'googleapis';
 import nodemailer from 'nodemailer';
-import myOAuth2Client from '../configs/config.googleoauth';
+import ErrorDTODataResponse from '../core/error.dto.response';
 import SuccessDTODataResponse from '../core/success.dto.response';
-import UserModel from '../models/user.model';
 import {
   ADMIN_EMAIL_ADDRESS,
   GOOGLE_MAILER_CLIENT_ID,
   GOOGLE_MAILER_CLIENT_SECRET,
   GOOGLE_MAILER_REFRESH_TOKEN,
+  GOOGLE_REDIRECT_URI,
 } from '../utils/constant';
 import { EnumReasonStatusCode } from '../utils/type';
-import ErrorDTODataResponse from '../core/error.dto.response';
 
 // const attachments = [
 //   {
@@ -18,6 +17,14 @@ import ErrorDTODataResponse from '../core/error.dto.response';
 //     path: __dirname + "/image1.jpg",
 //   },
 // ];
+
+const myOAuth2Client = new google.auth.OAuth2(
+  GOOGLE_MAILER_CLIENT_ID,
+  GOOGLE_MAILER_CLIENT_SECRET,
+  GOOGLE_REDIRECT_URI
+);
+
+myOAuth2Client.setCredentials({ refresh_token: GOOGLE_MAILER_REFRESH_TOKEN });
 
 class NodeMailerService {
   // =================================================================
@@ -71,6 +78,7 @@ class NodeMailerService {
 
         resolve(mailOptions);
       } catch (error) {
+        console.log('81 error:handleSendMail ========================>', error);
         reject(error);
       }
     });

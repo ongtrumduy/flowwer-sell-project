@@ -18,7 +18,7 @@ router.get('/all', asyncHandler(CartController.getAllProductInCartList));
 
 // =================================================================================
 // get all product in cart list
-router.post('/add', asyncHandler(CartController.addProductInCartItemsV2));
+router.post('/add', asyncHandler(CartController.addProductInCartItemsV3));
 
 // =================================================================================
 // get all product in cart list

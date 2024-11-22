@@ -5,12 +5,7 @@ import { nanoid } from 'nanoid';
 import cloudinaryConfig from '../configs/config.cloudinary';
 import ErrorDTODataResponse from '../core/error.dto.response';
 import SuccessDTODataResponse from '../core/success.dto.response';
-import {
-  EnumGender,
-  EnumMessageStatus,
-  EnumReasonStatusCode,
-  EnumRole,
-} from '../utils/type';
+import { EnumGender, EnumMessageStatus, EnumReasonStatusCode, EnumRole } from '../utils/type';
 import { Types } from 'mongoose';
 const cloudinary = cloudinaryConfig();
 const suffix_folder = '_cloudinary_upload';
@@ -26,7 +21,7 @@ class UserService {
       name: 1,
       phone: 1,
       address: 1,
-      roles: 1,
+      role_list: 1,
       avatar_url: 1,
       phone_number: 1,
       status: 1,
@@ -34,11 +29,16 @@ class UserService {
     },
   }) => {
     try {
-      const userInformation = await UserModel.findOne({ email })
-        .select(select)
-        .lean();
+      const userInformation = await UserModel.findOne({ email }).select(select).lean();
 
-      return userInformation;
+      return new SuccessDTODataResponse({
+        statusCode: 201,
+        reasonStatusCode: EnumReasonStatusCode.CREATED_201,
+        message: 'Find User Information Successfully !!!',
+        metaData: {
+          userInformation: userInformation,
+        },
+      });
     } catch (error) {
       throw new ErrorDTODataResponse({
         statusCode: 400,
@@ -52,29 +52,33 @@ class UserService {
   // ensure admin account exists
   static ensureAdminAccountExists = async () => {
     const existingAdmin = await UserModel.findOne({ role: 'admin' });
+    let adminAccount = null;
     if (!existingAdmin) {
       const hashedPassword = await bcrypt.hash('yourAdminPassword', 10);
-      const adminUser = new UserModel({
+      adminAccount = new UserModel({
         username: 'admin',
         email: 'admin@example.com',
         password: hashedPassword,
         role: 'admin',
       });
 
-      await adminUser.save();
+      await adminAccount.save();
       console.log('Admin account created.');
     }
+
+    return new SuccessDTODataResponse({
+      statusCode: 201,
+      reasonStatusCode: EnumReasonStatusCode.CREATED_201,
+      message: 'Create Admin successfully!!!',
+      metaData: {
+        adminAccount: adminAccount,
+      },
+    });
   };
 
   // =========================================================================
   // upload single image cloudinary
-  static uploadSingleImage = async ({
-    imagePath,
-    fieldName,
-  }: {
-    imagePath: string;
-    fieldName: string;
-  }) => {
+  static uploadSingleImage = async ({ imagePath, fieldName }: { imagePath: string; fieldName: string }) => {
     try {
       const result = await cloudinary.uploader.upload(imagePath, {
         folder: fieldName + suffix_folder, // Đặt tên thư mục trên Cloudinary
@@ -159,7 +163,7 @@ class UserService {
     birth_date,
     email,
     password,
-    roles,
+    role_list,
   }: {
     phone_number: string;
     address: string;
@@ -168,7 +172,7 @@ class UserService {
     birth_date: Date;
     email: string;
     password: string;
-    roles: EnumRole[];
+    role_list: EnumRole[];
   }) => {
     try {
       const user = await UserModel.create([
@@ -180,7 +184,7 @@ class UserService {
           birth_date,
           email,
           password,
-          roles,
+          role_list,
         },
       ]);
 

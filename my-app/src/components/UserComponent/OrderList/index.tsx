@@ -1,223 +1,303 @@
-import CancelOrderModal from '@components/ModalComponent/CancelOrderModal';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { AppRoutes } from '@helpers/app.router';
 import {
   Box,
   Button,
-  Container,
-  Paper,
-  Tab,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TablePagination,
-  TableRow,
+  Card,
+  CardContent,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Divider,
+  ListItem,
+  ListItemText,
+  List as MUIList,
   Typography,
 } from '@mui/material';
-import React, { useState } from 'react';
+import OrderApiService from '@services/api/order';
+import {
+  InterfaceOrderListData,
+  InterfaceOrderListMetadata,
+} from '@services/api/order/type';
+import { EnumOrderStatusStage } from '@services/api/stripe_payment/type';
+import React, { useEffect, useState } from 'react';
+import InfiniteScroll from 'react-infinite-scroll-component';
 import { useNavigate } from 'react-router-dom';
 
-function OrderList() {
-  // Giả sử đây là danh sách đơn hàng
-  const [orders, setOrders] = React.useState([
-    {
-      orderID: '001',
-      customerName: 'Nguyễn Văn A',
-      date: '2024-11-01',
-      totalAmount: 500000,
-      status: 'Pending',
-    },
-    {
-      orderID: '002',
-      customerName: 'Trần Thị B',
-      date: '2024-11-02',
-      totalAmount: 750000,
-      status: 'Completed',
-    },
-    {
-      orderID: '003',
-      customerName: 'Lê Văn C',
-      date: '2024-11-03',
-      totalAmount: 1000000,
-      status: 'Canceled',
-    },
-  ]);
+const DEFAULT_LIMIT = 5;
 
+const OrderList = ({ orderStatus }: { orderStatus: EnumOrderStatusStage }) => {
   const navigate = useNavigate();
 
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [ordersList, setOrdersList] = useState<InterfaceOrderListData[]>([]); // Danh sách đơn hàng
+  const [page, setPage] = useState(1); // Trang hiện tại
+  const [hasMore, setHasMore] = useState(true); // Kiểm tra còn dữ liệu không
+  const [loading, setLoading] = useState(false); // Trạng thái tải dữ liệu
 
-  const [openModal, setOpenModal] = useState(false);
-  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [openDeleteOrderPopup, setOpenDeleteOrderPopup] = useState(false);
+  const [orderDeleteId, setOrderDeleteId] = useState('');
 
-  // const [selectedTab, setSelectedTab] = useState(0);
-
-  // const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-  //   setSelectedTab(newValue);
-  // };
-
-  // Phân loại đơn hàng theo trạng thái
-  const filterOrdersByStatus = (status: string) => {
-    return orders.filter((order) => order.status === status);
+  const handleShowOrderDetail = ({
+    orderId,
+  }: {
+    orderId: string | undefined;
+  }) => {
+    navigate(`${AppRoutes.BASE()}${AppRoutes.ORDER_DETAIL({ orderId })}`);
   };
 
-  const handleChangePage = (
-    _event: unknown,
-    newPage: React.SetStateAction<number>
-  ) => {
-    setPage(newPage);
+  const handleDestroyOrderItem = ({
+    orderId,
+  }: {
+    orderId: string | undefined;
+  }) => {
+    OrderApiService.destroyOrderItem({
+      orderId: orderId || '',
+    })
+      .then((data) => {
+        console.log('43 data destroyOrderItem ===>', data);
+
+        setOrderDeleteId('');
+        setOpenDeleteOrderPopup(false);
+
+        navigate(0);
+      })
+      .catch((error) => {
+        console.log('46 error =================>', error);
+      });
   };
 
-  const handleChangeRowsPerPage = (event: { target: { value: string } }) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+  const handlePaymentNow = ({ orderId }: { orderId: string | undefined }) => {
+    navigate(`${AppRoutes.BASE()}${AppRoutes.PAYMENT({ orderId: orderId })}`);
   };
 
-  const handleViewDetails = ({ orderId }: { orderId: string }) => {
-    console.log('Xem chi tiết đơn hàng:', orderId);
+  // Gọi API lấy danh sách đơn hàng
+  const getOrderList = async ({ page }: { page: number }) => {
+    setLoading(true);
 
-    navigate(`/order-detail/${orderId}`);
+    OrderApiService.getAllOrderOfCustomerList({
+      page,
+      limit: DEFAULT_LIMIT,
+      orderStatus: orderStatus,
+    })
+      .then((data) => {
+        // console.log('33 data createOrderForCustomer ===>', data);
+
+        const newOrders = data as InterfaceOrderListMetadata;
+
+        setOrdersList((ordersList) => [...ordersList, ...newOrders.orders]); // Thêm dữ liệu mới vào danh sách
+
+        if (
+          ordersList.length + newOrders.orders.length >=
+          newOrders.totalOrderStatusItem
+        ) {
+          setHasMore(false); // Hết dữ liệu
+        }
+
+        setLoading(false);
+      })
+      .catch((error) => {
+        setLoading(false);
+        console.log('30 error =================>', error);
+      });
   };
 
-  const handleCancelOrder = ({ orderId }: { orderId: string | null }) => {
-    console.log('Hủy đơn hàng:', orderId);
-
-    handleOpenModal({ orderId });
+  // Hàm gọi khi cuộn xuống
+  const loadMoreOrders = () => {
+    if (!loading) {
+      setPage((prevPage) => prevPage + 1); // Tăng số trang
+    }
   };
 
-  const handleOpenModal = ({ orderId }: { orderId: string | null }) => {
-    setSelectedOrderId(orderId);
-    setOpenModal(true);
+  const handleDelete = () => {
+    handleDestroyOrderItem({ orderId: orderDeleteId });
   };
 
-  const handleCloseModal = () => {
-    setOpenModal(false);
-    setSelectedOrderId(null);
+  const handleCancel = () => {
+    setOpenDeleteOrderPopup(false);
   };
 
-  const handleConfirmCancel = () => {
-    setOrders(orders.filter((order) => order.orderID !== selectedOrderId));
-    handleCloseModal();
+  const handleOpenPopupDestroyOrder = ({
+    orderId,
+  }: {
+    orderId: string | undefined;
+  }) => {
+    if (orderId) {
+      setOpenDeleteOrderPopup(true);
+      setOrderDeleteId(orderId);
+    }
   };
 
-  const OrderListContent = ({ ordersList }: { ordersList: typeof orders }) => {
-    return (
-      <Paper>
-        <Table aria-label="order table">
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 'bold' }}>Mã đơn hàng</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Tên khách hàng</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Ngày đặt</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Tổng tiền</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Trạng thái</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Thao tác</TableCell>
-            </TableRow>
-          </TableHead>
+  const getStatusChipColor = ({ status }: { status: EnumOrderStatusStage }) => {
+    switch (status) {
+      case EnumOrderStatusStage.PENDING:
+        return 'default';
+      case EnumOrderStatusStage.PAYMENT_SUCCESS:
+        return 'success';
+      case EnumOrderStatusStage.PICKED_UP:
+        return 'warning';
+      case EnumOrderStatusStage.IN_TRANSIT:
+        return 'secondary';
+      case EnumOrderStatusStage.DELIVERED:
+        return 'info';
+      case EnumOrderStatusStage.CANCELLED:
+        return 'error';
+      default:
+        return 'default';
+    }
+  };
 
-          <TableBody>
-            {ordersList
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((order) => (
-                <TableRow key={order.orderID}>
-                  <TableCell>{order.orderID}</TableCell>
-                  <TableCell>{order.customerName}</TableCell>
-                  <TableCell>{order.date}</TableCell>
-                  <TableCell>
-                    {order.totalAmount.toLocaleString()} VND
-                  </TableCell>
-                  <TableCell>{order.status}</TableCell>
-                  <TableCell>
+  useEffect(() => {
+    getOrderList({ page });
+  }, [page]);
+
+  return (
+    <>
+      <Box sx={{ padding: '20px' }}>
+        {/* InfiniteScroll Wrapper */}
+        <InfiniteScroll
+          dataLength={ordersList.length} // Số lượng đơn hàng hiện tại
+          next={loadMoreOrders} // Hàm tải thêm
+          hasMore={hasMore} // Kiểm tra còn dữ liệu không
+          loader={
+            <Typography align="center" color="text.secondary">
+              Đang tải...
+            </Typography>
+          }
+          endMessage={
+            <Typography align="center" color="text.secondary">
+              Đã tải hết tất cả đơn hàng
+            </Typography>
+          }
+        >
+          {ordersList.map((order) => (
+            <Card
+              key={order._id}
+              sx={{ padding: '15px', marginBottom: '10px' }}
+            >
+              <CardContent>
+                <Typography variant="h6">
+                  Mã đơn hàng: {order.order_code}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Ngày đặt: {order.order_date}
+                </Typography>
+                <Chip
+                  label={order.order_status_stage}
+                  color={getStatusChipColor({
+                    status: order.order_status_stage,
+                  })}
+                  sx={{ marginTop: '10px', marginBottom: '10px' }}
+                />
+                <MUIList>
+                  <>
+                    {order.order_item_list.map((product, index) => (
+                      <React.Fragment key={index}>
+                        <ListItem>
+                          <Box display="flex" alignItems="center" width="100%">
+                            <Box
+                              component="img"
+                              src={product.productId.product_image}
+                              alt={product.productId.product_name}
+                              sx={{
+                                width: 56, // Kích thước ảnh vuông
+                                height: 56, // Kích thước ảnh vuông
+                                marginRight: 2, // Khoảng cách giữa ảnh và văn bản
+                                objectFit: 'cover', // Đảm bảo ảnh không bị méo
+                              }}
+                            />
+                            <Box>
+                              <ListItemText
+                                primary={`${product.productId.product_name} x${product.product_quantity}`}
+                                secondary={`${product.product_price_now.toLocaleString()} VNĐ`}
+                              />
+                            </Box>
+                          </Box>
+                        </ListItem>
+                        {index < order.order_item_list.length - 1 && (
+                          <Divider />
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </>
+                </MUIList>
+                <Typography
+                  variant="body1"
+                  sx={{ fontWeight: 'bold', marginTop: '10px' }}
+                ></Typography>
+                <Box sx={{ marginTop: '10px' }}>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    size="small"
+                    sx={{ marginRight: '10px' }}
+                    onClick={() =>
+                      handleShowOrderDetail({ orderId: order?._id })
+                    }
+                  >
+                    Xem chi tiết
+                  </Button>
+                  {order.order_status_stage ===
+                    EnumOrderStatusStage.PENDING && (
+                    //  ||order.status === EnumOrderStatusStage.PAYMENT_SUCCESS
                     <Button
-                      variant="contained"
-                      color="primary"
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      sx={{ marginRight: '10px' }}
                       onClick={() =>
-                        handleViewDetails({ orderId: order.orderID })
+                        handleOpenPopupDestroyOrder({ orderId: order?._id })
                       }
                     >
-                      Xem chi tiết
+                      Yêu cầu hủy đơn
                     </Button>
+                  )}
+                  {order.order_status_stage ===
+                    EnumOrderStatusStage.PENDING && (
+                    //  ||order.status === EnumOrderStatusStage.PAYMENT_SUCCESS
                     <Button
                       variant="outlined"
                       color="secondary"
                       size="small"
-                      style={{ marginLeft: '10px' }}
-                      onClick={() =>
-                        handleCancelOrder({ orderId: order.orderID })
-                      }
+                      onClick={() => handlePaymentNow({ orderId: order?._id })}
                     >
-                      Hủy
+                      Thanh toán ngay
                     </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={orders.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Paper>
-    );
-  };
-
-  const [value, setValue] = React.useState('1');
-
-  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
-    setValue(newValue);
-  };
-
-  return (
-    <Container
-      maxWidth="lg"
-      sx={{ maxWidth: '1200px !important', marginTop: 4 }}
-    >
-      <Typography variant="h4" align="center" gutterBottom>
-        Danh sách đơn hàng
-      </Typography>
-      <Box sx={{ width: '100%', typography: 'body1' }}>
-        <TabContext value={value}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <TabList
-              onChange={handleChange}
-              indicatorColor="primary"
-              textColor="primary"
-              variant="fullWidth"
-            >
-              <Tab label="Pending" value="Pending" />
-              <Tab label="Shipped" value="Shipped" />
-              <Tab label="Delivered" value="Delivered" />
-            </TabList>
-          </Box>
-
-          {/* // ================================================================= */}
-          <TabPanel value={'Pending'}>
-            <OrderListContent ordersList={filterOrdersByStatus('Pending')} />
-          </TabPanel>
-          <TabPanel value={'Shipped'}>
-            <OrderListContent ordersList={filterOrdersByStatus('Shipped')} />
-          </TabPanel>
-          <TabPanel value={'Delivered'}>
-            <OrderListContent ordersList={filterOrdersByStatus('Delivered')} />
-          </TabPanel>
-          {/* // ================================================================= */}
-        </TabContext>
+                  )}
+                </Box>
+              </CardContent>
+            </Card>
+          ))}
+        </InfiniteScroll>
       </Box>
-
-      <CancelOrderModal
-        open={openModal}
-        onClose={handleCloseModal}
-        onConfirm={handleConfirmCancel}
-      />
-    </Container>
+      {/* // ================================================================= */}
+      {/* Popup */}
+      <Dialog
+        open={openDeleteOrderPopup}
+        onClose={handleCancel}
+        aria-labelledby="confirm-delete-title"
+        aria-describedby="confirm-delete-description"
+      >
+        <DialogTitle id="confirm-delete-title">Xác nhận hủy</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="confirm-delete-description">
+            Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này không
+            thể hoàn tác.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancel} color="primary">
+            Không hủy
+          </Button>
+          <Button onClick={handleDelete} color="error" variant="contained">
+            Hủy đơn
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* // ================================================================= */}
+    </>
   );
-}
+};
 
 export default OrderList;

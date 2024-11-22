@@ -167,7 +167,7 @@ const CartList = () => {
           })
           .map((item) => {
             return {
-              productId: item._id,
+              productId: item.productId.productId,
               product_quantity: item.product_quantity,
               product_price_now: item.product_price_now,
             };
@@ -176,12 +176,18 @@ const CartList = () => {
         total_amount: total,
       })
         .then((data) => {
-          const returnOrder = data;
+          const returnOrder = data as {
+            newOrder: {
+              orderId: string;
+            };
+          };
 
           if (returnOrder) {
             console.log('returnOrder ================>', { returnOrder });
             // Redirect to payment page
-            navigate(`${AppRoutes.BASE()}${AppRoutes.PAYMENT()}`);
+            navigate(
+              `${AppRoutes.BASE()}${AppRoutes.PAYMENT({ orderId: returnOrder?.newOrder?.orderId })}`
+            );
           }
         })
         .catch(() => {})

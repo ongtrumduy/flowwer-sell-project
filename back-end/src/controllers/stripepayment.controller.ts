@@ -5,8 +5,8 @@ import SuccessResponse from '@core/success.response';
 import {
   EnumMessageStatus,
   EnumReasonStatusCode,
-  WithCartRequest,
-  WithKeyStoreV2Request,
+  InterfaceWithCartRequest,
+  InterfaceWithKeyStoreV2Request,
 } from '@root/src/utils/type';
 import {
   DEFAULT_LIMIT,
@@ -24,7 +24,7 @@ class StripePaymentController {
   // =========================================================
   // config for stripe payment
   static configForStripePayment = async (
-    req: WithCartRequest,
+    req: InterfaceWithCartRequest,
     res: Response,
     next: NextFunction
   ) => {
@@ -45,7 +45,7 @@ class StripePaymentController {
   // =========================================================
   // create payment intent
   static createPaymentIntent = async (
-    req: WithCartRequest,
+    req: InterfaceWithCartRequest,
     res: Response,
     next: NextFunction
   ) => {

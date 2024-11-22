@@ -27,6 +27,6 @@ const CategoryModel = model(CATEGORY_DOCUMENT_NAME, CategorySchema);
 
 // =======================================================
 // create index for search
-CategorySchema.index({ product_name: 'text' });
+CategorySchema.index({ category_name: 'text' });
 
 export default CategoryModel;

@@ -12,8 +12,7 @@ const AdminNavigationBar = () => {
 
   const handleLogout = async () => {
     try {
-      const returnLogout =
-        (await AccessApiService.logout()) as InterfaceLogoutResponseMetaData;
+      const returnLogout = (await AccessApiService.logout()) as InterfaceLogoutResponseMetaData;
 
       if (returnLogout) {
         navigate(`${AppRoutes.BASE()}${AppRoutes.LOGIN()}`);
@@ -30,40 +29,37 @@ const AdminNavigationBar = () => {
       <h2>Bảng Quản trị viên</h2>
       <ul>
         <li>
-          <Link to={`${AppRoutes.ADMIN_BASE()}/${AppRoutes.ADMIN_DASHBOARD()}`}>
-            Thống kê
-          </Link>
+          <Link to={`${AppRoutes.ADMIN_BASE()}/${AppRoutes.ADMIN_OVERVIEW()}`}>Thống kê</Link>
         </li>
         <li>
-          <Link to={`${AppRoutes.ADMIN_BASE()}/${AppRoutes.ADMIN_ACCOUNT()}`}>
-            Tài khoản
-          </Link>
+          <Link to={`${AppRoutes.ADMIN_BASE()}/${AppRoutes.ADMIN_ACCOUNT()}`}>Tài khoản</Link>
         </li>
         <li>
-          <Link to={`${AppRoutes.ADMIN_BASE()}/${AppRoutes.ADMIN_PRODUCT()}`}>
-            Sản phẩm{' '}
-          </Link>
+          <Link to={`${AppRoutes.ADMIN_BASE()}/${AppRoutes.ADMIN_PRODUCT()}`}>Sản phẩm</Link>
         </li>
         <li>
-          <Link to={`${AppRoutes.ADMIN_BASE()}/${AppRoutes.ADMIN_ORDER()}`}>
-            Đơn hàng
-          </Link>
+          <Link to={`${AppRoutes.ADMIN_BASE()}/${AppRoutes.ADMIN_ORDER()}`}>Đơn hàng</Link>
         </li>
         <li>
-          <Link to={`${AppRoutes.ADMIN_BASE()}/${AppRoutes.ADMIN_CATEGORY()}`}>
-            Danh mục
-          </Link>
+          <Link to={`${AppRoutes.ADMIN_BASE()}/${AppRoutes.ADMIN_CATEGORY()}`}>Danh mục</Link>
         </li>
-        <li>
+        {/* <li>
+          <Link
+            to={`${AppRoutes.ADMIN_BASE()}/${AppRoutes.ADMIN_PRODUCT_TYPE()}`}
+          >
+            Loại sản phẩm
+          </Link>
+        </li> */}
+        {/* <li>
           <Link to={`${AppRoutes.ADMIN_BASE()}/${AppRoutes.ADMIN_VOUCHER()}`}>
             Mã giảm giá
           </Link>
-        </li>
-        <li>
+        </li> */}
+        {/* <li>
           <Link to={`${AppRoutes.ADMIN_BASE()}/${AppRoutes.ADMIN_SETTING()}`}>
             Thiết lập
           </Link>
-        </li>
+        </li> */}
       </ul>
       <Button
         color="inherit"

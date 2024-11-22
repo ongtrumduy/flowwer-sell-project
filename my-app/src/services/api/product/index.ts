@@ -35,10 +35,7 @@ class ProductApiService {
       },
       (value) => {
         if (isObject(value)) {
-          return omitBy(
-            value,
-            (v) => v === null || v === '' || v === undefined
-          );
+          return omitBy(value, (v) => v === null || v === '' || v === undefined);
         }
       }
     );
@@ -124,35 +121,43 @@ class ProductApiService {
 
   // ===========================================================================
   // update product
-  static updateProduct = ({
-    product_name,
-    product_quantity,
-    product_price,
-    product_image,
-    product_description,
-    productId,
-  }: {
-    product_name: string;
-    product_quantity: number;
-    product_price: number;
-    product_image: string;
-    product_description: string;
-    productId: string;
-  }) => {
+  static updateProduct = ({ formData, productId }: { formData: FormData; productId: string }) => {
+    const headers = new AxiosHeaders();
+    headers.set('Content-Type', 'multipart/form-data');
+
     return new Promise((resolve, reject) => {
-      AxiosConfigService.postData({
-        url: PRODUCT_API.UPDATE(),
-        data: {
-          product_name,
-          product_quantity,
-          product_price,
-          product_image,
-          product_description,
+      AxiosConfigService.putData({
+        url: PRODUCT_API.UPDATE({ productId }),
+        data: formData,
+        customHeaders: headers,
+
+        // params: {
+        //   productId,
+        // },
+      })
+        .then((data) => {
+          console.log('138 data updateProduct ===>', data);
+
+          resolve(data);
+        })
+        .catch((error) => {
+          reject(error.response.data);
+        });
+    });
+  };
+
+  // ===========================================================================
+  // delete product
+  static deleteProduct = ({ productId }: { productId: string }) => {
+    return new Promise((resolve, reject) => {
+      AxiosConfigService.deleteData({
+        url: PRODUCT_API.DELETE(),
+        params: {
           productId,
         },
       })
         .then((data) => {
-          console.log('138 data updateProduct ===>', data);
+          console.log('138 data deleteProduct ===>', data);
 
           resolve(data);
         })

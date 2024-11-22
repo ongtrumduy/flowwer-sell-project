@@ -1,19 +1,9 @@
-import {
-  Button,
-  Card,
-  CardMedia,
-  Container,
-  Grid2,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { Button, Card, CardMedia, Container, Grid2, TextField, Typography } from '@mui/material';
 import CartApiService from '@services/api/cart';
 import ProductApiService from '@services/api/product';
-import {
-  InterfaceProductDetailItemMetaData,
-  InterfaceProductItem,
-} from '@services/api/product/type';
+import { InterfaceProductDetailItemMetaData, InterfaceProductItem } from '@services/api/product/type';
 import { useEffect, useMemo, useState } from 'react';
+import { NumericFormat } from 'react-number-format';
 import { useParams } from 'react-router-dom';
 
 const ProductDetail = () => {
@@ -26,6 +16,7 @@ const ProductDetail = () => {
     product_image: '',
     product_description: '',
     productId: '',
+    product_category: [],
   });
 
   const [quantity, setQuantity] = useState(1); // Khởi tạo state cho số lượng sản phẩm
@@ -60,17 +51,17 @@ const ProductDetail = () => {
   // Hàm xử lý khi bấm vào "Thêm vào Giỏ hàng"
   const handleAddToCart = () => {
     // Thực hiện logic thêm vào giỏ hàng, ví dụ như gọi API hoặc cập nhật state giỏ hàng
-    console.log(
-      `Thêm vào Giỏ hàng: ${productDetail.product_name}, Số lượng: ${quantity}`
-    );
+    console.log(`Thêm vào Giỏ hàng: ${productDetail.product_name}, Số lượng: ${quantity}`);
 
     if (productDetail.productId && productDetail.product_quantity) {
       CartApiService.addProductToCart({
         productId: productDetail.productId,
         product_quantity: quantity,
-      }).then((data) => {
-        console.log('response data from =================', { data });
-      });
+      })
+        .then((data) => {
+          console.log('response data from =================', { data });
+        })
+        .catch(() => {});
     }
   };
 
@@ -93,17 +84,14 @@ const ProductDetail = () => {
   }, [productId]);
 
   return (
-    <Container
-      maxWidth="lg"
-      sx={{ maxWidth: '1200px !important', marginTop: 4 }}
-    >
+    <Container maxWidth="lg" sx={{ maxWidth: '1200px !important', marginTop: 4 }}>
       <Grid2 container spacing={4}>
         {/* Hình ảnh sản phẩm */}
         <Grid2 sx={{ xs: 12, md: 6 }}>
           <Card>
             <CardMedia
               component="img"
-              image={productDetail.product_image}
+              image={productDetail.product_image || ''}
               alt={productDetail.product_name}
               sx={{
                 width: '560px',
@@ -121,28 +109,26 @@ const ProductDetail = () => {
             {productDetail.product_name}
           </Typography>
           <Typography variant="h5" color="text.secondary" gutterBottom>
-            {productDetail.product_price}
+            <NumericFormat
+              value={Number(productDetail.product_price || 0)}
+              thousandSeparator={'.'}
+              decimalSeparator={','}
+              displayType={'text'}
+              suffix={' VNĐ'}
+              className="money"
+            />
           </Typography>
           <Typography variant="body1" color="text.secondary">
             {productDetail.product_description}
           </Typography>
 
           {/* Hiển thị số lượng còn lại */}
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{ marginTop: 2, fontWeight: 'bold' }}
-          >
+          <Typography variant="body1" color="text.secondary" sx={{ marginTop: 2, fontWeight: 'bold' }}>
             Số lượng còn lại: {availableStock}
           </Typography>
 
           {/* Bộ chọn số lượng sản phẩm */}
-          <Grid2
-            container
-            alignItems="center"
-            spacing={1}
-            sx={{ marginTop: 2 }}
-          >
+          <Grid2 container alignItems="center" spacing={1} sx={{ marginTop: 2 }}>
             <Typography variant="subtitle1">Số lượng:</Typography>
             <TextField
               type="number"
@@ -157,13 +143,7 @@ const ProductDetail = () => {
 
           <Grid2 container spacing={2} sx={{ marginTop: 2 }}>
             <Grid2>
-              <Button
-                variant="contained"
-                color="primary"
-                size="large"
-                onClick={handleAddToCart}
-                disabled={quantity > availableStock}
-              >
+              <Button variant="contained" color="primary" size="large" onClick={handleAddToCart} disabled={quantity > availableStock}>
                 Thêm vào Giỏ hàng
               </Button>
             </Grid2>

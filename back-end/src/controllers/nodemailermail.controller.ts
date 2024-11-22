@@ -1,7 +1,10 @@
 import { NextFunction, Response } from 'express';
 
 import SuccessResponse from '@core/success.response';
-import { EnumReasonStatusCode, WithCartRequest } from '@root/src/utils/type';
+import {
+  EnumReasonStatusCode,
+  InterfaceWithCartRequest,
+} from '@root/src/utils/type';
 import OrderService from '../services/order.service';
 import NodeMailerService from '../services/nodemailerMail.service';
 
@@ -9,7 +12,7 @@ class NodemailerMailController {
   // =========================================================
   // post email
   static postEmail = async (
-    req: WithCartRequest,
+    req: InterfaceWithCartRequest,
     res: Response,
     next: NextFunction
   ) => {
@@ -34,7 +37,7 @@ class NodemailerMailController {
   // =========================================================
   // post email to reset password
   // static postEmailToResetPassword = async (
-  //   req: WithCartRequest,
+  //   req: InterfaceWithCartRequest,
   //   res: Response,
   //   next: NextFunction
   // ) => {

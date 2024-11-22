@@ -1,112 +1,287 @@
-import { Delete, Edit } from '@mui/icons-material';
-import {
-  Box,
-  Card,
-  CardContent,
-  IconButton,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-} from '@mui/material';
-import React from 'react';
-
-interface Order {
-  orderId: string;
-  customerName: string;
-  orderDate: string;
-  status: string;
-  totalAmount: number;
-}
-
-const orders: Order[] = [
-  {
-    orderId: '123',
-    customerName: 'Alice',
-    orderDate: '2024-11-01',
-    status: 'Delivered',
-    totalAmount: 120.5,
-  },
-  {
-    orderId: '124',
-    customerName: 'Bob',
-    orderDate: '2024-11-02',
-    status: 'Pending',
-    totalAmount: 80.0,
-  },
-  {
-    orderId: '125',
-    customerName: 'Charlie',
-    orderDate: '2024-11-03',
-    status: 'Shipped',
-    totalAmount: 150.75,
-  },
-  // Thêm dữ liệu mẫu tại đây
-];
+import { Box, Button, Card, CardContent, Chip, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import OrderApiService from '@services/api/order';
+import { InterfaceNeoOrder, InterfaceNeoOrderResponseMetadata, InterfaceOrderDetailItemMetaData } from '@services/api/order/type';
+import { EnumOrderStatusStage } from '@services/api/stripe_payment/type';
+import { DEFAULT_LIMIT, DEFAULT_PAGE } from '@utils/constant';
+import React, { useEffect, useState } from 'react';
+import { NumericFormat } from 'react-number-format';
+import AdminPaginationOrderList from './AdminPaginationOrderList';
+import AdminSearchOrderForm from './AdminSearchOrderForm';
+import ModalAddNewOrder from './ModalAddNewOrder';
+import ModalDeleteOrder from './ModalDeleteOrder';
+import ModalEditOrder from './ModalEditOrder';
 
 const AdminOrder: React.FC = () => {
-  const handleEdit = (orderId: string) => {
-    console.log(`Editing order: ${orderId}`);
+  // =============================================================================
+  // =============================================================================
+  const [orderList, setOrderList] = useState<InterfaceNeoOrder[]>([]);
+  const [searchParams, setSearchParams] = useState({
+    searchName: '',
+    orderStatus: '',
+    page: DEFAULT_PAGE,
+    limit: DEFAULT_LIMIT,
+    isPendingCall: false,
+  });
+  const [totalSearchCount, setTotalSearchCount] = useState(0);
+  // const [roleList, setRoleList] = useState<{ roleName: string; roleId: string }[]>([]);
+  const [orderDetail] = useState<InterfaceNeoOrder>({
+    orderId: '',
+    order_item_list: [],
+    total_amount: 0,
+    customerId: '',
+    pickup_address: '',
+    delivery_address: '',
+    order_status_stage: EnumOrderStatusStage.PENDING,
+    process_timeline: [],
+    order_date: '',
+    delivery_date: '',
+    pickup_date: '',
+    shipperId: '',
+    order_code: '',
+    customerDetails: null,
+    shipperDetails: null,
+  });
+
+  const [openAddNewPopup, setOpenAddNewPopup] = useState(false);
+  const [openEditPopup, setOpenEditPopup] = useState(false);
+  const [openDeletePopup, setOpenDeletePopup] = useState(false);
+
+  const [deleteOrderId, setDeleteOrderId] = useState('');
+
+  //============================================================================
+  //============================================================================
+
+  const handleSearchOrder = ({ searchName, orderStatus }: { searchName: string; orderStatus: EnumOrderStatusStage }) => {
+    setSearchParams((searchParams) => {
+      return {
+        ...searchParams,
+        searchName,
+        orderStatus,
+        isPendingCall: true,
+      };
+    });
   };
 
-  const handleDelete = (orderId: string) => {
-    console.log(`Deleting order: ${orderId}`);
+  const handlePageChange = ({ page }: { page: number }) => {
+    setSearchParams((searchParams) => {
+      return { ...searchParams, page };
+    });
   };
 
+  const handleOpenAddNewPopup = () => {
+    setOpenAddNewPopup(true);
+  };
+
+  const handleOpenEditPopup = ({ orderId }: { orderId: string | undefined }) => {
+    if (orderId) {
+      OrderApiService.getOrderItemDetail_ForAdmin({ orderId })
+        .then((data) => {
+          const orderDetail = data as InterfaceOrderDetailItemMetaData;
+          console.log('Order Detail ===>', orderDetail);
+
+          // setOrderDetail(orderDetail.OrderDetail);
+        })
+        .then(() => {
+          setOpenEditPopup(true);
+        });
+    }
+  };
+
+  const handleOpenDeletePopup = ({ orderId }: { orderId: string | undefined }) => {
+    if (orderId) {
+      setOpenDeletePopup(true);
+      setDeleteOrderId(orderId);
+    }
+  };
+
+  const handleCloseAddNewPopup = () => {
+    setOpenAddNewPopup(false);
+  };
+
+  const handleCloseEditPopup = () => {
+    setOpenEditPopup(false);
+  };
+
+  const handleCloseDeletePopup = () => {
+    setOpenDeletePopup(false);
+  };
+
+  // =============================================================================
+  // =============================================================================
+
+  const handleGetOrderList = () => {
+    OrderApiService.getAllOrderList_ForAdmin(searchParams)
+      .then((data) => {
+        const orderList = data as InterfaceNeoOrderResponseMetadata;
+
+        setOrderList(orderList.orders);
+        setTotalSearchCount(orderList.totalSearchCount);
+      })
+      .catch(() => {})
+      .finally(() => {
+        setSearchParams((searchParams) => {
+          return { ...searchParams, isPendingCall: false };
+        });
+      });
+  };
+
+  // =============================================================================
+  // =============================================================================
+  useEffect(() => {
+    handleGetOrderList();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(searchParams)]);
+
+  // useEffect(() => {
+  //   setRoleList(() => {
+  //     return [...Object.values(EnumRole).map((role) => ({ roleId: role, roleName: role }))];
+  //   });
+  // }, []);
+
+  //============================================================================
+  //============================================================================
   return (
-    <Box sx={{ padding: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Order Management
-      </Typography>
+    <>
+      <Box sx={{ padding: 3 }}>
+        <Typography variant="h4" gutterBottom>
+          Quản lý Đơn hàng
+        </Typography>
 
-      <Card>
-        <CardContent>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Order ID</TableCell>
-                  <TableCell>Customer Name</TableCell>
-                  <TableCell>Order Date</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Total Amount</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {orders.map((order) => (
-                  <TableRow key={order.orderId}>
-                    <TableCell>{order.orderId}</TableCell>
-                    <TableCell>{order.customerName}</TableCell>
-                    <TableCell>{order.orderDate}</TableCell>
-                    <TableCell>{order.status}</TableCell>
-                    <TableCell>${order.totalAmount.toFixed(2)}</TableCell>
-                    <TableCell>
-                      <IconButton
-                        onClick={() => handleEdit(order.orderId)}
-                        color="primary"
-                      >
-                        <Edit />
-                      </IconButton>
-                      <IconButton
-                        onClick={() => handleDelete(order.orderId)}
-                        color="secondary"
-                      >
-                        <Delete />
-                      </IconButton>
-                    </TableCell>
+        <AdminSearchOrderForm onSearch={handleSearchOrder} />
+
+        <Card>
+          <CardContent>
+            <Button variant="contained" color="primary" sx={{ mb: 2 }} onClick={handleOpenAddNewPopup}>
+              Thêm mới Đơn hàng
+            </Button>
+
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Mã đơn hàng</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Sản phẩm </TableCell>
+                    {/* <TableCell sx={{ fontWeight: 'bold' }}>Ảnh đại diện</TableCell> */}
+                    <TableCell sx={{ fontWeight: 'bold' }}>Tổng giá trị</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Tên người nhận</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Địa chỉ nhận hàng</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Ngày đặt hàng</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Trạng thái đơn hàng</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Người giao</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Hành động</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
-    </Box>
+                </TableHead>
+                <TableBody>
+                  {orderList.map((order) => (
+                    <TableRow key={order.orderId}>
+                      {/* <TableCell>{order.orderId}</TableCell> */}
+                      <TableCell>{order.order_code}</TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, flexDirection: 'column' }}>
+                          {order.order_item_list && order.order_item_list.length ? (
+                            order.order_item_list.map((value) => {
+                              const product = value.product_name;
+                              const amount = value.product_quantity;
+                              const price = value.product_price_now;
+                              const idProduct = value.productId;
+
+                              return (
+                                <Chip
+                                  key={idProduct}
+                                  label={
+                                    <p>
+                                      <span>{product} - </span>
+                                      <NumericFormat
+                                        value={Number(amount || 0)}
+                                        thousandSeparator={'.'}
+                                        decimalSeparator={','}
+                                        displayType={'text'}
+                                        suffix={' VNĐ'}
+                                        className="money"
+                                      />
+                                      <span> x {price}</span>
+                                    </p>
+                                  }
+                                />
+                              );
+                            })
+                          ) : (
+                            <p>Không có sản phẩm nào</p>
+                          )}
+                        </Box>
+                      </TableCell>
+                      <TableCell>{order.total_amount}</TableCell>
+                      <TableCell>{order.customerDetails?.name}</TableCell>
+                      <TableCell>{order.delivery_address}</TableCell>
+                      <TableCell>{order.order_date}</TableCell>
+                      {/* <TableCell>{order.order_status_stage}</TableCell> */}
+                      <TableCell>
+                        <Box>
+                          <Chip key={order.order_status_stage} label={order.order_status_stage} />
+                        </Box>
+                      </TableCell>
+                      <TableCell>{order.shipperDetails?.name}</TableCell>
+
+                      <TableCell>
+                        <Button variant="outlined" color="primary" onClick={() => handleOpenEditPopup({ orderId: order?.orderId })} sx={{ mr: 1 }}>
+                          Sửa
+                        </Button>
+                        <Button variant="outlined" color="secondary" onClick={() => handleOpenDeletePopup({ orderId: order?.orderId })}>
+                          Xóa
+                        </Button>
+                        {order.order_status_stage === EnumOrderStatusStage.PENDING && (
+                          <Button variant="outlined" color="primary">
+                            Chỉ định giao hàng
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            <Box sx={{ mt: 4 }}>
+              <AdminPaginationOrderList totalPages={Math.ceil(totalSearchCount / DEFAULT_LIMIT)} onPageChange={handlePageChange} />
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
+      {/* // ============================================================================= */}
+      <ModalAddNewOrder
+        openAddNewPopup={openAddNewPopup}
+        handleDialogClose={handleCloseAddNewPopup}
+        // roleList={roleList}
+        // handleSubmit={handleSubmit}
+        // handleAddOrder={handleAddOrder}
+        // control={control}
+        // errors={errors}
+        setOpenAddNewPopup={setOpenAddNewPopup}
+        // handleGetOrderList={handleGetOrderList}
+      />
+      {/* // ============================================================================= */}
+      <ModalEditOrder
+        openEditPopup={openEditPopup}
+        handleCloseEditPopup={handleCloseEditPopup}
+        // roleList={roleList}
+        // handleSubmit={handleSubmit}
+        // handleEditOrder={handleEditOrder}
+        // control={control}
+        orderDetail={orderDetail}
+        // reset={reset}
+        setOpenEditPopup={setOpenEditPopup}
+      />
+      {/* // ============================================================================= */}
+      <ModalDeleteOrder
+        openDeletePopup={openDeletePopup}
+        handleCloseDeletePopup={handleCloseDeletePopup}
+        // handleDeleteOrder={handleDeleteOrder}
+        deleteOrderId={deleteOrderId}
+        setOpenDeletePopup={setOpenDeletePopup}
+      />
+      {/* // ============================================================================= */}
+    </>
   );
 };
 

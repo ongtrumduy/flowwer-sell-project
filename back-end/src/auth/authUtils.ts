@@ -12,7 +12,8 @@ import {
 import {
   EnumHeaderKey,
   EnumReasonStatusCode,
-  WithKeyStoreV2Request,
+  InterfacePayload,
+  InterfaceWithKeyStoreV2Request,
 } from '../utils/type';
 
 export const createTokenPair = async ({
@@ -20,17 +21,7 @@ export const createTokenPair = async ({
   publicKey,
   privateKey,
 }: {
-  payload: {
-    userId: string;
-    name: string;
-    email: string;
-    roles: string[];
-    avatar_url: string;
-    address: string;
-    phone_number: string;
-    status: boolean;
-    verified: boolean;
-  };
+  payload: InterfacePayload;
   publicKey: string;
   privateKey: string;
 }) => {
@@ -64,7 +55,7 @@ export const createTokenPair = async ({
 };
 
 // export const authentication = asyncHandler(
-//   async (req: WithKeyStoreRequest, res: Response, next: NextFunction) => {
+//   async (req: InterfaceWithKeyStoreRequest, res: Response, next: NextFunction) => {
 //     const reqHeader = req.headers;
 
 //     const userId = reqHeader[EnumHeaderKey.CLIEND_ID]?.toString();
@@ -122,7 +113,11 @@ export const createTokenPair = async ({
 // );
 
 export const authenticationV2 = asyncHandler(
-  async (req: WithKeyStoreV2Request, res: Response, next: NextFunction) => {
+  async (
+    req: InterfaceWithKeyStoreV2Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     const userId = req.headers[EnumHeaderKey.CLIEND_ID]?.toString();
 
     if (!userId) {
@@ -149,9 +144,12 @@ export const authenticationV2 = asyncHandler(
         const refreshToken =
           req.headers[EnumHeaderKey.REFRESH_TOKEN]?.toString();
 
-        const decodeUser = JWT.verify(refreshToken, keyStore.privateKey);
+        const decodeUser = JWT.verify(
+          refreshToken,
+          keyStore.privateKey
+        ) as InterfacePayload;
 
-        if (userId !== (decodeUser as JwtPayload).userId) {
+        if (userId !== decodeUser.userId) {
           throw new ErrorDTODataResponse({
             statusCode: 401,
             reasonStatusCode: EnumReasonStatusCode.INVALID_USER_ID,
@@ -187,9 +185,12 @@ export const authenticationV2 = asyncHandler(
     }
 
     try {
-      const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
+      const decodeUser = JWT.verify(
+        accessToken,
+        keyStore.publicKey
+      ) as InterfacePayload;
 
-      if (userId !== (decodeUser as JwtPayload).userId) {
+      if (userId !== decodeUser.userId) {
         throw new ErrorDTODataResponse({
           statusCode: 401,
           reasonStatusCode: EnumReasonStatusCode.INVALID_USER_ID,

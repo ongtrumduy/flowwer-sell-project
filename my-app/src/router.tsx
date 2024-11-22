@@ -8,18 +8,21 @@ import EmptyLayout from './layouts/EmptyLayout';
 import AdminLayout from '@layouts/AdminLayout';
 import EmployeeLayout from '@layouts/EmployeeLayout';
 import ShipperLayout from '@layouts/ShipperLayout';
-import AdminAccountPage from '@pages/AdminPage/AdminAccount';
-import AdminCategoryPage from '@pages/AdminPage/AdminCategory';
-import AdminDashboardPage from '@pages/AdminPage/AdminDashboard';
-import AdminOrderPage from '@pages/AdminPage/AdminOrder';
-import AdminProductPage from '@pages/AdminPage/AdminProduct';
-import AdminSettingPage from '@pages/AdminPage/AdminSetting';
+import ForgotPasswordPage from '@pages/AccessPage/ForgotPassword';
 import LoginPage from '@pages/AccessPage/Login';
 import SignUpPage from '@pages/AccessPage/SignUp';
+import AdminAccountPage from '@pages/AdminPage/AdminAccount';
+import AdminCategoryPage from '@pages/AdminPage/AdminCategory';
+import AdminOrderPage from '@pages/AdminPage/AdminOrder';
+import AdminOverviewPage from '@pages/AdminPage/AdminOverview';
+import AdminProductPage from '@pages/AdminPage/AdminProduct';
 import UserProfilePage from '@pages/CommonPage/UserProfile';
 import EmployeeCategoryPage from '@pages/EmployeePage/EmployeeCategory';
+import EmployeeOverviewPage from '@pages/EmployeePage/EmployeeOverview';
 import ShipperOrderPage from '@pages/ShipperPage/ShipperOrderList';
 import CartPage from '@pages/UserPage/Cart';
+import CompletionPage from '@pages/UserPage/Completion';
+import ImageUploadPage from '@pages/UserPage/ImageUpload';
 import OrderPage from '@pages/UserPage/Order';
 import OrderDetailPage from '@pages/UserPage/OrderDetail';
 import ProductDetailPage from '@pages/UserPage/ProductDetail';
@@ -29,9 +32,6 @@ import { Route, Routes } from 'react-router-dom';
 import { ProtectedRoleRoute, VerifiedUserRoute } from './core/RouterWrapper';
 import NotFoundPage from './pages/CommonPage/NotFound';
 import HomePage from './pages/UserPage/Home';
-import CompletionPage from '@pages/UserPage/Completion';
-import ImageUploadPage from '@pages/UserPage/ImageUpload';
-import ForgotPasswordPage from '@pages/AccessPage/ForgotPassword';
 
 // import './utils/register-aliases';
 
@@ -121,7 +121,7 @@ const RootRouter = React.memo(() => {
           }
         />
         <Route
-          path={AppRoutes.PAYMENT()}
+          path={AppRoutes.PAYMENT({})}
           element={
             <ProtectedRoleRoute requiredRole={[EnumRole.USER]}>
               <StripePaymentPage />
@@ -129,7 +129,7 @@ const RootRouter = React.memo(() => {
           }
         />
         <Route
-          path={AppRoutes.PAYMENT() + '/' + AppRoutes.COMPLETION()}
+          path={AppRoutes.PAYMENT({}) + '/' + AppRoutes.COMPLETION()}
           element={
             <ProtectedRoleRoute requiredRole={[EnumRole.USER]}>
               <CompletionPage />
@@ -197,16 +197,16 @@ const RootRouter = React.memo(() => {
           index
           element={
             <ProtectedRoleRoute requiredRole={[EnumRole.ADMIN]}>
-              <AdminDashboardPage />
+              <AdminOverviewPage />
             </ProtectedRoleRoute>
           }
         />
         {/* // ------------------------------------------------------------------------ */}
         <Route
-          path="dashboard"
+          path={AppRoutes.ADMIN_OVERVIEW()}
           element={
             <ProtectedRoleRoute requiredRole={[EnumRole.ADMIN]}>
-              <AdminDashboardPage />
+              <AdminOverviewPage />
             </ProtectedRoleRoute>
           }
         />
@@ -242,21 +242,21 @@ const RootRouter = React.memo(() => {
             </ProtectedRoleRoute>
           }
         />
-        <Route
+        {/* <Route
           path={AppRoutes.ADMIN_SETTING()}
           element={
             <ProtectedRoleRoute requiredRole={[EnumRole.ADMIN]}>
               <AdminSettingPage />
             </ProtectedRoleRoute>
           }
-        />
+        /> */}
         {/* // ------------------------------------------------------------------------ */}
 
         {/* // ------------------------------------------------------------------------ */}
         {/* <Route
             path="/product-detail/:productId"
             element={
-              <ProtectedRoleRoute
+              <ProtectedRoleRouteADMIN_SETTING
                 requiredRole={[EnumRole.USER, EnumRole.GUEST]}
               >
                 <ProductDetailPage />
@@ -290,7 +290,15 @@ const RootRouter = React.memo(() => {
           index
           element={
             <ProtectedRoleRoute requiredRole={[EnumRole.EMPLOYEE]}>
-              <AdminDashboardPage />
+              <EmployeeOverviewPage />
+            </ProtectedRoleRoute>
+          }
+        />
+        <Route
+          path={AppRoutes.EMPLOYEE_OVERVIEW()}
+          element={
+            <ProtectedRoleRoute requiredRole={[EnumRole.EMPLOYEE]}>
+              <EmployeeOverviewPage />
             </ProtectedRoleRoute>
           }
         />

@@ -77,6 +77,7 @@ function ProductList() {
   };
 
   useEffect(() => {
+    // if (searchParams.isPendingCall) {
     ProductApiService.getAllProductList(searchParams)
       .then((data) => {
         const productList = data as InterfaceProductMetaData;
@@ -92,6 +93,7 @@ function ProductList() {
           return { ...searchParams, isPendingCall: false };
         });
       });
+    // }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(searchParams)]);
 

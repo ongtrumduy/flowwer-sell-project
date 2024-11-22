@@ -10,7 +10,8 @@ export const AppRoutes = {
   PROFILE: () => `profile`,
   CART: () => `cart`,
   ORDER: () => 'order',
-  PAYMENT: () => 'payment',
+  PAYMENT: ({ orderId = '' }: { orderId?: string }) =>
+    `payment/${orderId ? orderId : ':orderId'}`,
   COMPLETION: () => 'completion',
 
   IMAGE_UPLOAD: () => 'image-upload',
@@ -29,20 +30,23 @@ export const AppRoutes = {
   // ================================================================================
   // ADMIN
   ADMIN_BASE: () => `${BASE_NAME}admin`,
-  ADMIN_DASHBOARD: () => `dashboard`,
+  ADMIN_OVERVIEW: () => `overview`,
   ADMIN_CATEGORY: () => `category`,
+  ADMIN_PRODUCT_TYPE: () => `product-type`,
   ADMIN_PRODUCT: () => `product`,
   ADMIN_ORDER: () => `order`,
   ADMIN_VOUCHER: () => `voucher`,
   ADMIN_ACCOUNT: () => `account`,
-  ADMIN_SETTING: () => `setting`,
+  // ADMIN_SETTING: () => `setting`,
 
   // ================================================================================
 
   // ================================================================================
   // EMPLOYEE
   EMPLOYEE_BASE: () => `${BASE_NAME}employee`,
+  EMPLOYEE_OVERVIEW: () => `overview`,
   EMPLOYEE_ORDER: () => `order`,
+  EMPLOYEE_PRODUCT_TYPE: () => `product-type`,
   EMPLOYEE_PRODUCT: () => `product`,
   EMPLOYEE_VOUCHER: () => `voucher`,
   EMPLOYEE_CATEGORY: () => `category`,

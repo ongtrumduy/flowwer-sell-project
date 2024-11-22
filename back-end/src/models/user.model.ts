@@ -6,7 +6,7 @@ import { DEFAULT_GENDER, DEFAULT_ROLE } from '../utils/constant';
 import bcrypt from 'bcryptjs';
 
 export const USER_DOCUMENT_NAME = 'Users';
-const USER_COLLECTION_NAME = 'Users_Collection';
+export const USER_COLLECTION_NAME = 'Users_Collection';
 
 const UserSchema = new Schema(
   {
@@ -28,8 +28,7 @@ const UserSchema = new Schema(
           const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
           return gmailRegex.test(value);
         },
-        message: (props) =>
-          `${props.value} is not a valid gmail email address!`,
+        message: (props) => `${props.value} is not a valid gmail email address!`,
       },
     },
     password: {
@@ -51,8 +50,7 @@ const UserSchema = new Schema(
         validator: function (v: string) {
           return /^(03|05|07|08|09)[0-9]{8}$/.test(v);
         },
-        message: (props: { value: any }) =>
-          `${props.value} is not a valid Vietnamese phone number!`,
+        message: (props: { value: any }) => `${props.value} is not a valid Vietnamese phone number!`,
       },
     },
     avatar_url: {
@@ -65,7 +63,7 @@ const UserSchema = new Schema(
       required: true,
       trim: true,
     },
-    roles: {
+    role_list: {
       type: [String],
       enum: Object.values(EnumRole),
       default: DEFAULT_ROLE,
@@ -84,7 +82,7 @@ const UserSchema = new Schema(
     },
     // ----------------------------------------------------------------},
     gender: {
-      type: [String],
+      type: String,
       enum: Object.values(EnumGender),
       default: DEFAULT_GENDER,
     },

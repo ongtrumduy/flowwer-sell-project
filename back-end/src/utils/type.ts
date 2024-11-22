@@ -1,23 +1,35 @@
 import { Request } from 'express';
 
-export interface WithKeyStoreRequest extends Request {
+export interface InterfacePayload {
+  userId: string;
+  name: string;
+  email: string;
+  role_list: EnumRole[];
+  avatar_url: string;
+  address: string;
+  phone_number: string;
+  status: boolean;
+  verified: boolean;
+}
+
+export interface InterfaceWithKeyStoreRequest extends Request {
   keyStore: any;
 }
 
-export interface WithKeyStoreV2Request extends Request {
+export interface InterfaceWithKeyStoreV2Request extends Request {
   keyStore: any;
-  user: any;
+  user: InterfacePayload;
   refreshToken: any;
 }
 
-export interface WithMulterFileRequest extends Request {
+export interface InterfaceWithMulterFileRequest extends Request {
   file?: Express.Multer.File;
 }
 
-export interface WithCartRequest extends Request {
+export interface InterfaceWithCartRequest extends Request {
   cart: any;
   cartId: string;
-  user: any;
+  user: InterfacePayload;
 }
 
 export enum EnumMessageStatus {

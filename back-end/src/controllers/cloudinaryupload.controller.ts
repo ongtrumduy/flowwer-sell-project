@@ -3,7 +3,7 @@ import { NextFunction, Response } from 'express';
 import SuccessResponse from '@core/success.response';
 import {
   EnumReasonStatusCode,
-  WithMulterFileRequest,
+  InterfaceWithMulterFileRequest,
 } from '@root/src/utils/type';
 import CloudinaryUploadService from '../services/cloudinaryUpload.service';
 
@@ -11,7 +11,7 @@ class CloudinaryUploadController {
   // =========================================================
   // create a new order for customerO
   static uploadProfileAvatarImage = async (
-    req: WithMulterFileRequest,
+    req: InterfaceWithMulterFileRequest,
     res: Response,
     next: NextFunction
   ) => {

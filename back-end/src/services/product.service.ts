@@ -46,7 +46,7 @@ class ProductService {
     }
     if (selectedCategory) {
       pipeline.push({
-        $match: { categoriesIds: new Types.ObjectId(selectedCategory) },
+        $match: { product_category_list: new Types.ObjectId(selectedCategory) },
       });
     }
     pipeline.push({
@@ -177,16 +177,13 @@ class ProductService {
     if (searchName) {
       pipeline.push({
         $match: {
-          $or: [
-            { $text: { $search: searchName } },
-            { product_name: { $regex: searchName, $options: 'i' } },
-          ],
+          $or: [{ $text: { $search: searchName } }, { product_name: { $regex: searchName, $options: 'i' } }],
         },
       });
     }
     if (selectedCategory && selectedCategory !== DEFAULT_CATEGORY_ID) {
       pipeline.push({
-        $match: { categoriesIds: new Types.ObjectId(selectedCategory) },
+        $match: { product_category_list: new Types.ObjectId(selectedCategory) },
       });
     }
     pipeline.push({
@@ -222,10 +219,7 @@ class ProductService {
       },
     });
     data.push({
-      $sort: { createdAt: -1, ...(searchName ? { score: -1 } : {}) } as Record<
-        string,
-        1 | -1
-      >,
+      $sort: { createdAt: -1, ...(searchName ? { score: -1 } : {}) } as Record<string, 1 | -1>,
     });
 
     pipeline.push({
@@ -252,11 +246,7 @@ class ProductService {
 
   //=====================================================================
   // get product item detail
-  static getProductItemDetail = async ({
-    productId,
-  }: {
-    productId: string;
-  }) => {
+  static getProductItemDetail = async ({ productId }: { productId: string }) => {
     // console.log('productId ===>', productId);
     try {
       const productDetail = await ProductModel.findOne({
@@ -268,19 +258,31 @@ class ProductService {
           product_image: 1,
           product_quantity: 1,
           product_description: 1,
+          product_category_list: 1,
+          product_type_list: 1,
+
           _id: 0,
+        })
+        .populate({
+          path: 'product_category_list',
+          select: 'category_name category_description', // Lấy những trường cần thiết
+        })
+        .populate({
+          path: 'product_type_list',
+          select: 'type_product_name type_product_description', // Lấy những trường cần thiết
         })
         .lean();
 
       // console.log('show productDetail ===>', { productDetail });
 
-      return {
-        code: 200,
+      return new SuccessDTODataResponse({
+        statusCode: 200,
         metaData: {
           productDetail: { ...productDetail, productId: productId },
         },
-        reasonStatusCode: EnumMessageStatus.SUCCESS_200,
-      };
+        reasonStatusCode: EnumReasonStatusCode.SUCCESS_200,
+        message: 'Get Product Detail Successfully !!!',
+      });
     } catch (error) {
       throw new ErrorDTODataResponse({
         message: (error as Error).message,
@@ -292,11 +294,7 @@ class ProductService {
 
   //=====================================================================
   // find list search product
-  static findListSearchProduct = async ({
-    key_search,
-  }: {
-    key_search: string;
-  }) => {
+  static findListSearchProduct = async ({ key_search }: { key_search: string }) => {
     // const regexSearch = new RegExp(key_search, 'i');
 
     const searchProducts = await ProductModel.find(
@@ -341,22 +339,26 @@ class ProductService {
     product_category: string[];
   }) => {
     try {
-      const suffix_folder = '_cloudinary_upload';
+      let result;
 
-      const result = await cloudinary.uploader.upload(productImagePath, {
-        folder: productImageFieldName + suffix_folder, // Đặt tên thư mục trên Cloudinary
-        public_id: `${productImageFieldName}_${nanoid(8)}_${Date.now()}`, // Tên ảnh trên Cloudinary
-        resource_type: 'auto',
-      });
+      if (productImagePath && productImageFieldName) {
+        const suffix_folder = '_cloudinary_upload';
 
-      // Xóa file tạm sau khi upload xong
-      fs.unlinkSync(productImagePath);
+        result = await cloudinary.uploader.upload(productImagePath, {
+          folder: productImageFieldName + suffix_folder, // Đặt tên thư mục trên Cloudinary
+          public_id: `${productImageFieldName}_${nanoid(8)}_${Date.now()}`, // Tên ảnh trên Cloudinary
+          resource_type: 'auto',
+        });
+
+        // Xóa file tạm sau khi upload xong
+        fs.unlinkSync(productImagePath);
+      }
 
       const newProduct = await ProductModel.create({
         product_name,
         product_quantity,
         product_price,
-        product_image: result.secure_url,
+        product_image: result?.secure_url || '',
         product_description,
       });
 
@@ -391,6 +393,10 @@ class ProductService {
     product_image,
     product_description,
     productId,
+    productImagePath,
+    productImageFieldName,
+    product_category,
+    product_type,
   }: {
     product_name: string;
     product_quantity: number;
@@ -398,58 +404,99 @@ class ProductService {
     product_image: string;
     product_description: string;
     productId: string;
+    productImagePath: string;
+    productImageFieldName: string;
+    product_category: string[];
+    product_type: string[];
   }) => {
-    const product = await ProductModel.findOne({
-      _id: new Types.ObjectId(productId),
-    });
+    try {
+      const product = await ProductModel.findOne({
+        _id: new Types.ObjectId(productId),
+      });
 
-    if (!product) {
+      if (!product) {
+        throw new ErrorDTODataResponse({
+          message: 'Product not found !!!',
+          statusCode: 400,
+          reasonStatusCode: EnumMessageStatus.BAD_REQUEST_400,
+        });
+      }
+
+      let result;
+
+      if (productImagePath && productImageFieldName) {
+        const suffix_folder = '_cloudinary_upload';
+
+        result = await cloudinary.uploader.upload(productImagePath, {
+          folder: productImageFieldName + suffix_folder, // Đặt tên thư mục trên Cloudinary
+          public_id: `${productImageFieldName}_${nanoid(8)}_${Date.now()}`, // Tên ảnh trên Cloudinary
+          resource_type: 'auto',
+        });
+
+        // Xóa file tạm sau khi upload xong
+        fs.unlinkSync(productImagePath);
+      }
+
+      product.product_quantity = product_quantity ? product_quantity : product.product_quantity;
+      product.product_name = product_name ? product_name : product.product_name;
+      product.product_price = product_price ? product_price : product.product_price;
+      product.product_image = result?.secure_url || (product_image ? product_image : product.product_image) || '';
+      product.product_description = product_description ? product_description : product.product_description;
+
+      product_category &&
+        product_category.length &&
+        product_category.forEach((category) => {
+          product.product_category_list.push(new Types.ObjectId(category));
+        });
+
+      product_type &&
+        product_type.length &&
+        product_type.forEach((type) => {
+          product.product_type_list.push(new Types.ObjectId(type));
+        });
+
+      product.save();
+
+      return new SuccessDTODataResponse({
+        statusCode: 201,
+        metaData: {
+          product,
+        },
+        reasonStatusCode: EnumReasonStatusCode.SUCCESS_200,
+        message: 'Update Product Successfully !!!',
+      });
+    } catch (error) {
       throw new ErrorDTODataResponse({
-        message: 'Product not found !!!',
-        statusCode: 400,
-        reasonStatusCode: EnumMessageStatus.BAD_REQUEST_400,
+        statusCode: 500,
+        message: (error as Error).message || 'Update Product Fail !!!',
+        reasonStatusCode: EnumReasonStatusCode.INTERNAL_SERVER_ERROR,
       });
     }
-
-    product.product_quantity = product_quantity
-      ? product_quantity
-      : product.product_quantity;
-    product.product_name = product_name ? product_name : product.product_name;
-    product.product_price = product_price
-      ? product_price
-      : product.product_price;
-    product.product_image = product_image
-      ? product_image
-      : product.product_image;
-    product.product_description = product_description
-      ? product_description
-      : product.product_description;
-
-    product.save();
-
-    return {
-      code: 201,
-      metaData: {
-        product,
-      },
-      reasonStatusCode: EnumMessageStatus.CREATED_201,
-    };
   };
 
   //=====================================================================
   // delete product
   static deleteProduct = async ({ productId }: { productId: string }) => {
-    const deletedProduct = await ProductModel.findByIdAndDelete({
-      _id: new Types.ObjectId(productId),
-    });
+    try {
+      const deletedProduct = await ProductModel.findByIdAndDelete({
+        _id: new Types.ObjectId(productId),
+      });
 
-    return {
-      code: 200,
-      metaData: {
-        deletedProduct,
-      },
-      reasonStatusCode: EnumMessageStatus.SUCCESS_200,
-    };
+      return new SuccessDTODataResponse({
+        statusCode: 201,
+        metaData: {
+          deletedProduct,
+        },
+        reasonStatusCode: EnumReasonStatusCode.SUCCESS_200,
+        message: 'Delete Product Successfully !!!',
+      });
+    } catch (error) {
+      throw new ErrorDTODataResponse({
+        statusCode: 500,
+        message: (error as Error).message || 'Delete Product Fail !!!',
+        reasonStatusCode: EnumReasonStatusCode.INTERNAL_SERVER_ERROR,
+      });
+    }
   };
 }
 

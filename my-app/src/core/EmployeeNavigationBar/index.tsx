@@ -12,8 +12,7 @@ const EmployeeNavigationBar = () => {
 
   const handleLogout = async () => {
     try {
-      const returnLogout =
-        (await AccessApiService.logout()) as InterfaceLogoutResponseMetaData;
+      const returnLogout = (await AccessApiService.logout()) as InterfaceLogoutResponseMetaData;
 
       if (returnLogout) {
         navigate(`${AppRoutes.BASE()}${AppRoutes.LOGIN()}`);
@@ -30,33 +29,28 @@ const EmployeeNavigationBar = () => {
       <h2>Bảng Nhân viên</h2>
       <ul>
         <li>
-          <Link
-            to={`${AppRoutes.EMPLOYEE_BASE()}/${AppRoutes.EMPLOYEE_ORDER()}`}
-          >
-            Đơn hàng
-          </Link>
+          <Link to={`${AppRoutes.EMPLOYEE_BASE()}/${AppRoutes.EMPLOYEE_ORDER()}`}>Đơn hàng</Link>
         </li>
         <li>
-          <Link
-            to={`${AppRoutes.ADMIN_BASE()}/${AppRoutes.EMPLOYEE_PRODUCT()}`}
-          >
-            Sản phẩm
-          </Link>
+          <Link to={`${AppRoutes.ADMIN_BASE()}/${AppRoutes.EMPLOYEE_PRODUCT()}`}>Sản phẩm</Link>
         </li>
-        <li>
+        {/* <li>
           <Link
             to={`${AppRoutes.EMPLOYEE_VOUCHER()}/${AppRoutes.EMPLOYEE_VOUCHER()}`}
           >
             Mã giảm giá
           </Link>
-        </li>
+        </li> */}
         <li>
-          <Link
-            to={`${AppRoutes.EMPLOYEE_BASE()}/${AppRoutes.EMPLOYEE_CATEGORY()}`}
-          >
-            Danh mục
-          </Link>
+          <Link to={`${AppRoutes.EMPLOYEE_BASE()}/${AppRoutes.EMPLOYEE_CATEGORY()}`}>Danh mục</Link>
         </li>
+        {/* <li>
+          <Link
+            to={`${AppRoutes.ADMIN_BASE()}/${AppRoutes.ADMIN_PRODUCT_TYPE()}`}
+          >
+            Loại sản phẩm
+          </Link>
+        </li> */}
       </ul>
       <Button
         color="inherit"

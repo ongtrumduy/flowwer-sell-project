@@ -11,7 +11,7 @@ export interface InterfaceAuthInformationMetaData {
     userId: string;
     name: string;
     email: string;
-    roles: string[];
+    role_list: string[];
     address: string;
     avatar_url: string;
     phone_number: string;

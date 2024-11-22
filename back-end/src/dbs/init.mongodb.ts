@@ -15,10 +15,14 @@ class Database {
     this.connect();
   }
 
+  // Đảm bảo mongoose.connect bật useUnifiedTopology
+  // Session không hoạt động nếu không bật useUnifiedTopology
   connect() {
     mongoose
       .connect(connectString_atlas, {
-        maxPoolSize: 100,
+        maxPoolSize: 40,
+        serverSelectionTimeoutMS: 4000,
+        socketTimeoutMS: 4000,
       })
       .then(() => {
         console.log('Connected to MongoDB !!!', { connectString_atlas });

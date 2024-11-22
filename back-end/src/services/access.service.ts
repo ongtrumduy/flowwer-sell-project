@@ -9,11 +9,7 @@ import KeyTokenService from '@services/keyToken.service';
 import { createTokenPair, verifyJWTByRefreshToken } from '@auth/authUtils';
 
 import { getInformationData } from '@utils/index';
-import {
-  EnumMessageStatus,
-  EnumReasonStatusCode,
-  EnumRole,
-} from '@root/src/utils/type';
+import { EnumMessageStatus, EnumReasonStatusCode, EnumRole } from '@root/src/utils/type';
 
 import { JwtPayload } from 'jsonwebtoken';
 import ErrorDTODataResponse from '@root/src/core/error.dto.response';
@@ -36,7 +32,7 @@ class AccessService {
       userId: string;
       email: string;
       name: string;
-      roles: string[];
+      role_list: EnumRole[];
       address: string;
       avatar_url: string;
       phone_number: string;
@@ -44,17 +40,7 @@ class AccessService {
       verified: boolean;
     };
   }) => {
-    const {
-      userId,
-      email,
-      name,
-      roles,
-      address,
-      avatar_url,
-      phone_number,
-      status,
-      verified,
-    } = user;
+    const { userId, email, name, role_list, address, avatar_url, phone_number, status, verified } = user;
 
     if (keyStore.refreshTokenUsed.includes(refreshToken)) {
       await KeyTokenService.deleteKeyTokenByUserId({
@@ -91,7 +77,7 @@ class AccessService {
         userId,
         email,
         name,
-        roles,
+        role_list,
         address,
         avatar_url,
         phone_number,
@@ -123,21 +109,11 @@ class AccessService {
       statusCode: 201,
       metaData: {
         user: getInformationData({
-          fields: [
-            'userId',
-            'name',
-            'email',
-            'roles',
-            'address',
-            'avatar_url',
-            'phone_number',
-            'status',
-            'verified',
-          ],
+          fields: ['userId', 'name', 'email', 'role_list', 'address', 'avatar_url', 'phone_number', 'status', 'verified'],
           object: { ...user },
         }),
         tokens,
-        roles: DEFAULT_ROLE,
+        role_list: DEFAULT_ROLE,
       },
       reasonStatusCode: EnumReasonStatusCode.CREATED_SUCCESSFULLY,
       message: 'Refresh Token Successfully !!!',
@@ -146,11 +122,7 @@ class AccessService {
 
   //=====================================================================
   // handle refresh token
-  static handlerRefreshToken = async ({
-    refreshToken,
-  }: {
-    refreshToken: string;
-  }) => {
+  static handlerRefreshToken = async ({ refreshToken }: { refreshToken: string }) => {
     const foundUsedToken = await KeyTokenService.findByRefreshTokenUsed({
       refreshToken,
     });
@@ -200,17 +172,19 @@ class AccessService {
         });
       }
 
-      const foundUser = await UserService.findUserInformationByEmail({
+      const foundUserReturn = await UserService.findUserInformationByEmail({
         email: (payload as JwtPayload)?.email,
       });
 
-      if (!foundUser) {
+      if (!foundUserReturn) {
         throw new ErrorDTODataResponse({
           statusCode: 401,
           message: 'Not Found User !!!',
           reasonStatusCode: EnumReasonStatusCode.NOT_FOUND_USER,
         });
       }
+
+      const foundUser = foundUserReturn.metaData.userInformation;
 
       const userId = String(foundUser._id);
 
@@ -219,7 +193,7 @@ class AccessService {
           userId,
           email: foundUser.email,
           name: foundUser.name,
-          roles: foundUser.roles,
+          role_list: foundUser.role_list,
           avatar_url: foundUser.avatar_url,
           address: foundUser.address,
           phone_number: foundUser.phone_number,
@@ -254,7 +228,7 @@ class AccessService {
             userId: (payload as JwtPayload)?.userId,
             email: (payload as JwtPayload)?.email,
             name: (payload as JwtPayload)?.name,
-            roles: (payload as JwtPayload)?.roles,
+            role_list: (payload as JwtPayload)?.role_list,
             address: (payload as JwtPayload)?.address,
             avatar_url: (payload as JwtPayload)?.avatar_url,
             phone_number: (payload as JwtPayload)?.phone_number,
@@ -262,7 +236,7 @@ class AccessService {
             verified: (payload as JwtPayload)?.verified,
           },
           tokens,
-          roles: DEFAULT_ROLE,
+          role_list: DEFAULT_ROLE,
         },
         message: 'Refresh Token Successfully !!!',
         reasonStatusCode: EnumReasonStatusCode.CREATED_SUCCESSFULLY,
@@ -272,24 +246,20 @@ class AccessService {
 
   //=====================================================================
   // login
-  static login = async ({
-    email,
-    password,
-    refreshToken = null,
-  }: {
-    email: string;
-    password: string;
-    refreshToken?: string | null;
-  }) => {
-    const foundUser = await UserService.findUserInformationByEmail({ email });
+  static login = async ({ email, password, refreshToken = null }: { email: string; password: string; refreshToken?: string | null }) => {
+    const foundUserReturn = await UserService.findUserInformationByEmail({
+      email,
+    });
 
-    if (!foundUser) {
+    if (!foundUserReturn) {
       throw new ErrorDTODataResponse({
         statusCode: 401,
         message: 'Not Found User !!!',
         reasonStatusCode: EnumReasonStatusCode.NOT_FOUND_USER,
       });
     }
+
+    const foundUser = foundUserReturn?.metaData?.userInformation;
 
     const isMatch = await bcrypt.compare(password, foundUser.password);
 
@@ -301,16 +271,7 @@ class AccessService {
       });
     }
 
-    const {
-      _id,
-      name,
-      roles,
-      avatar_url,
-      address,
-      phone_number,
-      status,
-      verified,
-    } = foundUser;
+    const { _id, name, role_list, avatar_url, address, phone_number, status, verified } = foundUser;
     const userId = String(_id);
 
     const privateKey = crypto.randomBytes(32).toString('hex');
@@ -321,7 +282,7 @@ class AccessService {
         userId: userId,
         email,
         name,
-        roles,
+        role_list,
         avatar_url,
         address,
         phone_number,
@@ -351,17 +312,7 @@ class AccessService {
       statusCode: 200,
       metaData: {
         user: getInformationData({
-          fields: [
-            'userId',
-            'name',
-            'email',
-            'roles',
-            'address',
-            'avatar_url',
-            'phone_number',
-            'status',
-            'verified',
-          ],
+          fields: ['userId', 'name', 'email', 'role_list', 'address', 'avatar_url', 'phone_number', 'status', 'verified'],
           object: { ...foundUser, userId },
         }),
         tokens,
@@ -420,7 +371,7 @@ class AccessService {
       address,
       phone_number,
       password: password,
-      roles: DEFAULT_ROLE,
+      role_list: DEFAULT_ROLE,
       avatar_url: '',
     });
 
@@ -450,7 +401,7 @@ class AccessService {
           userId,
           email,
           name,
-          roles: newUser.roles,
+          role_list: newUser.role_list as EnumRole[],
           address,
           avatar_url: newUser.avatar_url,
           phone_number,
@@ -473,17 +424,7 @@ class AccessService {
         statusCode: 201,
         metaData: {
           user: getInformationData({
-            fields: [
-              'userId',
-              'name',
-              'email',
-              'roles',
-              'address',
-              'avatar_url',
-              'phone_number',
-              'status',
-              'verified',
-            ],
+            fields: ['userId', 'name', 'email', 'role_list', 'address', 'avatar_url', 'phone_number', 'status', 'verified'],
             object: { ...newUser.toObject(), userId },
           }),
           tokens,
@@ -504,16 +445,9 @@ class AccessService {
 
   //=====================================================================
   // verify to reset password
-  static verifyToResetPassword = async ({
-    resetPasswordToken,
-  }: {
-    resetPasswordToken: string;
-  }) => {
+  static verifyToResetPassword = async ({ resetPasswordToken }: { resetPasswordToken: string }) => {
     // Mã hóa token từ người dùng
-    const hashedToken = crypto
-      .createHash('sha256')
-      .update(resetPasswordToken)
-      .digest('hex');
+    const hashedToken = crypto.createHash('sha256').update(resetPasswordToken).digest('hex');
 
     // Kiểm tra token trong cơ sở dữ liệu
     const user = await UserModel.findOne({
@@ -536,8 +470,7 @@ class AccessService {
         user: user,
       },
       message: 'Verify To Reset Password Successfully !!!',
-      reasonStatusCode:
-        EnumReasonStatusCode.VERIFY_TO_RESET_PASSWORD_SUCCESSFULLY,
+      reasonStatusCode: EnumReasonStatusCode.VERIFY_TO_RESET_PASSWORD_SUCCESSFULLY,
     });
   };
 
@@ -548,15 +481,14 @@ class AccessService {
   static resetPassword = async ({
     resetPasswordToken,
     newPassword,
+    linkToSupportUser,
   }: {
     resetPasswordToken: string;
     newPassword: string;
+    linkToSupportUser: string;
   }) => {
     // Mã hóa token gửi lên từ người dùng
-    const hashedToken = crypto
-      .createHash('sha256')
-      .update(resetPasswordToken)
-      .digest('hex');
+    const hashedToken = crypto.createHash('sha256').update(resetPasswordToken).digest('hex');
 
     // Tìm kiếm người dùng với token và kiểm tra thời gian hết hạn
     const user = await UserModel.findOne({
@@ -591,7 +523,7 @@ class AccessService {
 <p>Mật khẩu của bạn đã được thay đổi thành công.</p>
 <p>Nếu bạn không thực hiện thay đổi này, vui lòng liên hệ ngay với bộ phận hỗ trợ để đảm bảo an toàn cho tài khoản của bạn.</p>
 <p>Trân trọng,</p>
-<p>Đội ngũ hỗ trợ Flower Shop</p>
+<p>Đội ngũ hỗ trợ Flower Shop</p><p><a href="${linkToSupportUser}">Liên hệ hỗ trợ</a></p>
 `,
       });
 
@@ -603,9 +535,7 @@ class AccessService {
       });
     } catch (error) {
       throw new ErrorDTODataResponse({
-        message:
-          (error as Error).message ||
-          'An Error Occurred While Resetting Your Password !!!',
+        message: (error as Error).message || 'An Error Occurred While Resetting Your Password !!!',
         reasonStatusCode: EnumReasonStatusCode.RESET_PASSWORD_ERROR,
         statusCode: 500,
       });
@@ -620,18 +550,27 @@ class AccessService {
     userId,
     oldPassword,
     newPassword,
+    linkToSupportUser,
   }: {
     userId: string;
     oldPassword: string;
     newPassword: string;
+    linkToSupportUser: string;
   }) => {
     try {
       // Kiểm tra đầu vào
       if (!oldPassword || !newPassword) {
         throw new ErrorDTODataResponse({
           message: 'Old Password And New Password Are Required !!!',
-          reasonStatusCode:
-            EnumReasonStatusCode.OLD_PASSWORD_AND_NEW_PASSWORD_REQUIRED,
+          reasonStatusCode: EnumReasonStatusCode.OLD_PASSWORD_AND_NEW_PASSWORD_REQUIRED,
+          statusCode: 400,
+        });
+      }
+
+      if (!linkToSupportUser) {
+        throw new ErrorDTODataResponse({
+          message: 'Link To Support User Are Required !!!',
+          reasonStatusCode: EnumReasonStatusCode.BAD_REQUEST,
           statusCode: 400,
         });
       }
@@ -675,7 +614,7 @@ class AccessService {
 <p>Mật khẩu của bạn đã được thay đổi thành công.</p>
 <p>Nếu bạn không thực hiện thay đổi này, vui lòng liên hệ ngay với bộ phận hỗ trợ để đảm bảo an toàn cho tài khoản của bạn.</p>
 <p>Trân trọng,</p>
-<p>Đội ngũ hỗ trợ Flower Shop</p>
+<p>Đội ngũ hỗ trợ Flower Shop</p><p><a href="${linkToSupportUser}">Liên hệ hỗ trợ</a></p>
 `,
       });
 
@@ -689,9 +628,7 @@ class AccessService {
     } catch (error) {
       throw new ErrorDTODataResponse({
         statusCode: 500,
-        message:
-          (error as Error).message ||
-          'An Error Occurred While Updating Your Password.',
+        message: (error as Error).message || 'An Error Occurred While Updating Your Password.',
         reasonStatusCode: EnumReasonStatusCode.INTERNAL_SERVER_ERROR,
       });
     }
@@ -702,10 +639,22 @@ class AccessService {
   // Endpoint để người dùng reset mật khẩu
   static postEmailToResetPassword = async ({
     emailTo,
+    linkToResetPassword,
+    linkToSupportUser,
   }: {
     emailTo: string;
+    linkToResetPassword: string;
+    linkToSupportUser: string;
   }) => {
     try {
+      if (!emailTo || !linkToResetPassword || !linkToSupportUser) {
+        throw new ErrorDTODataResponse({
+          statusCode: 400,
+          message: 'Email To And Link To Reset Password And Support User Are Required !!!',
+          reasonStatusCode: EnumReasonStatusCode.BAD_REQUEST,
+        });
+      }
+
       // Kiểm tra người dùng
       const user = await UserModel.findOne({ email: emailTo });
 
@@ -713,8 +662,7 @@ class AccessService {
         // Luôn trả thông báo thành công để tránh lộ thông tin
 
         return new SuccessDTODataResponse({
-          message:
-            'If This Email Exists, You Will Receive A Reset Link Shortly !!!',
+          message: 'If This Email Exists, You Will Receive A Reset Link Shortly !!!',
           statusCode: 200,
           reasonStatusCode: EnumReasonStatusCode.SUCCESS_200,
           metaData: { emailTo },
@@ -725,14 +673,11 @@ class AccessService {
         const now = Date.now();
 
         // Reset lại đếm nếu quá 1 giờ từ yêu cầu trước
-        if (
-          user.lastResetRequest &&
-          now - user.lastResetRequest.getTime() > 3600000
-        ) {
+        if (user.lastResetRequest && now - user.lastResetRequest.getTime() > 3600000) {
           user.resetAttempts = 0;
         }
 
-        if (user.resetAttempts >= 3) {
+        if (user.resetAttempts >= 4) {
           throw new ErrorDTODataResponse({
             message: 'Too Many Reset Attempts. Please Try Again Later !!!',
             statusCode: 429,
@@ -753,32 +698,28 @@ class AccessService {
         });
       });
 
-      const token = buffer.toString('hex');
+      const resetPasswordToken = buffer.toString('hex');
       // Tạo token và mã hóa
       // const token = crypto.randomBytes(32).toString('hex');
-      const hashedToken = crypto
-        .createHash('sha256')
-        .update(token)
-        .digest('hex');
+      const hashedToken = crypto.createHash('sha256').update(resetPasswordToken).digest('hex');
 
       // Lưu token và thời gian hết hạn
       user.resetToken = hashedToken;
       user.resetTokenExpiration = Date.now() + 3600000; // 1 giờ
       await user.save();
 
-      // Gửi email
+      // Gửi emailresetPasswordToken
       await NodeMailerService.handleSendMail({
         emailTo: emailTo,
         subject: 'Đặt lại Mật khẩu',
         content: `<p>Xin chào,</p>
 <p>Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản của mình.</p>
 <p>Vui lòng nhấn vào liên kết bên dưới để đặt lại mật khẩu:</p>
-<a href="http://localhost:3000/reset/${token}">Đặt lại mật khẩu</a>
+<a href="${linkToResetPassword}?resetPasswordToken=${resetPasswordToken}">Đặt lại mật khẩu</a>
 <p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này hoặc liên hệ với bộ phận hỗ trợ của chúng tôi.</p>
 <p>Trân trọng,</p>
 <p>Đội ngũ hỗ trợ Flower Shop</p>
-<p><a href="http://localhost:3000/support">Liên hệ hỗ trợ</a></p><p>Lưu ý: Liên kết này chỉ có hiệu lực trong vòng 1 giờ. Vui lòng đặt lại mật khẩu trước khi liên kết hết hạn.</p>
-
+<p><a href="${linkToSupportUser}">Liên hệ hỗ trợ</a></p><p>Lưu ý: Liên kết này chỉ có hiệu lực trong vòng 1 giờ. Vui lòng đặt lại mật khẩu trước khi liên kết hết hạn.</p>
 `,
       });
 

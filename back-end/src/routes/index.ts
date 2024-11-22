@@ -4,6 +4,8 @@ import { apiKeys, permission } from '@auth/checkAuth';
 import { EnumMessageStatus, EnumPermission } from '@root/src/utils/type';
 
 import accessRouter from './access';
+import accountRouter from './account';
+
 import productRouter from './product';
 import userRouter from './user';
 
@@ -12,9 +14,11 @@ import cartRouter from './cart';
 import orderRouter from './order';
 import stripePaymentRouter from './stripe_payment';
 import cloudinaryUploadRouter from './cloudinary_upload';
-
+import overviewRouter from './overview';
 import apiKeyRouter from './api_key';
 import { asyncHandler } from '../helpers/asyncHandler';
+
+import adminRouter from './admin';
 
 const router = express.Router({ mergeParams: true }); // Bật mergeParams
 
@@ -64,6 +68,11 @@ router.use('/v1/api/product', productRouter);
 //=================================================
 
 //=================================================
+// for product
+router.use('/v1/api/account', accountRouter);
+//=================================================
+
+//=================================================
 // for category
 router.use('/v1/api/category', categoryRouter);
 //=================================================
@@ -86,6 +95,16 @@ router.use('/v1/api/stripe_payment', stripePaymentRouter);
 //=================================================
 // for cloudinary upload image
 router.use('/v1/api/cloudinary_upload', cloudinaryUploadRouter);
+//=================================================
+
+//=================================================
+// for cloudinary upload image
+router.use('/v1/api/overview', overviewRouter);
+//=================================================
+
+//=================================================
+// for admin route
+router.use('/v1/api/admin', adminRouter);
 //=================================================
 
 //=================================================

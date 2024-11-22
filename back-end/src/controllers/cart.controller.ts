@@ -5,8 +5,8 @@ import SuccessResponse from '@core/success.response';
 import {
   EnumMessageStatus,
   EnumReasonStatusCode,
-  WithCartRequest,
-  WithKeyStoreV2Request,
+  InterfaceWithCartRequest,
+  InterfaceWithKeyStoreV2Request,
 } from '@root/src/utils/type';
 import {
   DEFAULT_LIMIT,
@@ -23,7 +23,7 @@ class CartController {
   // get all product list
   // query params: limit, page, userId, cartId
   static getAllProductInCartList = async (
-    req: WithCartRequest,
+    req: InterfaceWithCartRequest,
     res: Response,
     next: NextFunction
   ) => {
@@ -49,7 +49,7 @@ class CartController {
   // =================================================================
   // create new cart and get cart for user
   static createNewCartAndGetCartForUser = async (
-    req: WithCartRequest,
+    req: InterfaceWithCartRequest,
     res: Response,
     next: NextFunction
   ) => {
@@ -66,7 +66,7 @@ class CartController {
   // =========================================================
   // get cart product item details
   static getCartProductItemDetail = async (
-    req: WithCartRequest,
+    req: InterfaceWithCartRequest,
     res: Response,
     next: NextFunction
   ) => {
@@ -91,7 +91,7 @@ class CartController {
   // =========================================================
   // update quantity product in cart 2
   static updateQuantityProductInCartV2 = async (
-    req: WithCartRequest,
+    req: InterfaceWithCartRequest,
     res: Response,
     next: NextFunction
   ) => {
@@ -117,7 +117,7 @@ class CartController {
   // =========================================================
   // delete product in cart items
   static deleteProductInCartItems = async (
-    req: WithCartRequest,
+    req: InterfaceWithCartRequest,
     res: Response,
     next: NextFunction
   ) => {
@@ -142,7 +142,7 @@ class CartController {
   // =========================================================
   // add product in cart items
   // static addProductInCartItems = async (
-  //   req: WithCartRequest,
+  //   req: InterfaceWithCartRequest,
   //   res: Response,
   //   next: NextFunction
   // ) => {
@@ -166,13 +166,13 @@ class CartController {
   // };
 
   // =========================================================
-  // add product in cart items version 2
-  static addProductInCartItemsV2 = async (
-    req: WithCartRequest,
+  // add product in cart items version 3
+  static addProductInCartItemsV3 = async (
+    req: InterfaceWithCartRequest,
     res: Response,
     next: NextFunction
   ) => {
-    const data = await CartService.addProductInCartItemsV2({
+    const data = await CartService.addProductInCartItemsV3({
       productId: req.body.productId,
       product_quantity: req.body.product_quantity,
       userId: req?.user.userId,

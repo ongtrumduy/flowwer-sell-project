@@ -28,18 +28,18 @@ const Login = () => {
       })) as InterfaceAuthInformationMetaData;
 
       if (returnLogin) {
-        if (returnLogin.user.roles.includes(EnumRole.ADMIN)) {
-          navigate('/admin');
+        if (returnLogin.user.role_list.includes(EnumRole.ADMIN)) {
+          navigate(`${AppRoutes.ADMIN_BASE()}`);
           return;
-        } else if (returnLogin.user.roles.includes(EnumRole.SHIPPER)) {
-          navigate('/shipper');
+        } else if (returnLogin.user.role_list.includes(EnumRole.SHIPPER)) {
+          navigate(`${AppRoutes.SHIPPER_BASE()}`);
           return;
-        } else if (returnLogin.user.roles.includes(EnumRole.EMPLOYEE)) {
-          navigate('/employee');
+        } else if (returnLogin.user.role_list.includes(EnumRole.EMPLOYEE)) {
+          navigate(`${AppRoutes.EMPLOYEE_BASE()}`);
           return;
         }
 
-        navigate('/home');
+        navigate(`${AppRoutes.BASE()}`);
       }
 
       return returnLogin;
@@ -67,16 +67,7 @@ const Login = () => {
           Đăng nhập
         </Typography>
         <form onSubmit={handleSubmit}>
-          <TextField
-            label="Email"
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
+          <TextField label="Email" variant="outlined" fullWidth margin="normal" name="email" value={formData.email} onChange={handleChange} required />
           <TextField
             label="Mật khẩu"
             variant="outlined"
@@ -88,34 +79,20 @@ const Login = () => {
             onChange={handleChange}
             required
           />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            color="primary"
-            sx={{ mt: 2 }}
-          >
+          <Button type="submit" fullWidth variant="contained" color="primary" sx={{ mt: 2 }}>
             Đăng nhập
           </Button>
 
           {/* Thêm quên mật khẩu */}
           <Typography variant="body2" align="center" sx={{ mt: 2 }}>
-            <Link
-              to={`${AppRoutes.BASE()}${AppRoutes.FORGOT_PASSWORD()}`}
-              color="primary"
-            >
-              <span style={{ textDecoration: 'underline' }}>
-                Quên mật khẩu?
-              </span>
+            <Link to={`${AppRoutes.BASE()}${AppRoutes.FORGOT_PASSWORD()}`} color="primary">
+              <span style={{ textDecoration: 'underline' }}>Quên mật khẩu?</span>
             </Link>
           </Typography>
 
           <Typography variant="body2" align="center" sx={{ mt: 2 }}>
             Bạn chưa có tài khoản?{' '}
-            <Link
-              to={`${AppRoutes.BASE()}${AppRoutes.SIGN_UP()}`}
-              color="primary"
-            >
+            <Link to={`${AppRoutes.BASE()}${AppRoutes.SIGN_UP()}`} color="primary">
               <span style={{ textDecoration: 'underline' }}>Đăng ký ngay</span>
             </Link>
           </Typography>
