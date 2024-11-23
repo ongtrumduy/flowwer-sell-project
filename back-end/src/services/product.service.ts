@@ -28,10 +28,13 @@ class ProductService {
     searchName: string;
     selectedCategory: string;
   }) => {
-    const pipeline = [];
+    const allPipeline = [];
+    // for pagination
+    const dataPipeline = [];
+    const overviewPipeline = [];
 
     if (searchName) {
-      pipeline.push({
+      allPipeline.push({
         $search: {
           index: 'default',
           text: {
@@ -45,11 +48,11 @@ class ProductService {
       });
     }
     if (selectedCategory) {
-      pipeline.push({
+      allPipeline.push({
         $match: { product_category_list: new Types.ObjectId(selectedCategory) },
       });
     }
-    pipeline.push({
+    allPipeline.push({
       $match: {
         product_price: {
           $gte: priceMin,
@@ -59,12 +62,11 @@ class ProductService {
     });
 
     // =================================================================
-    // for pagination
-    const data = [];
-    data.push({
+
+    dataPipeline.push({
       $skip: (page - 1) * limit,
     });
-    data.push({
+    dataPipeline.push({
       $limit: limit,
     });
     // =================================================================
@@ -79,7 +81,7 @@ class ProductService {
     //     totalProductSearch: { $sum: 1 }, // Tổng số sản phẩm đã tìm kiếm   product_name: 1,
     //   },
     // });
-    data.push({
+    dataPipeline.push({
       $project: {
         product_name: 1,
         product_price: 1,
@@ -91,7 +93,7 @@ class ProductService {
         _id: 0,
       },
     });
-    data.push({
+    dataPipeline.push({
       $sort: { createdAt: -1 } as Record<string, 1 | -1>, // Sắp xếp theo ngày tạo
     });
     // data.push({
@@ -103,21 +105,19 @@ class ProductService {
     //   },
     // });
 
-    pipeline.push({
+    // Tạo pipeline cho tổng quan (đếm số lượng)
+    overviewPipeline.push({
+      $count: 'totalSearchCount',
+    });
+
+    allPipeline.push({
       $facet: {
-        data: data,
-        overview: [
-          {
-            $count: 'totalSearchCount', // Đếm tổng số sản phẩm
-            // $addFields: {
-            //   totalProductSearch: '$totalProductSearch',
-            // },
-          },
-        ],
+        data: dataPipeline,
+        overview: overviewPipeline,
       },
     });
 
-    const products = await ProductModel.aggregate(pipeline);
+    const products = await ProductModel.aggregate(allPipeline);
 
     // console.log('products ===>', { products });
 

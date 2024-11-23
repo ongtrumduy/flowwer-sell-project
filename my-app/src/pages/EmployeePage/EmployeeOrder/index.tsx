@@ -1,7 +1,7 @@
-import EmployeeOrderList from '@components/EmployeeComponent/EmployeeOrderList';
+import EmployeeOrder from '@components/EmployeeComponent/EmployeeOrder';
 
 const EmployeeOrderPage = () => {
-  return <EmployeeOrderList />;
+  return <EmployeeOrder />;
 };
 
 export default EmployeeOrderPage;

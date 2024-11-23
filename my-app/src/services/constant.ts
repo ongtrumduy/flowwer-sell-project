@@ -16,30 +16,54 @@ export const ACCESS_API = {
 export const PRODUCT_API = {
   ALL: () => `/v1/api/product/all`,
   CREATE: () => `/v1/api/product/create`,
-  UPDATE: ({ productId }: { productId: string }) => `/v1/api/product/update/${productId}`,
+  UPDATE: ({ productId }: { productId: string }) =>
+    `/v1/api/product/update/${productId}`,
   DELETE: () => `/v1/api/product/delete`,
-  PRODUCT_DETAIL: ({ productId }: { productId: string }) => `/v1/api/product/${productId}`,
-  SEARCH: ({ key_search }: { key_search: string }) => `/v1/api/product/search?key_search=${key_search ? key_search : ``}`,
+  PRODUCT_DETAIL: ({ productId }: { productId: string }) =>
+    `/v1/api/product/${productId}`,
+  SEARCH: ({ key_search }: { key_search: string }) =>
+    `/v1/api/product/search?key_search=${key_search ? key_search : ``}`,
 };
 
 //===============================================================================================================
 export const ORDER_API = {
   CREATE: () => `/v1/api/order/create`,
-  GET_ORDER_INFORMATION_TO_PAYMENT: ({ orderId }: { orderId: string }) => `/v1/api/order/get/information/payment/${orderId}`,
+  GET_ORDER_INFORMATION_TO_PAYMENT: ({ orderId }: { orderId: string }) =>
+    `/v1/api/order/get/information/payment/${orderId}`,
   UPDATE_SUCCESS_PAYMENT: () => '/v1/api/order/update/success/payment',
   GET_ALL_ORDER_OF_CUSTOMER_LIST: () => '/v1/api/order/get/all/customer',
 
-  DESTROY_ORDER_ITEM: ({ orderId }: { orderId: string }) => `/v1/api/order/destroy/item/${orderId}`,
+  DESTROY_ORDER_ITEM: ({ orderId }: { orderId: string }) =>
+    `/v1/api/order/destroy/item/${orderId}`,
 
-  GET_DETAIL_OF_ORDER: ({ orderId }: { orderId: string }) => `/v1/api/order/get/detail/${orderId}`,
+  GET_DETAIL_OF_ORDER: ({ orderId }: { orderId: string }) =>
+    `/v1/api/order/get/detail/${orderId}`,
 
   ALL_FOR_ADMIN: () => `/v1/api/admin/order/all`,
-  ORDER_DETAIL_FOR_ADMIN: ({ orderId }: { orderId: string }) => `/v1/api/admin/order/${orderId}`,
+
+  ORDER_DETAIL_FOR_ADMIN: ({ orderId }: { orderId: string }) =>
+    `/v1/api/admin/order/${orderId}`,
 
   CREATE_FOR_ADMIN: () => `/v1/api/admin/order/create`,
-  UPDATE_FOR_ADMIN: ({ orderId }: { orderId: string }) => `/v1/api/admin/order/update/${orderId}`,
+  UPDATE_FOR_ADMIN: ({ orderId }: { orderId: string }) =>
+    `/v1/api/admin/order/update/${orderId}`,
   DELETE_FOR_ADMIN: () => `/v1/api/admin/order/delete`,
-  GET_SHIPPER_LIST_FOR_ADMIN: () => `/v1/api/admin/shipper/list`,
+  GET_SHIPPER_LIST_FOR_ADMIN: () => `/v1/api/admin/order/shipper/list`,
+
+  GET_SHIPPER_LIST_FOR_EMPLOYEE: () => `/v1/api/employee/order/shipper/list`,
+
+  ASSIGN_SHIPPER_TO_DELIVER: () => `/v1/api/employee/order/shipper/assign`,
+
+  ALL_FOR_EMPLOYEE: () => `/v1/api/employee/order/all`,
+
+  GET_ALL_ORDER_OF_SHIPPER_LIST_FOR_SHIPPER: () =>
+    '/v1/api/shipper/order/get/all/shipper',
+
+  GET_DETAIL_OF_ORDER_FOR_SHIPPER: ({ orderId }: { orderId: string }) =>
+    `/v1/api/shipper/order/get/detail/${orderId}`,
+
+  CHANGE_STATUS_OF_ORDER_OF_SHIPPER_FOR_SHIPPER: () =>
+    `/v1/api/shipper/order/change/status`,
 };
 
 //===============================================================================================================
@@ -59,7 +83,8 @@ export const CART_API = {
   ALL: () => `/v1/api/cart/all`,
   ADD_PRODUCT_TO_CART: () => `/v1/api/cart/add`,
   UPDATE_QUANTITY: () => `/v1/api/cart/quantity/update`,
-  REMOVE_PRODUCT: ({ cartProductId }: { cartProductId: string }) => `/v1/api/cart/product/remove/${cartProductId}`,
+  REMOVE_PRODUCT: ({ cartProductId }: { cartProductId: string }) =>
+    `/v1/api/cart/product/remove/${cartProductId}`,
 };
 
 //===============================================================================================================
@@ -68,10 +93,12 @@ export const CATEGORY_API = {
   ALL: () => `/v1/api/category/all`,
 
   ALL_FOR_ADMIN: () => `/v1/api/admin/category/all`,
-  CATEGORY_DETAIL_FOR_ADMIN: ({ categoryId }: { categoryId: string }) => `/v1/api/admin/category/${categoryId}`,
+  CATEGORY_DETAIL_FOR_ADMIN: ({ categoryId }: { categoryId: string }) =>
+    `/v1/api/admin/category/${categoryId}`,
 
   CREATE_FOR_ADMIN: () => `/v1/api/admin/category/create`,
-  UPDATE_FOR_ADMIN: ({ categoryId }: { categoryId: string }) => `/v1/api/admin/category/update/${categoryId}`,
+  UPDATE_FOR_ADMIN: ({ categoryId }: { categoryId: string }) =>
+    `/v1/api/admin/category/update/${categoryId}`,
   DELETE_FOR_ADMIN: () => `/v1/api/admin/category/delete`,
 };
 
@@ -87,9 +114,29 @@ export const OVERVIEW_API = {
 //===============================================================================================================
 export const ACCOUNT_API = {
   ALL: () => `/v1/api/account/all`,
-  ACCOUNT_DETAIL: ({ accountId }: { accountId: string }) => `/v1/api/account/${accountId}`,
+  ACCOUNT_DETAIL: ({ accountId }: { accountId: string }) =>
+    `/v1/api/account/${accountId}`,
 
   CREATE: () => `/v1/api/account/create`,
-  UPDATE: ({ accountId }: { accountId: string }) => `/v1/api/account/update/${accountId}`,
+  UPDATE: ({ accountId }: { accountId: string }) =>
+    `/v1/api/account/update/${accountId}`,
   DELETE: () => `/v1/api/account/delete`,
+};
+
+//===============================================================================================================
+
+export const TYPE_PRODUCT_API = {
+  ALL: () => `/v1/api/type_product/all`,
+
+  ALL_FOR_ADMIN: () => `/v1/api/admin/type_product/all`,
+  TYPE_PRODUCT_DETAIL_FOR_ADMIN: ({
+    typeProductId,
+  }: {
+    typeProductId: string;
+  }) => `/v1/api/admin/type_product/${typeProductId}`,
+
+  CREATE_FOR_ADMIN: () => `/v1/api/admin/type_product/create`,
+  UPDATE_FOR_ADMIN: ({ typeProductId }: { typeProductId: string }) =>
+    `/v1/api/admin/type_product/update/${typeProductId}`,
+  DELETE_FOR_ADMIN: () => `/v1/api/admin/type_product/delete`,
 };

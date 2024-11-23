@@ -79,7 +79,7 @@ function StripePayment() {
         setOrderDetails(returnDataResponse);
       })
       .catch(() => {
-        navigate(AppRoutes.PAGE_UNAUTHORIZED());
+        navigate(`${AppRoutes.BASE()}${AppRoutes.UNAUTHORIZED()}`);
       });
   }, [orderId]);
 
@@ -88,7 +88,7 @@ function StripePayment() {
       orderDetails?.order.customerId !== userInformation.userId) ||
     !orderId
   ) {
-    return <Navigate to={`${AppRoutes.PAGE_UNAUTHORIZED()}`} />;
+    return <Navigate to={`${AppRoutes.BASE()}${AppRoutes.UNAUTHORIZED()}`} />;
   }
 
   if (

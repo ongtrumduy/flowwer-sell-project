@@ -164,6 +164,11 @@ OrderSchema.pre('save', function (next) {
 });
 
 // =======================================================
+// create index for search
+OrderSchema.index({ order_code: 'text' });
+// =======================================================
+
+// =======================================================
 
 const OrderModel = model(ORDER_DOCUMENT_NAME, OrderSchema);
 

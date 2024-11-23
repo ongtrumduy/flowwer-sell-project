@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 
 import SuccessResponse from '@core/success.response';
-import { EnumMessageStatus, InterfaceWithKeyStoreV2Request } from '@root/src/utils/type';
+import { EnumMessageStatus, EnumStatusOfOrder, InterfaceWithKeyStoreV2Request } from '@root/src/utils/type';
 import AdminOrderService from '@root/src/services/admin/order.service';
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from '@root/src/utils/constant';
 
@@ -14,6 +14,7 @@ class AdminOrderController {
       limit: req.query?.limit ? Number(req.query.limit) : DEFAULT_LIMIT,
       page: req.query?.page ? Number(req.query.page) : DEFAULT_PAGE,
       searchName: req.query?.searchName ? String(req.query.searchName) : '',
+      orderStatus: (req.query?.orderStatus as EnumStatusOfOrder) || 'ALL',
     });
 
     new SuccessResponse({

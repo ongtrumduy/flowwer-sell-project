@@ -77,11 +77,53 @@ class UserController {
   };
 
   // =================================================================
-  static checkHaveRoleUserAdminOrEmployee = async (req: InterfaceWithKeyStoreV2Request, res: Response, next: NextFunction) => {
+  static checkHaveRoleUserAdmin = async (req: InterfaceWithKeyStoreV2Request, res: Response, next: NextFunction) => {
     const haveRoleUser = req.user;
 
     const isPermission = haveRoleUser?.role_list?.some((role) => {
-      return [EnumRole.ADMIN, EnumRole.EMPLOYEE].indexOf(role) > -1;
+      return [EnumRole.ADMIN].indexOf(role) > -1;
+    });
+
+    if (isPermission) {
+      return next();
+    } else {
+      const errorReturn = new ErrorDTODataResponse({
+        message: "You don't have permission",
+        statusCode: 403,
+        reasonStatusCode: EnumReasonStatusCode.FORBIDDEN_PERMISSION,
+      });
+
+      return next(errorReturn);
+    }
+  };
+
+  // =================================================================
+  static checkHaveRoleUserEmployee = async (req: InterfaceWithKeyStoreV2Request, res: Response, next: NextFunction) => {
+    const haveRoleUser = req.user;
+
+    const isPermission = haveRoleUser?.role_list?.some((role) => {
+      return [EnumRole.EMPLOYEE].indexOf(role) > -1;
+    });
+
+    if (isPermission) {
+      return next();
+    } else {
+      const errorReturn = new ErrorDTODataResponse({
+        message: "You don't have permission",
+        statusCode: 403,
+        reasonStatusCode: EnumReasonStatusCode.FORBIDDEN_PERMISSION,
+      });
+
+      return next(errorReturn);
+    }
+  };
+
+  // =================================================================
+  static checkHaveRoleUserShipper = async (req: InterfaceWithKeyStoreV2Request, res: Response, next: NextFunction) => {
+    const haveRoleUser = req.user;
+
+    const isPermission = haveRoleUser?.role_list?.some((role) => {
+      return [EnumRole.SHIPPER].indexOf(role) > -1;
     });
 
     if (isPermission) {

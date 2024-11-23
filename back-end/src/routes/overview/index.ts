@@ -16,7 +16,7 @@ const router = express.Router({ mergeParams: true }); // Bật mergeParams
 // can call endpoints that require authenticated user
 router.use(asyncHandler(authenticationV2));
 // ==================================================
-router.use(asyncHandler(UserController.checkHaveRoleUserAdminOrEmployee));
+router.use(asyncHandler(UserController.checkHaveRoleUserAdmin));
 
 // create new user
 router.get('/information', asyncHandler(OverviewController.overviewDashboardCountInformation));

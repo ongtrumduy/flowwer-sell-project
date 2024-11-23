@@ -19,6 +19,8 @@ import apiKeyRouter from './api_key';
 import { asyncHandler } from '../helpers/asyncHandler';
 
 import adminRouter from './admin';
+import employeeRouter from './employee';
+import shipperRouter from './shipper';
 
 const router = express.Router({ mergeParams: true }); // Bật mergeParams
 
@@ -102,10 +104,195 @@ router.use('/v1/api/cloudinary_upload', cloudinaryUploadRouter);
 router.use('/v1/api/overview', overviewRouter);
 //=================================================
 
+/**
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ */
+
 //=================================================
 // for admin route
 router.use('/v1/api/admin', adminRouter);
 //=================================================
+//=================================================
+
+//=================================================
+// for employee route
+router.use('/v1/api/employee', employeeRouter);
+//=================================================
+//=================================================
+
+//=================================================
+// for shipper route
+router.use('/v1/api/shipper', shipperRouter);
+//=================================================
+//=================================================
+
+/**
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ */
 
 //=================================================
 // put in last of routes because some routers of product do not need to check authentication

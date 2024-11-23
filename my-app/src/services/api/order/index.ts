@@ -3,6 +3,7 @@ import { ORDER_API } from '@services/constant';
 import { AxiosHeaders } from 'axios';
 import { cloneDeepWith, isObject, omitBy } from 'lodash';
 import { InterfaceOrderDetailItem_ForAdmin } from './type';
+import { EnumOrderStatusStage } from '../stripe_payment/type';
 
 class OrderApiService {
   // ===========================================================================
@@ -93,7 +94,15 @@ class OrderApiService {
 
   // ===========================================================================
   //
-  static getAllOrderOfCustomerList = ({ page, limit, orderStatus }: { page: number; limit: number; orderStatus: string }) => {
+  static getAllOrderOfCustomerList = ({
+    page,
+    limit,
+    orderStatus,
+  }: {
+    page: number;
+    limit: number;
+    orderStatus: EnumOrderStatusStage | 'ALL';
+  }) => {
     return new Promise((resolve, reject) => {
       AxiosConfigService.getData({
         url: ORDER_API.GET_ALL_ORDER_OF_CUSTOMER_LIST(),
@@ -162,16 +171,30 @@ class OrderApiService {
   // =========================================FOR_ADMIN========================================================
   // ===========================================================================================================
   // get all order list
-  static getAllOrderList_ForAdmin = ({ searchName, page, limit }: { searchName: string; page: number; limit: number }) => {
+  static getAllOrderList_ForAdmin = ({
+    searchName,
+    orderStatus,
+    page,
+    limit,
+  }: {
+    searchName: string;
+    page: number;
+    limit: number;
+    orderStatus: EnumOrderStatusStage | 'ALL';
+  }) => {
     const params = cloneDeepWith(
       {
         searchName,
         page,
         limit,
+        orderStatus,
       },
       (value) => {
         if (isObject(value)) {
-          return omitBy(value, (v) => v === null || v === '' || v === undefined);
+          return omitBy(
+            value,
+            (v) => v === null || v === '' || v === undefined
+          );
         }
       }
     );
@@ -239,7 +262,13 @@ class OrderApiService {
 
   // ===========================================================================
   // update order
-  static updateOrder_ForAdmin = ({ formData, orderId }: { formData: FormData; orderId: string }) => {
+  static updateOrder_ForAdmin = ({
+    formData,
+    orderId,
+  }: {
+    formData: FormData;
+    orderId: string;
+  }) => {
     const headers = new AxiosHeaders();
     headers.set('Content-Type', 'multipart/form-data');
 
@@ -285,7 +314,15 @@ class OrderApiService {
 
   // ===========================================================================
   // get shipper data list
-  static getShipperDataList_ForAdmin = ({ limit, page, searchName }: { limit: number; page: number; searchName: string }) => {
+  static getShipperDataList_ForAdmin = ({
+    limit,
+    page,
+    searchName,
+  }: {
+    limit: number;
+    page: number;
+    searchName: string;
+  }) => {
     const params = cloneDeepWith(
       {
         searchName,
@@ -294,7 +331,10 @@ class OrderApiService {
       },
       (value) => {
         if (isObject(value)) {
-          return omitBy(value, (v) => v === null || v === '' || v === undefined);
+          return omitBy(
+            value,
+            (v) => v === null || v === '' || v === undefined
+          );
         }
       }
     );
@@ -308,6 +348,210 @@ class OrderApiService {
           const shipperData = data as InterfaceOrderDetailItem_ForAdmin;
 
           resolve(shipperData.metaData);
+        })
+        .catch((error) => {
+          reject(error.response.data);
+        });
+    });
+  };
+
+  // ===========================================================================
+  // get shipper data list
+  static getAllOrderList_ForEmployee = ({
+    limit,
+    page,
+    searchName,
+    orderStatus,
+  }: {
+    limit: number;
+    page: number;
+    searchName: string;
+    orderStatus: EnumOrderStatusStage | 'ALL';
+  }) => {
+    const params = cloneDeepWith(
+      {
+        searchName,
+        page,
+        limit,
+        orderStatus,
+      },
+      (value) => {
+        if (isObject(value)) {
+          return omitBy(
+            value,
+            (v) => v === null || v === '' || v === undefined
+          );
+        }
+      }
+    );
+
+    return new Promise((resolve, reject) => {
+      AxiosConfigService.getData({
+        url: ORDER_API.ALL_FOR_EMPLOYEE(),
+        params,
+      })
+        .then((data) => {
+          const shipperData = data as InterfaceOrderDetailItem_ForAdmin;
+
+          resolve(shipperData.metaData);
+        })
+        .catch((error) => {
+          reject(error.response.data);
+        });
+    });
+  };
+
+  // ===========================================================================
+  // get shipper data list
+  static getShipperDataList_ForEmployee = ({
+    limit,
+    page,
+    searchName,
+  }: {
+    limit: number;
+    page: number;
+    searchName: string;
+  }) => {
+    const params = cloneDeepWith(
+      {
+        searchName,
+        page,
+        limit,
+      },
+      (value) => {
+        if (isObject(value)) {
+          return omitBy(
+            value,
+            (v) => v === null || v === '' || v === undefined
+          );
+        }
+      }
+    );
+
+    return new Promise((resolve, reject) => {
+      AxiosConfigService.getData({
+        url: ORDER_API.GET_SHIPPER_LIST_FOR_EMPLOYEE(),
+        params,
+      })
+        .then((data) => {
+          const shipperData = data as InterfaceOrderDetailItem_ForAdmin;
+
+          resolve(shipperData.metaData);
+        })
+        .catch((error) => {
+          reject(error.response.data);
+        });
+    });
+  };
+
+  // ===========================================================================
+  // get shipper data list
+  static assignShipperToDeliver_ForEmployee = ({
+    shipperId,
+    orderId,
+  }: {
+    shipperId: string;
+    orderId: string;
+  }) => {
+    return new Promise((resolve, reject) => {
+      AxiosConfigService.postData({
+        url: ORDER_API.ASSIGN_SHIPPER_TO_DELIVER(),
+        data: {
+          shipperId,
+          orderId,
+        },
+      })
+        .then((data) => {
+          const shipperData = data as InterfaceOrderDetailItem_ForAdmin;
+
+          resolve(shipperData.metaData);
+        })
+        .catch((error) => {
+          reject(error.response.data);
+        });
+    });
+  };
+
+  // ===========================================================================
+  // ===========================================================================
+  //
+  static getAllOrderOfShipperList = ({
+    page,
+    limit,
+    orderStatus,
+  }: {
+    page: number;
+    limit: number;
+    orderStatus: EnumOrderStatusStage | 'ALL';
+  }) => {
+    return new Promise((resolve, reject) => {
+      AxiosConfigService.getData({
+        url: ORDER_API.GET_ALL_ORDER_OF_SHIPPER_LIST_FOR_SHIPPER(),
+        params: {
+          page,
+          limit,
+          orderStatus,
+        },
+      })
+        .then((data) => {
+          console.log('33 data createOrderForCustomer ===>', data);
+          const returnData = data as {
+            metaData: unknown;
+          };
+
+          resolve(returnData.metaData);
+        })
+        .catch((error) => {
+          reject(error.response.data);
+        });
+    });
+  };
+
+  // ===========================================================================
+  //
+  static getDetailOfOrder_ForShipper = ({ orderId }: { orderId: string }) => {
+    return new Promise((resolve, reject) => {
+      AxiosConfigService.getData({
+        url: ORDER_API.GET_DETAIL_OF_ORDER_FOR_SHIPPER({ orderId }),
+      })
+        .then((data) => {
+          console.log('33 data createOrderForCustomer ===>', data);
+          const returnData = data as {
+            metaData: unknown;
+          };
+
+          resolve(returnData.metaData);
+        })
+        .catch((error) => {
+          reject(error.response.data);
+        });
+    });
+  };
+
+  // ===========================================================================
+  // get shipper data list
+  static changeStatusOfOrderOfShipper = ({
+    orderId,
+    currentOrderStatus,
+  }: {
+    orderId: string;
+    currentOrderStatus: EnumOrderStatusStage | null;
+  }) => {
+    return new Promise((resolve, reject) => {
+      AxiosConfigService.postData({
+        url: ORDER_API.CHANGE_STATUS_OF_ORDER_OF_SHIPPER_FOR_SHIPPER(),
+        data: {
+          orderId,
+          currentOrderStatus,
+        },
+      })
+        .then((data) => {
+          console.log('33 data createOrderForCustomer ===>', data);
+          const returnData = data as {
+            metaData: unknown;
+          };
+
+          resolve(returnData.metaData);
         })
         .catch((error) => {
           reject(error.response.data);

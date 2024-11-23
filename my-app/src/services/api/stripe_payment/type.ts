@@ -39,6 +39,7 @@ export interface InterfaceOrderInformationToPayMetaData {
 export enum EnumOrderStatusStage {
   PENDING = 'PENDING',
   PAYMENT_SUCCESS = 'PAYMENT_SUCCESS',
+  WAITING_CONFIRM = 'WAITING_CONFIRM',
   PICKED_UP = 'PICKED_UP',
   IN_TRANSIT = 'IN_TRANSIT',
   DELIVERED = 'DELIVERED',
@@ -48,6 +49,7 @@ export enum EnumOrderStatusStage {
 export enum ProcessEvent {
   PENDING = 'PENDING',
   PAYMENT_SUCCESS = 'PAYMENT_SUCCESS',
+  WAITING_CONFIRM = 'WAITING_CONFIRM',
   PICKED_UP = 'PICKED_UP',
   IN_TRANSIT = 'IN_TRANSIT',
   DELIVERED = 'DELIVERED',

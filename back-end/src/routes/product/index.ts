@@ -27,7 +27,7 @@ router.get('/search', asyncHandler(ProductController.findListSearchProduct));
 // can call endpoints that require authenticated user
 router.use(asyncHandler(authenticationV2));
 // ==================================================
-router.use(asyncHandler(UserController.checkHaveRoleUserAdminOrEmployee));
+router.use(asyncHandler(UserController.checkHaveRoleUserAdmin));
 
 // create new product
 router.post(

@@ -68,7 +68,13 @@ export interface InterfaceOrderListData {
   orderId?: string;
   order_item_list: InterfaceOrderItem[];
   total_amount: number;
-  customerId: string;
+  customerId: {
+    name: string;
+    phone_number: string;
+    _id: string;
+    address: string;
+    email: string;
+  };
   pickup_address: string;
   delivery_address: string;
   order_status_stage: EnumOrderStatusStage; // Enum nếu có
@@ -84,6 +90,8 @@ export interface InterfaceOrderListData {
     name: string;
     phone_number: string;
     _id: string;
+    address: string;
+    email: string;
   };
 }
 
@@ -205,4 +213,56 @@ export interface InterfaceNeoUserDetailI_ForAdmin {
   __v: number;
   role_list: string[];
   phone_number: string;
+}
+
+export interface InterfaceShipperListMetaData_ForEmployee {
+  shipperData: InterfaceShipperDetailItem_ForEmployee[];
+}
+
+export interface InterfaceShipperDetailItem_ForEmployee {
+  shipperId: string;
+  shipper_name: string;
+  shipper_phone_number: string;
+  shipper_email: string;
+  shipper_gender: string;
+  shipper_address: string;
+  currentOrders: number;
+  currentAssignedOrders: number;
+}
+
+export interface InterfaceOrderDetailMetadata_ForShipper {
+  totalOrderStatusItem: number;
+  order: InterfaceOrderListData_ForShipper;
+}
+
+export interface InterfaceOrderListData_ForShipper {
+  _id?: string;
+  orderId?: string;
+  order_item_list: InterfaceOrderItem[];
+  total_amount: number;
+  customerId: {
+    name: string;
+    phone_number: string;
+    _id: string;
+    address: string;
+    email: string;
+  };
+  pickup_address: string;
+  delivery_address: string;
+  order_status_stage: EnumOrderStatusStage; // Enum nếu có
+  process_timeline: InterfaceProcessTimeline[];
+  order_date: string; // ISO Date string
+  delivery_date: string; // ISO Date string
+  pickup_date: string; // ISO Date string
+  createdAt: string; // ISO Date string
+  updatedAt: string; // ISO Date string
+  order_code: string;
+  __v: number;
+  shipperId: {
+    name: string;
+    phone_number: string;
+    _id: string;
+    address: string;
+    email: string;
+  };
 }

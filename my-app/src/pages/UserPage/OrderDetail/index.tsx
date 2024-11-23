@@ -1,4 +1,4 @@
-import OrderDetail from '@components/UserComponent/OrderDetail';
+import OrderDetail from '@components/UserComponent/Order/OrderDetail';
 
 function OrderDetailPage() {
   return <OrderDetail />;

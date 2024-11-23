@@ -31,6 +31,14 @@ class UserService {
     try {
       const userInformation = await UserModel.findOne({ email }).select(select).lean();
 
+      if (!userInformation) {
+        throw new ErrorDTODataResponse({
+          statusCode: 400,
+          message: 'Find User Information Failed !!!',
+          reasonStatusCode: EnumMessageStatus.BAD_REQUEST_400,
+        });
+      }
+
       return new SuccessDTODataResponse({
         statusCode: 201,
         reasonStatusCode: EnumReasonStatusCode.CREATED_201,

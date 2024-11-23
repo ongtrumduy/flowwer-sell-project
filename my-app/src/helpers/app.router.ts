@@ -29,10 +29,10 @@ export const AppRoutes = {
 
   // ================================================================================
   // ADMIN
-  ADMIN_BASE: () => `${BASE_NAME}admin`,
+  ADMIN_BASE: () => `${BASE_NAME}admin/`,
   ADMIN_OVERVIEW: () => `overview`,
   ADMIN_CATEGORY: () => `category`,
-  ADMIN_PRODUCT_TYPE: () => `product-type`,
+  ADMIN_TYPE_PRODUCT: () => `type-product`,
   ADMIN_PRODUCT: () => `product`,
   ADMIN_ORDER: () => `order`,
   ADMIN_VOUCHER: () => `voucher`,
@@ -43,7 +43,7 @@ export const AppRoutes = {
 
   // ================================================================================
   // EMPLOYEE
-  EMPLOYEE_BASE: () => `${BASE_NAME}employee`,
+  EMPLOYEE_BASE: () => `${BASE_NAME}employee/`,
   EMPLOYEE_OVERVIEW: () => `overview`,
   EMPLOYEE_ORDER: () => `order`,
   EMPLOYEE_PRODUCT_TYPE: () => `product-type`,
@@ -55,9 +55,11 @@ export const AppRoutes = {
 
   // ================================================================================
   // SHIPPER
-  SHIPPER_BASE: () => `${BASE_NAME}shipper`,
+  SHIPPER_BASE: () => `${BASE_NAME}shipper/`,
   SHIPPER_ORDER: () => `order`,
 
+  SHIPPER_ORDER_DETAIL: ({ orderId = '' }: { orderId?: string }) =>
+    `order-detail/${orderId ? orderId : ':orderId'}`,
   // ================================================================================
 
   // ================================================================================
@@ -65,5 +67,9 @@ export const AppRoutes = {
   PAGE_NOT_FOUND: () => `/not-found`,
   PAGE_UNAUTHORIZED: () => `/unauthorized`,
   PAGE_SERVER_ERROR: () => `/server-error`,
+
+  NOT_FOUND: () => `not-found`,
+  UNAUTHORIZED: () => `unauthorized`,
+  SERVER_ERROR: () => `/server-error`,
   // ================================================================================
 };

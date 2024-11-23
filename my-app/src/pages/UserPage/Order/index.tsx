@@ -1,4 +1,4 @@
-import OrderList from '@components/UserComponent/OrderTab';
+import OrderList from '@components/UserComponent/Order/OrderTab';
 
 const OrderPage = () => {
   return <OrderList />;

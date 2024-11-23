@@ -30,7 +30,7 @@ const ShipperNavigationBar = () => {
       <h2>Bảng Người giao hàng</h2>
       <ul>
         <li>
-          <Link to={`${AppRoutes.SHIPPER_BASE()}/${AppRoutes.SHIPPER_ORDER()}`}>
+          <Link to={`${AppRoutes.SHIPPER_BASE()}${AppRoutes.SHIPPER_ORDER()}`}>
             Đơn hàng
           </Link>
         </li>

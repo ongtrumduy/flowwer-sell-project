@@ -273,23 +273,37 @@ class AdminOrderService {
   //   });
   // };
 
-  static getAllOrderListV3 = async ({ limit, page, searchName }: { limit: number; page: number; searchName: string }) => {
+  static getAllOrderListV3 = async ({
+    limit,
+    page,
+    searchName,
+    orderStatus,
+  }: {
+    limit: number;
+    page: number;
+    searchName: string;
+    orderStatus: EnumStatusOfOrder | 'ALL';
+  }) => {
+    const allPipeline = [];
+
     const dataPipeline: any[] = [];
     const overviewPipeline: any[] = [];
 
     // Tìm kiếm theo tên đơn hàng (searchName)
     if (searchName) {
-      dataPipeline.push({
-        $search: {
-          index: 'default',
-          text: {
-            query: searchName,
-            path: ['order_name'],
-            fuzzy: {
-              maxEdits: 2,
-            },
-          },
+      allPipeline.push({
+        $match: {
+          $or: [
+            { $text: { $search: searchName } }, // Tìm kiếm full-text
+            { order_code: { $regex: `.*${searchName}.*`, $options: 'i' } }, // Tìm kiếm gần đúng
+          ],
         },
+      });
+    }
+
+    if (orderStatus && orderStatus !== 'ALL') {
+      allPipeline.push({
+        $match: { order_status_stage: orderStatus },
       });
     }
 
@@ -371,6 +385,8 @@ class AdminOrderService {
         },
         customerDetails: { $first: '$customerDetails' }, // Thêm thông tin chi tiết customer
         shipperDetails: { $first: '$shipperDetails' }, // Thêm thông tin chi tiết shipper
+
+        ...(searchName ? { score: { $first: '$score' } } : {}), // Lưu điểm số vào nhóm
       },
     });
 
@@ -394,8 +410,14 @@ class AdminOrderService {
         process_timeline: 1,
         customerDetails: 1, // Thêm thông tin chi tiết của customer
         shipperDetails: 1, // Thêm thông tin chi tiết của shipper
-        orderId: '$_id', // Đổi tên _id thành orderId        _id: 0,
+        orderId: '$_id', // Đổi tên _id thành orderId
+        ...(searchName ? { score: { $meta: 'textScore' } } : {}),
       },
+    });
+
+    // Sắp xếp
+    dataPipeline.push({
+      $sort: { createdAt: -1, ...(searchName ? { score: -1 } : {}) },
     });
 
     // Tạo pipeline cho tổng quan (đếm số lượng)
@@ -404,17 +426,15 @@ class AdminOrderService {
     });
 
     // Tổng hợp pipeline
-    const pipeline = [
-      {
-        $facet: {
-          data: dataPipeline,
-          overview: overviewPipeline,
-        },
+    allPipeline.push({
+      $facet: {
+        data: dataPipeline,
+        overview: overviewPipeline,
       },
-    ];
+    });
 
     // Thực thi pipeline
-    const orders = await OrderModel.aggregate(pipeline);
+    const orders = await OrderModel.aggregate(allPipeline);
 
     // Xử lý kết quả trả về
     const { data, overview } = orders[0];

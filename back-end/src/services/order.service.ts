@@ -5,11 +5,7 @@ import CartModel from '../models/cart.model';
 import OrderModel from '../models/order.model';
 import ProductModel, { PRODUCT_DOCUMENT_NAME } from '../models/product.model';
 import { getInformationData, getInformationData_V2 } from '../utils';
-import {
-  EnumReasonStatusCode,
-  EnumStatusOfOrder,
-  InterfacePayload,
-} from '../utils/type';
+import { EnumReasonStatusCode, EnumStatusOfOrder, InterfacePayload } from '../utils/type';
 import NodeMailerService from './nodemailerMail.service';
 
 class OrderService {
@@ -36,7 +32,8 @@ class OrderService {
 
     const orders = await OrderModel.find({
       customerId: new Types.ObjectId(customerId),
-      order_status_stage: orderStatus, // Chú ý: phải dùng `order_status_stage` thay vì `orderStatus`
+      order_status_stage:
+        orderStatus !== EnumStatusOfOrder.WAITING_CONFIRM ? orderStatus : { $in: [EnumStatusOfOrder.WAITING_CONFIRM, EnumStatusOfOrder.PAYMENT_SUCCESS] }, // Chú ý: phải dùng `order_status_stage` thay vì `orderStatus`
     })
       .populate({
         path: 'order_item_list.productId',
@@ -77,13 +74,7 @@ class OrderService {
 
   //=====================================================================
   // get detail of order
-  static getDetailOfOrder = async ({
-    orderId,
-    customerId,
-  }: {
-    orderId: string;
-    customerId: string;
-  }) => {
+  static getDetailOfOrder = async ({ orderId, customerId }: { orderId: string; customerId: string }) => {
     if (!customerId) {
       throw new ErrorDTODataResponse({
         message: 'CustomerId Is Required !!!',
@@ -105,6 +96,8 @@ class OrderService {
       customerId: new Types.ObjectId(customerId),
     })
       .populate('order_item_list.productId')
+      .populate('shipperId')
+      .populate('customerId')
       .lean()
       .exec();
 
@@ -198,9 +191,7 @@ class OrderService {
       // =================================================================
       // Kiểm tra từng sản phẩm trong danh sách đặt hàng
       for (const item of order_item_list) {
-        const product = await ProductModel.findById(item.productId).session(
-          session
-        );
+        const product = await ProductModel.findById(item.productId).session(session);
 
         if (!product) {
           throw new ErrorDTODataResponse({
@@ -272,19 +263,9 @@ class OrderService {
         { session }
       );
 
-      const newCartQuantity = updatedCart
-        ? updatedCart.cart_item_list.reduce(
-            (sum, item) => sum + item.product_quantity,
-            0
-          )
-        : 0;
+      const newCartQuantity = updatedCart ? updatedCart.cart_item_list.reduce((sum, item) => sum + item.product_quantity, 0) : 0;
 
-      const newTotalPrice = updatedCart
-        ? updatedCart.cart_item_list.reduce(
-            (sum, item) => sum + item.product_quantity * item.product_price_now,
-            0
-          )
-        : 0;
+      const newTotalPrice = updatedCart ? updatedCart.cart_item_list.reduce((sum, item) => sum + item.product_quantity * item.product_price_now, 0) : 0;
 
       // Cập nhật lại `cart_quantity`
       await CartModel.updateOne(
@@ -401,9 +382,7 @@ class OrderService {
       // Kiểm tra từng sản phẩm trong danh sách đặt hàng
       for (const item of order_item_list) {
         try {
-          const product = await ProductModel.findById(
-            new Types.ObjectId(item.productId)
-          ).session(session);
+          const product = await ProductModel.findById(new Types.ObjectId(item.productId)).session(session);
 
           if (!product) {
             throw new ErrorDTODataResponse({
@@ -520,9 +499,7 @@ class OrderService {
           $pull: {
             cart_item_list: {
               productId: {
-                $in: order_item_list.map(
-                  (item) => new Types.ObjectId(item.productId)
-                ),
+                $in: order_item_list.map((item) => new Types.ObjectId(item.productId)),
               },
             },
           },
@@ -531,14 +508,8 @@ class OrderService {
       );
 
       //   // Recalculate cart totals
-      updatedCart.cart_quantity = cart.cart_item_list.reduce(
-        (acc, item) => acc + item.product_quantity,
-        0
-      );
-      updatedCart.total_price = cart.cart_item_list.reduce(
-        (acc, item) => acc + item.product_quantity * item.product_price_now,
-        0
-      );
+      updatedCart.cart_quantity = cart.cart_item_list.reduce((acc, item) => acc + item.product_quantity, 0);
+      updatedCart.total_price = cart.cart_item_list.reduce((acc, item) => acc + item.product_quantity * item.product_price_now, 0);
 
       await updatedCart.save({ session });
       // ==================================================================
@@ -599,13 +570,7 @@ class OrderService {
 
   //=====================================================================
   // cancel the order by customer
-  static cancelTheOrderByCustomer = async ({
-    customerId,
-    orderId,
-  }: {
-    customerId: string;
-    orderId: string;
-  }) => {
+  static cancelTheOrderByCustomer = async ({ customerId, orderId }: { customerId: string; orderId: string }) => {
     const cartProductDetail = await OrderModel.findOneAndDelete({
       _id: new Types.ObjectId(orderId),
       customerId: new Types.ObjectId(customerId),
@@ -621,13 +586,7 @@ class OrderService {
 
   //=====================================================================
   // update new shipper
-  static updateNewShipperOfOrder = async ({
-    shipperId,
-    orderId,
-  }: {
-    shipperId: string;
-    orderId: string;
-  }) => {
+  static updateNewShipperOfOrder = async ({ shipperId, orderId }: { shipperId: string; orderId: string }) => {
     // remember don't miss await promise
     const order = await OrderModel.findOne(new Types.ObjectId(orderId));
 
@@ -655,20 +614,14 @@ class OrderService {
 
   //=====================================================================
   // update order status
-  static updateOrderStatus = async ({
-    orderId,
-    newStatus,
-  }: {
-    orderId: string;
-    newStatus: EnumStatusOfOrder;
-  }) => {
+  static updateOrderStatus = async ({ orderId, newStatus }: { orderId: string; newStatus: EnumStatusOfOrder }) => {
     const order = await OrderModel.findOneAndUpdate(
       {
         _id: new Types.ObjectId(orderId),
       },
       {
         $set: {
-          order_status: newStatus,
+          order_status_stage: newStatus,
         },
       }
     );
@@ -685,13 +638,7 @@ class OrderService {
 
   //=====================================================================
   // get order information to payment
-  static getOrderInformationToPayment = async ({
-    orderId,
-    customerId,
-  }: {
-    orderId: string;
-    customerId: string;
-  }) => {
+  static getOrderInformationToPayment = async ({ orderId, customerId }: { orderId: string; customerId: string }) => {
     const order = await OrderModel.findOne({
       _id: new Types.ObjectId(orderId),
       customerId: new Types.ObjectId(customerId),
@@ -781,8 +728,16 @@ class OrderService {
           },
           $push: {
             process_timeline: {
-              event: EnumStatusOfOrder.PAYMENT_SUCCESS, // Trạng thái mới
-              timestamp: new Date(), // Thời gian hiện tại
+              $each: [
+                {
+                  event: EnumStatusOfOrder.PAYMENT_SUCCESS, // Trạng thái mới
+                  timestamp: new Date(),
+                },
+                {
+                  event: EnumStatusOfOrder.WAITING_CONFIRM, // Trạng thái mới
+                  timestamp: new Date(),
+                },
+              ], // Thời gian hiện tại
             },
           },
         },
@@ -855,13 +810,7 @@ class OrderService {
 
   // ======================================================================
   //
-  static destroyOrderItem = async ({
-    orderId,
-    customerId,
-  }: {
-    orderId: string;
-    customerId: string;
-  }) => {
+  static destroyOrderItem = async ({ orderId, customerId }: { orderId: string; customerId: string }) => {
     const session = await mongoose.startSession();
 
     try {
@@ -886,8 +835,12 @@ class OrderService {
           },
           $push: {
             process_timeline: {
-              event: EnumStatusOfOrder.CANCELLED, // Trạng thái mới
-              timestamp: new Date(), // Thời gian hiện tại
+              $each: [
+                {
+                  event: EnumStatusOfOrder.CANCELLED, // Trạng thái mới
+                  timestamp: new Date(), // Thời gian hiện tại
+                },
+              ],
             },
           },
         },
@@ -906,11 +859,7 @@ class OrderService {
       for (const item of order.order_item_list) {
         const { productId, product_quantity } = item;
 
-        const updatedProduct = await ProductModel.findByIdAndUpdate(
-          productId,
-          { $inc: { product_quantity } },
-          { new: true, session }
-        );
+        const updatedProduct = await ProductModel.findByIdAndUpdate(productId, { $inc: { product_quantity } }, { new: true, session });
 
         if (!updatedProduct) {
           throw new ErrorDTODataResponse({
@@ -930,12 +879,8 @@ class OrderService {
           order: order,
         },
         reasonStatusCode: EnumReasonStatusCode.SUCCESS_200,
-        message:
-          'Order Deleted And Product Quantities Updated Successfully !!!',
+        message: 'Order Deleted And Product Quantities Updated Successfully !!!',
       });
-      console.log(
-        'Order deleted and product quantities updated successfully !'
-      );
     } catch (error) {
       // Rollback nếu có lỗi
       await session.abortTransaction();

@@ -16,10 +16,9 @@ import AdminCategoryPage from '@pages/AdminPage/AdminCategory';
 import AdminOrderPage from '@pages/AdminPage/AdminOrder';
 import AdminOverviewPage from '@pages/AdminPage/AdminOverview';
 import AdminProductPage from '@pages/AdminPage/AdminProduct';
+import AdminTypeProductPage from '@pages/AdminPage/AdminTypeProduct';
 import UserProfilePage from '@pages/CommonPage/UserProfile';
-import EmployeeCategoryPage from '@pages/EmployeePage/EmployeeCategory';
-import EmployeeOverviewPage from '@pages/EmployeePage/EmployeeOverview';
-import ShipperOrderPage from '@pages/ShipperPage/ShipperOrderList';
+import ShipperOrderPage from '@pages/ShipperPage/ShipperOrder';
 import CartPage from '@pages/UserPage/Cart';
 import CompletionPage from '@pages/UserPage/Completion';
 import ImageUploadPage from '@pages/UserPage/ImageUpload';
@@ -32,6 +31,8 @@ import { Route, Routes } from 'react-router-dom';
 import { ProtectedRoleRoute, VerifiedUserRoute } from './core/RouterWrapper';
 import NotFoundPage from './pages/CommonPage/NotFound';
 import HomePage from './pages/UserPage/Home';
+import EmployeeOrderPage from '@pages/EmployeePage/EmployeeOrder';
+import ShipperOrderDetailPage from '@pages/ShipperPage/ShipperOrderDetail';
 
 // import './utils/register-aliases';
 
@@ -42,6 +43,10 @@ const RootRouter = React.memo(() => {
       <Route path={AppRoutes.PAGE_NOT_FOUND()} element={<EmptyLayout />}>
         <Route index element={<NotFoundPage />} />
       </Route>
+      <Route path={AppRoutes.PAGE_UNAUTHORIZED()} element={<EmptyLayout />}>
+        <Route index element={<NotFoundPage />} />
+      </Route>
+
       {/* // ================================================================================================= */}
 
       {/* // ================================================================================================= */}
@@ -241,6 +246,14 @@ const RootRouter = React.memo(() => {
               <AdminAccountPage />
             </ProtectedRoleRoute>
           }
+        />{' '}
+        <Route
+          path={AppRoutes.ADMIN_TYPE_PRODUCT()}
+          element={
+            <ProtectedRoleRoute requiredRole={[EnumRole.ADMIN]}>
+              <AdminTypeProductPage />
+            </ProtectedRoleRoute>
+          }
         />
         {/* <Route
           path={AppRoutes.ADMIN_SETTING()}
@@ -251,7 +264,6 @@ const RootRouter = React.memo(() => {
           }
         /> */}
         {/* // ------------------------------------------------------------------------ */}
-
         {/* // ------------------------------------------------------------------------ */}
         {/* <Route
             path="/product-detail/:productId"
@@ -272,7 +284,6 @@ const RootRouter = React.memo(() => {
             }
           /> */}
         {/* // ------------------------------------------------------------------------ */}
-
         <Route path="*" element={<NotFoundPage />} />
       </Route>
       {/* // ================================================================================================= */}
@@ -290,24 +301,24 @@ const RootRouter = React.memo(() => {
           index
           element={
             <ProtectedRoleRoute requiredRole={[EnumRole.EMPLOYEE]}>
-              <EmployeeOverviewPage />
+              <EmployeeOrderPage />
             </ProtectedRoleRoute>
           }
         />
-        <Route
+        {/* <Route
           path={AppRoutes.EMPLOYEE_OVERVIEW()}
           element={
             <ProtectedRoleRoute requiredRole={[EnumRole.EMPLOYEE]}>
               <EmployeeOverviewPage />
             </ProtectedRoleRoute>
           }
-        />
+        /> */}
         {/* // ------------------------------------------------------------------------ */}
         <Route
-          path={AppRoutes.EMPLOYEE_CATEGORY()}
+          path={AppRoutes.EMPLOYEE_ORDER()}
           element={
             <ProtectedRoleRoute requiredRole={[EnumRole.EMPLOYEE]}>
-              <EmployeeCategoryPage />
+              <EmployeeOrderPage />
             </ProtectedRoleRoute>
           }
         />
@@ -357,34 +368,24 @@ const RootRouter = React.memo(() => {
         />
         {/* // ------------------------------------------------------------------------ */}
         <Route
-          path={AppRoutes.ADMIN_CATEGORY()}
+          path={AppRoutes.SHIPPER_ORDER()}
           element={
             <ProtectedRoleRoute requiredRole={[EnumRole.SHIPPER]}>
               <ShipperOrderPage />
             </ProtectedRoleRoute>
           }
         />
+
+        <Route
+          path={AppRoutes.SHIPPER_ORDER_DETAIL({})}
+          element={
+            <ProtectedRoleRoute requiredRole={[EnumRole.SHIPPER]}>
+              <ShipperOrderDetailPage />
+            </ProtectedRoleRoute>
+          }
+        />
         {/* // ------------------------------------------------------------------------ */}
 
-        {/* // ------------------------------------------------------------------------ */}
-        {/* <Route
-            path="/product-detail/:productId"
-            element={
-              <ProtectedRoleRoute
-                requiredRole={[EnumRole.USER, EnumRole.GUEST]}
-              >
-                <ProductDetailPage />
-              </ProtectedRoleRoute>
-            }
-          /> */}
-        {/* <Route
-            path="/order-detail/:orderId"
-            element={
-              <ProtectedRoleRoute requiredRole={[EnumRole.USER]}>
-                <OrderDetailPage />
-              </ProtectedRoleRoute>
-            }
-          /> */}
         {/* // ------------------------------------------------------------------------ */}
 
         <Route path="*" element={<NotFoundPage />} />
