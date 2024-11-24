@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import SuccessResponse from '@core/success.response';
 import { EnumMessageStatus, EnumStatusOfOrder, InterfaceWithKeyStoreV2Request } from '@root/src/utils/type';
 import EmployeeOrderService from '@root/src/services/employee/order.service';
-import { DEFAULT_LIMIT, DEFAULT_PAGE } from '@root/src/utils/constant';
+import { DEFAULT_LIMIT, DEFAULT_ORDER_STAGE, DEFAULT_PAGE } from '@root/src/utils/constant';
 
 class EmployeeOrderController {
   //=========================================================
@@ -14,7 +14,7 @@ class EmployeeOrderController {
       limit: req.query?.limit ? Number(req.query.limit) : DEFAULT_LIMIT,
       page: req.query?.page ? Number(req.query.page) : DEFAULT_PAGE,
       searchName: req.query?.searchName ? String(req.query.searchName) : '',
-      orderStatus: (req.query?.orderStatus as EnumStatusOfOrder) || 'ALL',
+      orderStatus: (req.query?.orderStatus as EnumStatusOfOrder) || DEFAULT_ORDER_STAGE,
     });
 
     new SuccessResponse({

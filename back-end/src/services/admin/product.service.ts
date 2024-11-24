@@ -1,16 +1,15 @@
+import cloudinaryConfig from '@root/src/configs/config.cloudinary';
+import ErrorDTODataResponse from '@root/src/core/error.dto.response';
+import SuccessDTODataResponse from '@root/src/core/success.dto.response';
+import ProductModel from '@root/src/models/product.model';
+import { EnumMessageStatus, EnumReasonStatusCode } from '@root/src/utils/type';
+import fs from 'fs';
 import { Types } from 'mongoose';
-import ErrorDTODataResponse from '../core/error.dto.response';
-import ProductModel from '../models/product.model';
-import { EnumMessageStatus, EnumReasonStatusCode } from '../utils/type';
-import { DEFAULT_CATEGORY_ID, DEFAULT_TYPE_PRODUCT_ID } from '../utils/constant';
-import SuccessDTODataResponse from '../core/success.dto.response';
 import { nanoid } from 'nanoid';
-import cloudinaryConfig from '../configs/config.cloudinary';
 
 const cloudinary = cloudinaryConfig();
-import fs from 'fs';
 
-class ProductService {
+class AdminProductService {
   //=====================================================================
   // get all product list version2
   static getAllProductListV2 = async ({
@@ -140,123 +139,116 @@ class ProductService {
 
   //=====================================================================
   // get all product list
-  static getAllProductList = async ({
-    limit,
-    page,
-    priceMin,
-    priceMax,
-    searchName,
-    selectedCategory,
-    selectedTypeProduct,
-  }: {
-    limit: number;
-    page: number;
-    priceMin: number;
-    priceMax: number;
-    searchName: string;
-    selectedCategory: string;
-    selectedTypeProduct: string;
-  }) => {
-    // const products = await ProductModel.find({
-    //   $text: { $search: searchName },
-    // }).sort({
-    //   score: { $meta: 'scoreText' },
-    // });
+  // static getAllProductList = async ({
+  //   limit,
+  //   page,
+  //   priceMin,
+  //   priceMax,
+  //   searchName,
+  //   selectedCategory,
+  // }: {
+  //   limit: number;
+  //   page: number;
+  //   priceMin: number;
+  //   priceMax: number;
+  //   searchName: string;
+  //   selectedCategory: string;
+  // }) => {
+  //   // const products = await ProductModel.find({
+  //   //   $text: { $search: searchName },
+  //   // }).sort({
+  //   //   score: { $meta: 'scoreText' },
+  //   // });
 
-    // const products = await ProductModel.aggregate([
-    //   {
-    //     $match: {
-    //       $text: { $search: searchName },
-    //     },
-    //   },
-    //   {
-    //     $project: {
-    //       product_name: 1,
-    //       product_description: 1,
-    //       score: { $meta: 'textScore' }, // Lấy điểm số
-    //     },
-    //   },
-    //   {
-    //     $sort: { score: -1 }, // Sắp xếp theo điểm số
-    //   },
-    // ]);
+  //   // const products = await ProductModel.aggregate([
+  //   //   {
+  //   //     $match: {
+  //   //       $text: { $search: searchName },
+  //   //     },
+  //   //   },
+  //   //   {
+  //   //     $project: {
+  //   //       product_name: 1,
+  //   //       product_description: 1,
+  //   //       score: { $meta: 'textScore' }, // Lấy điểm số
+  //   //     },
+  //   //   },
+  //   //   {
+  //   //     $sort: { score: -1 }, // Sắp xếp theo điểm số
+  //   //   },
+  //   // ]);
 
-    const pipeline = [];
+  //   const pipeline = [];
 
-    if (searchName) {
-      pipeline.push({
-        $match: {
-          $or: [{ $text: { $search: searchName } }, { product_name: { $regex: searchName, $options: 'i' } }],
-        },
-      });
-    }
-    if (selectedCategory && selectedCategory !== DEFAULT_CATEGORY_ID) {
-      pipeline.push({
-        $match: { categoryId_document_list: new Types.ObjectId(selectedCategory) },
-      });
-    }
-    if (selectedTypeProduct && selectedTypeProduct !== DEFAULT_TYPE_PRODUCT_ID) {
-      pipeline.push({
-        $match: { typeProductId_document_list: new Types.ObjectId(selectedTypeProduct) },
-      });
-    }
-    pipeline.push({
-      $match: {
-        product_price: {
-          $gte: priceMin,
-          $lte: priceMax,
-        },
-      },
-    });
+  //   if (searchName) {
+  //     pipeline.push({
+  //       $match: {
+  //         $or: [{ $text: { $search: searchName } }, { product_name: { $regex: searchName, $options: 'i' } }],
+  //       },
+  //     });
+  //   }
+  //   if (selectedCategory && selectedCategory !== DEFAULT_CATEGORY_ID) {
+  //     pipeline.push({
+  //       $match: { categoryId_document_list: new Types.ObjectId(selectedCategory) },
+  //     });
+  //   }
+  //   pipeline.push({
+  //     $match: {
+  //       product_price: {
+  //         $gte: priceMin,
+  //         $lte: priceMax,
+  //       },
+  //     },
+  //   });
 
-    // =================================================================
-    // for pagination
-    const data = [];
-    data.push({
-      $skip: (page - 1) * limit,
-    });
-    data.push({
-      $limit: limit,
-    });
-    // =================================================================
-    data.push({
-      $project: {
-        product_name: 1,
-        product_price: 1,
-        product_image: 1,
-        product_quantity: 1,
-        product_description: 1,
-        productId: '$_id',
-        _id: 0,
+  //   // =================================================================
+  //   // for pagination
+  //   const data = [];
+  //   data.push({
+  //     $skip: (page - 1) * limit,
+  //   });
+  //   data.push({
+  //     $limit: limit,
+  //   });
+  //   // =================================================================
+  //   data.push({
+  //     $project: {
+  //       product_name: 1,
+  //       product_price: 1,
+  //       product_image: 1,
+  //       product_quantity: 1,
+  //       product_description: 1,
+  //       productId: '$_id',
+  //       _id: 0,
 
-        ...(searchName ? { score: { $meta: 'textScore' } } : {}),
-      },
-    });
-    data.push({
-      $sort: { createdAt: -1, ...(searchName ? { score: -1 } : {}) } as Record<string, 1 | -1>,
-    });
+  //       ...(searchName ? { score: { $meta: 'textScore' } } : {}),
+  //     },
+  //   });
+  //   data.push({
+  //     $sort: { createdAt: -1, ...(searchName ? { score: -1 } : {}) } as Record<string, 1 | -1>,
+  //   });
 
-    pipeline.push({
-      $facet: {
-        data: data,
-        overview: [
-          {
-            $count: 'totalSearchCount',
-          },
-        ],
-      },
-    });
+  //   pipeline.push({
+  //     $facet: {
+  //       data: data,
+  //       overview: [
+  //         {
+  //           $count: 'totalSearchCount',
+  //         },
+  //       ],
+  //     },
+  //   });
 
-    const products = await ProductModel.aggregate(pipeline);
+  //   const products = await ProductModel.aggregate(pipeline);
 
-    return {
-      code: 200,
-      metaData: {
-        products: { ...products },
-      },
-      reasonStatusCode: EnumMessageStatus.SUCCESS_200,
-    };
-  };
+  //   return {
+  //     code: 200,
+  //     metaData: {
+  //       products: { ...products },
+  //     },
+  //     reasonStatusCode: EnumMessageStatus.SUCCESS_200,
+  //   };
+  // };
 
   //=====================================================================
   // get product item detail
@@ -274,9 +266,6 @@ class ProductService {
           product_description: 1,
           categoryId_document_list: 1,
           typeProductId_document_list: 1,
-          product_average_rating: 1,
-          product_total_review: 1,
-
           _id: 0,
         })
         .populate({
@@ -520,4 +509,4 @@ class ProductService {
   };
 }
 
-export default ProductService;
+export default AdminProductService;

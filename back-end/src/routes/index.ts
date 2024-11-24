@@ -18,6 +18,7 @@ import overviewRouter from './overview';
 import apiKeyRouter from './api_key';
 import { asyncHandler } from '../helpers/asyncHandler';
 
+import publicRouter from './public';
 import adminRouter from './admin';
 import employeeRouter from './employee';
 import shipperRouter from './shipper';
@@ -189,6 +190,12 @@ router.use('/v1/api/overview', overviewRouter);
  *
  *
  */
+
+//=================================================
+// for public user route
+router.use('/v1/api', publicRouter);
+//=================================================
+//=================================================
 
 //=================================================
 // for admin route

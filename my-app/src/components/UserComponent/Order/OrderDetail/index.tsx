@@ -22,7 +22,10 @@ import {
   Typography,
 } from '@mui/material';
 import OrderApiService from '@services/api/order';
-import { InterfaceOrderDetailMetadata } from '@services/api/order/type';
+import {
+  InterfaceOrderDetailMetadata,
+  InterfaceOrderItem,
+} from '@services/api/order/type';
 import { EnumOrderStatusStage } from '@services/api/stripe_payment/type';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
@@ -30,6 +33,9 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import TimelineCustom from './TimelineCustom';
 
 import 'dayjs/locale/vi'; // Import ngôn ngữ tiếng Việt
+import ReviewFormDialog from '../ReviewFormDialog';
+import CommentApiService from '@services/api/comment';
+import * as yup from 'yup';
 
 // Sample order status timeline
 
@@ -47,6 +53,12 @@ const OrderDetail = () => {
 
   const [openDeleteOrderPopup, setOpenDeleteOrderPopup] = useState(false);
   const [orderDeleteId, setOrderDeleteId] = useState('');
+
+  const [openPopupReviewProduct, setOpenPopupReviewProduct] = useState(false);
+
+  const [selectedId, setSelectedId] = useState('');
+
+  const [orderItemList, setOrderItemList] = useState<InterfaceOrderItem[]>([]);
 
   const handleDestroyOrderItem = ({ orderId }: { orderId: string }) => {
     OrderApiService.destroyOrderItem({
@@ -71,6 +83,60 @@ const OrderDetail = () => {
   const handleCancel = () => {
     setOpenDeleteOrderPopup(false);
     setOrderDeleteId('');
+  };
+
+  const handleOpenPopupReviewProduct = ({
+    orderId,
+    order_item_list,
+  }: {
+    orderId: string;
+    order_item_list: InterfaceOrderItem[];
+  }) => {
+    setOpenPopupReviewProduct(true);
+    setSelectedId(orderId);
+    setOrderItemList(order_item_list);
+  };
+
+  const handleClosePopupReviewProduct = () => {
+    setOpenPopupReviewProduct(false);
+  };
+
+  const handleSubmit = (data: {
+    review_product_list?:
+      | {
+          product_image?: yup.Maybe<string | null | undefined>;
+          productId: string;
+          product_name: string;
+          comment_title: string;
+          comment_content: string;
+          comment_rating: number;
+        }[]
+      | undefined;
+  }) => {
+    console.log('Dữ liệu đánh giá:', data);
+    // Gửi dữ liệu tới server
+
+    if (data.review_product_list?.length) {
+      const promiseArray = data.review_product_list.map((item) => {
+        return CommentApiService.sendReviewContentToProduct({
+          productId: item.productId,
+          comment_title: item.comment_title,
+          comment_content: item.comment_content,
+          comment_rating: item.comment_rating,
+        });
+      });
+
+      Promise.all(promiseArray)
+        .then((responses) => {
+          console.log('responses', responses);
+
+          navigate(0);
+          handleClosePopupReviewProduct();
+        })
+        .catch((error) => {
+          console.log('error', error);
+        });
+    }
   };
 
   const handleOpenPopupDestroyOrder = ({
@@ -314,6 +380,30 @@ const OrderDetail = () => {
           ) : (
             <></>
           )}
+          {orderDetail?.order.order_status_stage ===
+          EnumOrderStatusStage.DELIVERED ? (
+            <Box sx={{ textAlign: 'center', mt: 2 }}>
+              {/* <Button variant="contained" color="primary" sx={{ mr: 2 }}>
+          Xem hóa đơn
+        </Button> */}
+              <Button
+                variant="outlined"
+                color="error"
+                size="small"
+                sx={{ marginRight: '10px' }}
+                onClick={() =>
+                  handleOpenPopupReviewProduct({
+                    orderId: orderDetail?.order.orderId || '',
+                    order_item_list: orderDetail?.order.order_item_list,
+                  })
+                }
+              >
+                Viết đánh giá
+              </Button>
+            </Box>
+          ) : (
+            <></>
+          )}
         </>
       </Container>
       {/* // ================================================================= */}
@@ -340,6 +430,14 @@ const OrderDetail = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      {/* // ================================================================= */}
+      <ReviewFormDialog
+        open={openPopupReviewProduct}
+        onClose={handleClosePopupReviewProduct}
+        onSubmit={handleSubmit}
+        selectedId={selectedId}
+        orderItemList={orderItemList}
+      />
       {/* // ================================================================= */}
     </>
   );

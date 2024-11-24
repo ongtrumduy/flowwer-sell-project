@@ -1,8 +1,24 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import {
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+} from '@mui/material';
 import { InterfaceCategoryItem } from '@services/api/category/type';
 import ProductApiService from '@services/api/product';
-import { InterfaceProductItem, InterfaceProductMetaData } from '@services/api/product/type';
+import {
+  InterfaceProductItem,
+  InterfaceProductMetaData,
+} from '@services/api/product/type';
 import { cloneDeep } from 'lodash';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -120,14 +136,16 @@ const ModalEditProduct = ({
 
   useEffect(() => {
     if (productDetail) {
-      const temp = cloneDeep(productDetail) as unknown as InterfaceFormEditState;
-      temp.product_category = productDetail.product_category_list
-        ? productDetail.product_category_list.map((item) => {
+      const temp = cloneDeep(
+        productDetail
+      ) as unknown as InterfaceFormEditState;
+      temp.product_category = productDetail.categoryId_document_list
+        ? productDetail.categoryId_document_list.map((item) => {
             return item._id;
           })
         : [];
-      temp.product_type = productDetail.product_category_list
-        ? productDetail.product_category_list.map((item) => {
+      temp.product_type = productDetail.categoryId_document_list
+        ? productDetail.categoryId_document_list.map((item) => {
             return item._id;
           })
         : [];
@@ -236,8 +254,19 @@ const ModalEditProduct = ({
               name="product_category"
               control={control}
               render={({ field }) => (
-                <FormControl fullWidth margin="normal" error={!!errors.product_category}>
-                  <InputLabel sx={{ background: 'white !important', padding: '0 8px !important' }}>Danh mục sản phẩm</InputLabel>
+                <FormControl
+                  fullWidth
+                  margin="normal"
+                  error={!!errors.product_category}
+                >
+                  <InputLabel
+                    sx={{
+                      background: 'white !important',
+                      padding: '0 8px !important',
+                    }}
+                  >
+                    Danh mục sản phẩm
+                  </InputLabel>
                   <Select
                     multiple
                     value={field.value}
@@ -245,15 +274,25 @@ const ModalEditProduct = ({
                     renderValue={(selected) => (
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                         {(selected as string[]).map((value) => {
-                          const category = categoryList?.find((item) => item.categoryId === value);
-                          return <Chip key={value} label={category?.category_name || value} />;
+                          const category = categoryList?.find(
+                            (item) => item.categoryId === value
+                          );
+                          return (
+                            <Chip
+                              key={value}
+                              label={category?.category_name || value}
+                            />
+                          );
                         })}
                       </Box>
                     )}
                   >
                     {categoryList?.length ? (
                       categoryList.map((category) => (
-                        <MenuItem key={category.categoryId} value={category.categoryId}>
+                        <MenuItem
+                          key={category.categoryId}
+                          value={category.categoryId}
+                        >
                           {category.category_name}
                         </MenuItem>
                       ))
@@ -261,7 +300,11 @@ const ModalEditProduct = ({
                       <MenuItem disabled>Không có danh mục nào</MenuItem>
                     )}
                   </Select>
-                  {errors.product_category && <p style={{ color: 'red' }}>{errors.product_category.message}</p>}
+                  {errors.product_category && (
+                    <p style={{ color: 'red' }}>
+                      {errors.product_category.message}
+                    </p>
+                  )}
                 </FormControl>
               )}
             />
@@ -271,7 +314,12 @@ const ModalEditProduct = ({
               control={control}
               render={({ field }) => (
                 <>
-                  <Button variant="contained" component="label" fullWidth sx={{ mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    component="label"
+                    fullWidth
+                    sx={{ mt: 2 }}
+                  >
                     Tải ảnh sản phẩm
                     <input
                       type="file"
@@ -284,14 +332,23 @@ const ModalEditProduct = ({
                       }}
                     />
                   </Button>
-                  {errors.product_image && <p style={{ color: 'red' }}>{errors.product_image.message}</p>}
+                  {errors.product_image && (
+                    <p style={{ color: 'red' }}>
+                      {errors.product_image.message}
+                    </p>
+                  )}
                 </>
               )}
             />
 
             {previewUrl && (
               <>
-                <p>Xem trước ảnh:</p> <img src={previewUrl} alt="Preview" style={{ maxWidth: '300px', height: 'auto' }} />
+                <p>Xem trước ảnh:</p>{' '}
+                <img
+                  src={previewUrl}
+                  alt="Preview"
+                  style={{ maxWidth: '300px', height: 'auto' }}
+                />
               </>
             )}
           </DialogContent>

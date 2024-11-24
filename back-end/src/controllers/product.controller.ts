@@ -17,6 +17,7 @@ class ProductController {
       priceMax: req.query?.priceMax ? Number(req.query.priceMax) : DEFAULT_MAX_PRICE,
       searchName: req.query?.searchName ? String(req.query.searchName) : '',
       selectedCategory: req.query?.selectedCategory ? String(req.query.selectedCategory) : '',
+      selectedTypeProduct: req.query?.selectedTypeProduct ? String(req.query.selectedTypeProduct) : '',
     });
 
     new SuccessResponse({
@@ -75,6 +76,7 @@ class ProductController {
       product_price: req.body.product_price,
       // product_image: req.body.product_image,
       product_category: req.body.product_category,
+      product_type: req.body.product_type,
       productImagePath: req.file ? req.file.path : '',
       productImageFieldName: 'product_image',
       product_description: req.body.product_description,

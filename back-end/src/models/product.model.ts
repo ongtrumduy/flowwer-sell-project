@@ -32,30 +32,40 @@ const ProductSchema = new Schema(
       required: true,
       trim: true,
     },
-    product_category_list: [
+    categoryId_document_list: [
       {
         type: Schema.Types.ObjectId,
         ref: CATEGORY_DOCUMENT_NAME,
         // required: true,
       },
     ],
-    product_type_list: [
+    typeProductId_document_list: [
       {
         type: Schema.Types.ObjectId,
         ref: TYPE_PRODUCT_DOCUMENT_NAME,
         // required: true,
       },
     ],
-    discount: {
+    product_average_rating: {
+      type: Number,
+      default: 4,
+      min: 0,
+      max: 5,
+    },
+    product_total_review: {
       type: Number,
       default: 0,
-      min: [0, 'Discount cannot be negative'],
-      max: [100, 'Discount cannot exceed 100%'],
     },
-    discounted_Price: {
-      type: Number,
-      min: 0,
-    },
+    // discount: {
+    //   type: Number,
+    //   default: 0,
+    //   min: [0, 'Discount cannot be negative'],
+    //   max: [100, 'Discount cannot exceed 100%'],
+    // },
+    // discounted_Price: {
+    //   type: Number,
+    //   min: 0,
+    // },
   },
   {
     timestamps: true,
@@ -77,24 +87,24 @@ ProductSchema.index({ product_name: 'text' });
 
 // =======================================================
 // create middleware
-ProductSchema.pre('save', function (next) {
-  if (this.isModified('product_price') || this.isModified('discount')) {
-    this.discounted_Price = this.product_price * (1 - this.discount / 100);
-  }
+// ProductSchema.pre('save', function (next) {
+//   if (this.isModified('product_price') || this.isModified('discount')) {
+//     this.discounted_Price = this.product_price * (1 - this.discount / 100);
+//   }
 
-  next();
-});
+//   next();
+// });
 
-ProductSchema.pre('validate', function (next) {
-  if (this.discount > 100) {
-    throw new Error('Discount cannot exceed 100%');
-  }
-  if (this.isModified('discounted_Price') && this.discounted_Price !== undefined && this.discounted_Price !== null && this.discounted_Price < 0) {
-    throw new Error('Discounted price must be non-negative');
-  }
+// ProductSchema.pre('validate', function (next) {
+//   if (this.discount > 100) {
+//     throw new Error('Discount cannot exceed 100%');
+//   }
+//   if (this.isModified('discounted_Price') && this.discounted_Price !== undefined && this.discounted_Price !== null && this.discounted_Price < 0) {
+//     throw new Error('Discounted price must be non-negative');
+//   }
 
-  next();
-});
+//   next();
+// });
 
 // =======================================================
 

@@ -2,7 +2,7 @@ import { EnumGender, EnumPermission, EnumRole } from './type';
 
 const DEFAULT_ROLE = [EnumRole.USER];
 const DEFAULT_PERMISSION = [EnumPermission.ALL];
-const DEFAULT_GENDER = [EnumGender.UNKNOWN];
+const DEFAULT_GENDER = EnumGender.UNKNOWN;
 
 const ACCESS_TOKEN_EXPIRES_IN = process.env.ACCESS_TOKEN_EXPIRES_IN || '1m';
 const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '30d';
@@ -12,6 +12,10 @@ const DEFAULT_MIN_PRICE = 0;
 const DEFAULT_MAX_PRICE = 1000000;
 const DEFAULT_PAGE = 1;
 const DEFAULT_CATEGORY_ID = 'ALL';
+const DEFAULT_TYPE_PRODUCT_ID = 'ALL';
+
+const DEFAULT_ORDER_STAGE = 'ALL';
+
 const DEFAULT_PORT = 8888;
 const DEFAULT_DOMAIN = 'http://localhost';
 
@@ -21,8 +25,7 @@ const DEFAULT_APP_NAME = '';
 const DOMAIN = process.env.DOMAIN || DEFAULT_DOMAIN;
 const APP_NAME = process.env.APP_NAME || DEFAULT_APP_NAME;
 
-const DEFAULT_PICK_UP_ADDRESS =
-  'Số nhà AA, ngõ 111, phường XX, quận YY, thành phố S';
+const DEFAULT_PICK_UP_ADDRESS = 'Số nhà AA, ngõ 111, phường XX, quận YY, thành phố S';
 
 const DEFAULT_ROLE_LIST = Object.values(EnumRole);
 
@@ -53,6 +56,8 @@ export {
   DEFAULT_MAX_PRICE,
   DEFAULT_PAGE,
   DEFAULT_CATEGORY_ID,
+  DEFAULT_TYPE_PRODUCT_ID,
+  DEFAULT_ORDER_STAGE,
   DEFAULT_PORT,
   PORT,
   DOMAIN,

@@ -9,6 +9,7 @@ import fs from 'fs';
 import { nanoid } from 'nanoid';
 import UserModel, { USER_COLLECTION_NAME, USER_DOCUMENT_NAME } from '@root/src/models/user.model';
 import { PRODUCT_COLLECTION_NAME, PRODUCT_DOCUMENT_NAME } from '@root/src/models/product.model';
+import { DEFAULT_ORDER_STAGE } from '@root/src/utils/constant';
 
 const cloudinary = cloudinaryConfig();
 
@@ -282,7 +283,7 @@ class EmployeeOrderService {
     limit: number;
     page: number;
     searchName: string;
-    orderStatus: EnumStatusOfOrder | 'ALL';
+    orderStatus: EnumStatusOfOrder | typeof DEFAULT_ORDER_STAGE;
   }) => {
     const allPipeline = [];
 
@@ -315,7 +316,7 @@ class EmployeeOrderService {
       });
     }
 
-    if (orderStatus && orderStatus !== 'ALL') {
+    if (orderStatus && orderStatus !== DEFAULT_ORDER_STAGE) {
       allPipeline.push({
         $match: { order_status_stage: orderStatus },
       });

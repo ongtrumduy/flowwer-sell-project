@@ -49,7 +49,7 @@ interface InterfacProduct {
   product_quantity: number;
 }
 
-interface InterfaceOrderItem {
+export interface InterfaceOrderItem {
   productId: InterfacProduct;
   product_quantity: string;
   product_price_now: string;

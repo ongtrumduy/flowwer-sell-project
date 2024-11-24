@@ -27,13 +27,17 @@ export interface InterfaceFormEditState {
   product_image: File | null | undefined | string;
 
   product_category?: Maybe<Blob[] | undefined | string[]>;
-  product_category_list?: string[];
+  categoryId_document_list?: string[];
 
   product_type?: Maybe<Blob[] | undefined | string[]>;
-  product_type_list?: string[];
+  typeProductId_document_list?: string[];
 }
 
-export interface InterfaceSubmitFormEditState extends Omit<InterfaceFormEditState, 'product_image' | 'product_category' | 'product_type'> {
+export interface InterfaceSubmitFormEditState
+  extends Omit<
+    InterfaceFormEditState,
+    'product_image' | 'product_category' | 'product_type'
+  > {
   product_category?: Maybe<Blob[] | undefined>;
   product_type?: Maybe<Blob[] | undefined>;
 

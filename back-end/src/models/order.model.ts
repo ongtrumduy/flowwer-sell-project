@@ -4,6 +4,7 @@ import { EnumStatusOfOrder } from '../utils/type';
 import { PRODUCT_DOCUMENT_NAME } from './product.model';
 import { USER_DOCUMENT_NAME } from './user.model';
 import { DEFAULT_PICK_UP_ADDRESS } from '../utils/constant';
+import { COUPON_DOCUMENT_NAME } from './coupon.model';
 
 export const ORDER_DOCUMENT_NAME = 'Orders';
 const ORDER_COLLECTION_NAME = 'Orders_Collection';
@@ -28,6 +29,10 @@ interface InterfaceOrder extends Document {
     event: EnumStatusOfOrder;
     timestamp: Date;
     currentTime?: Date; // Add this property
+  }[];
+
+  couponId_document_list: {
+    id: Types.ObjectId;
   }[];
 
   generateOrderCode(): string;
@@ -126,6 +131,14 @@ const OrderSchema = new Schema<InterfaceOrder>(
         },
       },
     ],
+    couponId_document_list: {
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: COUPON_DOCUMENT_NAME,
+        },
+      ],
+    },
     // created_at: {
     //   type: Date,
     //   default: Date.now,

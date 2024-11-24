@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import OrderApiService from '@services/api/order';
 import {
+  InterfaceOrderItem,
   InterfaceOrderListData,
   InterfaceOrderListMetadata,
 } from '@services/api/order/type';
@@ -25,6 +26,10 @@ import { EnumOrderStatusStage } from '@services/api/stripe_payment/type';
 import React, { useEffect, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useNavigate } from 'react-router-dom';
+import ReviewFormDialog from '../ReviewFormDialog';
+
+import * as yup from 'yup';
+import CommentApiService from '@services/api/comment';
 
 const DEFAULT_LIMIT = 5;
 
@@ -42,6 +47,12 @@ const OrderList = ({
 
   const [openDeleteOrderPopup, setOpenDeleteOrderPopup] = useState(false);
   const [orderDeleteId, setOrderDeleteId] = useState('');
+
+  const [openPopupReviewProduct, setOpenPopupReviewProduct] = useState(false);
+
+  const [orderItemList, setOrderItemList] = useState<InterfaceOrderItem[]>([]);
+
+  const [selectedId, setSelectedId] = useState('');
 
   const handleShowOrderDetail = ({
     orderId,
@@ -70,6 +81,60 @@ const OrderList = ({
       .catch((error) => {
         console.log('46 error =================>', error);
       });
+  };
+
+  const handleOpenPopupReviewProduct = ({
+    orderId,
+    order_item_list,
+  }: {
+    orderId: string;
+    order_item_list: InterfaceOrderItem[];
+  }) => {
+    setOpenPopupReviewProduct(true);
+    setSelectedId(orderId);
+    setOrderItemList(order_item_list);
+  };
+
+  const handleClosePopupReviewProduct = () => {
+    setOpenPopupReviewProduct(false);
+  };
+
+  const handleSubmit = (data: {
+    review_product_list?:
+      | {
+          product_image?: yup.Maybe<string | null | undefined>;
+          productId: string;
+          product_name: string;
+          comment_title: string;
+          comment_content: string;
+          comment_rating: number;
+        }[]
+      | undefined;
+  }) => {
+    console.log('Dữ liệu đánh giá:', data);
+    // Gửi dữ liệu tới server
+
+    if (data.review_product_list?.length) {
+      const promiseArray = data.review_product_list.map((item) => {
+        return CommentApiService.sendReviewContentToProduct({
+          productId: item.productId,
+          comment_title: item.comment_title,
+          comment_content: item.comment_content,
+          comment_rating: item.comment_rating,
+        });
+      });
+
+      Promise.all(promiseArray)
+        .then((responses) => {
+          console.log('responses', responses);
+
+          navigate(0);
+          handleClosePopupReviewProduct();
+        })
+        .catch((error) => {
+          console.log('error', error);
+        });
+    }
   };
 
   const handlePaymentNow = ({ orderId }: { orderId: string | undefined }) => {
@@ -289,6 +354,25 @@ const OrderList = ({
                       Thanh toán ngay
                     </Button>
                   )}
+                  {order.order_status_stage ===
+                  EnumOrderStatusStage.DELIVERED ? (
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      sx={{ marginRight: '10px' }}
+                      onClick={() =>
+                        handleOpenPopupReviewProduct({
+                          orderId: order.orderId || '',
+                          order_item_list: order.order_item_list,
+                        })
+                      }
+                    >
+                      Viết đánh giá
+                    </Button>
+                  ) : (
+                    <></>
+                  )}
                 </Box>
               </CardContent>
             </Card>
@@ -319,6 +403,14 @@ const OrderList = ({
           </Button>
         </DialogActions>
       </Dialog>
+      {/* // ================================================================= */}
+      <ReviewFormDialog
+        open={openPopupReviewProduct}
+        onClose={handleClosePopupReviewProduct}
+        onSubmit={handleSubmit}
+        selectedId={selectedId}
+        orderItemList={orderItemList}
+      />
       {/* // ================================================================= */}
     </>
   );

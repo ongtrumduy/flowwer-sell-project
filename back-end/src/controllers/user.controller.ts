@@ -138,6 +138,27 @@ class UserController {
       return next(errorReturn);
     }
   };
+
+  // =================================================================
+  static checkHaveRoleUserPublic = async (req: InterfaceWithKeyStoreV2Request, res: Response, next: NextFunction) => {
+    const haveRoleUser = req.user;
+
+    const isPermission = haveRoleUser?.role_list?.some((role) => {
+      return [EnumRole.USER].indexOf(role) > -1;
+    });
+
+    if (isPermission) {
+      return next();
+    } else {
+      const errorReturn = new ErrorDTODataResponse({
+        message: "You don't have permission",
+        statusCode: 403,
+        reasonStatusCode: EnumReasonStatusCode.FORBIDDEN_PERMISSION,
+      });
+
+      return next(errorReturn);
+    }
+  };
 }
 
 export default UserController;

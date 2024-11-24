@@ -140,3 +140,12 @@ export const TYPE_PRODUCT_API = {
     `/v1/api/admin/type_product/update/${typeProductId}`,
   DELETE_FOR_ADMIN: () => `/v1/api/admin/type_product/delete`,
 };
+
+//===============================================================================================================
+
+export const COMMENT_API = {
+  GET_ALL_COMMENT_OF_PRODUCT_LIST: () => `/v1/api/comment/all/comment`,
+
+  SEND_REVIEW_CONTENT_TO_PRODUCT: ({ productId }: { productId: string }) =>
+    `/v1/api/comment/send/comment/review/${productId}`,
+};

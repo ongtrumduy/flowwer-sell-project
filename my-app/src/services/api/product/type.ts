@@ -5,12 +5,14 @@ export interface InterfaceProductItem {
   product_image: string | null;
   product_description: string;
   productId: string;
-  product_category_list?: {
+  categoryId_document_list?: {
     category_description: string;
     category_name: string;
     _id: string;
   }[];
   product_category: string[];
+  product_average_rating: number;
+  product_total_review: number;
 }
 
 export interface InterfaceProductMetaData {

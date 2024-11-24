@@ -10,6 +10,7 @@ import { getInformationData_V2 } from '@root/src/utils';
 import { EnumMessageStatus, EnumReasonStatusCode, EnumRole, EnumStatusOfOrder } from '@root/src/utils/type';
 import fs from 'fs';
 import { nanoid } from 'nanoid';
+import { DEFAULT_ORDER_STAGE } from '@root/src/utils/constant';
 
 const cloudinary = cloudinaryConfig();
 
@@ -283,7 +284,7 @@ class ShipperOrderService {
     limit: number;
     page: number;
     searchName: string;
-    orderStatus: EnumStatusOfOrder | 'ALL';
+    orderStatus: EnumStatusOfOrder | typeof DEFAULT_ORDER_STAGE;
   }) => {
     const allPipeline = [];
 
@@ -302,7 +303,7 @@ class ShipperOrderService {
       });
     }
 
-    if (orderStatus && orderStatus !== 'ALL') {
+    if (orderStatus && orderStatus !== DEFAULT_ORDER_STAGE) {
       allPipeline.push({
         $match: { order_status_stage: orderStatus },
       });
